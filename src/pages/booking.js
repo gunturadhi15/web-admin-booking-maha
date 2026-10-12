@@ -1,6 +1,6 @@
 /**
  * Booking Online Frontend Page
- * Sacred Journey Bali — Public Booking Form with Supabase Integration
+ * Sacred Journey Bali — Public Booking Form with Pricing, Phone & Time
  */
 
 import { supabase, isUsingMock } from '../supabaseClient.js';
@@ -9,6 +9,7 @@ export const SERVICES = [
   {
     id: 'SRV001',
     name: 'Spiritual Temple Tour',
+    price: 650000,
     category: 'Sacred Tour',
     duration: '3 - 6 Jam',
     desc: 'Kunjungan pura sakral dengan panduan spiritual, meditasi & upacara pembersihan diri.',
@@ -17,6 +18,7 @@ export const SERVICES = [
   {
     id: 'SRV002',
     name: 'Yoga & Meditation Retreat',
+    price: 1200000,
     category: 'Mindfulness Retreat',
     duration: 'Full Day / Retreat',
     desc: 'Retreat yoga & meditasi intensif di tengah alam Ubud untuk kedamaian batin sejati.',
@@ -25,6 +27,7 @@ export const SERVICES = [
   {
     id: 'SRV003',
     name: 'Numerology Consultation',
+    price: 350000,
     category: 'Spiritual Guidance',
     duration: '60 - 90 Menit',
     desc: 'Konsultasi numerologi personal untuk memahami potensi diri, jodoh & arah hidup.',
@@ -33,6 +36,7 @@ export const SERVICES = [
   {
     id: 'SRV004',
     name: 'Healing & Purification',
+    price: 450000,
     category: 'Traditional Melukat',
     duration: '2 - 4 Jam',
     desc: 'Ritual pembersihan diri Melukat dengan air suci alami di Tirta Empul atau Sebatu.',
@@ -51,7 +55,7 @@ export function renderBookingPage() {
         <p class="hero-subtitle">Sacred Journey Bali</p>
         <h2 class="hero-title">Formulir Booking Online</h2>
         <p class="hero-description">
-          Pilih layanan spiritual sakral Anda dan lengkapi detail reservasi. Data akan langsung tersimpan aman ke database Supabase secara real-time.
+          Pilih layanan spiritual sakral, waktu pelaksanaan, dan lengkapi detail reservasi. Data akan langsung terhubung ke dashboard Web Admin secara real-time.
         </p>
       </div>
 
@@ -60,48 +64,63 @@ export function renderBookingPage() {
         <div class="alert alert-info">
           <span>ℹ️</span>
           <div>
-            <strong>Mode Demo Browser Aktif:</strong> Supabase URL & Anon Key belum diatur. Pesanan akan disimpan ke LocalStorage dan dapat dipantau langsung di tab Web Admin.
-            <a href="javascript:void(0)" id="link-open-config" style="color: inherit; text-decoration: underline; margin-left: 6px; font-weight: 600;">Hubungkan Supabase</a>
+            <strong>Mode Demo Browser:</strong> Pesanan tersimpan di browser dan langsung muncul di tab Web Admin.
           </div>
         </div>
       ` : `
         <div class="alert alert-success">
           <span>🟢</span>
           <div>
-            <strong>Terhubung ke Database Supabase Live:</strong> Seluruh form submission akan langsung di-INSERT ke tabel <code>bookings</code>.
+            <strong>Terhubung ke Supabase Live:</strong> Seluruh form submission akan langsung di-INSERT ke tabel <code>bookings</code>.
           </div>
         </div>
       `}
 
-      <!-- Status Alert Box (Error / Success) -->
+      <!-- Status Alert Box -->
       <div id="booking-alert" style="display: none;"></div>
 
       <!-- Main Booking Card -->
       <div class="card">
         <form id="public-booking-form" class="booking-form" novalidate>
           
-          <!-- 1. Customer Name -->
-          <div class="form-group">
-            <label class="form-label" for="customer_name">
-              <span>Nama Lengkap Pemesan</span>
-              <span class="form-label-required">*Wajib diisi</span>
-            </label>
-            <input 
-              type="text" 
-              id="customer_name" 
-              name="customer_name" 
-              class="form-input" 
-              placeholder="Contoh: I Putu Mahendra / Sarah Jenkins"
-              required 
-              autocomplete="name"
-            />
+          <!-- 1. Customer Name & Phone -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="customer_name">
+                <span>Nama Lengkap Pemesan</span>
+                <span class="form-label-required">*Wajib</span>
+              </label>
+              <input 
+                type="text" 
+                id="customer_name" 
+                name="customer_name" 
+                class="form-input" 
+                placeholder="Contoh: I Putu Mahendra"
+                required 
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="customer_phone">
+                <span>No. WhatsApp / Telepon</span>
+                <span class="form-label-required">*Untuk kendala &amp; tiket</span>
+              </label>
+              <input 
+                type="tel" 
+                id="customer_phone" 
+                name="customer_phone" 
+                class="form-input" 
+                placeholder="+62 812 3456 7890"
+                required 
+              />
+            </div>
           </div>
 
           <!-- 2. Customer Email -->
           <div class="form-group">
             <label class="form-label" for="customer_email">
               <span>Alamat Email</span>
-              <span class="form-label-required">*Konfirmasi tiket</span>
+              <span class="form-label-required">*Konfirmasi</span>
             </label>
             <input 
               type="email" 
@@ -110,7 +129,6 @@ export function renderBookingPage() {
               class="form-input" 
               placeholder="nama@email.com"
               required 
-              autocomplete="email"
             />
           </div>
 
@@ -122,45 +140,72 @@ export function renderBookingPage() {
             </label>
             <div class="service-selector-grid">
               ${SERVICES.map((srv, idx) => `
-                <div class="service-radio-card ${idx === 0 ? 'selected' : ''}" data-service="${srv.name}">
+                <div class="service-radio-card ${idx === 0 ? 'selected' : ''}" data-service="${srv.name}" data-price="${srv.price}">
                   <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">${srv.icon}</div>
                   <div class="service-radio-title">${srv.name}</div>
                   <div class="service-radio-desc">${srv.desc}</div>
-                  <span style="font-size: 0.72rem; color: var(--gold-light); font-weight: 600; margin-top: auto; padding-top: 0.5rem;">⏱️ ${srv.duration}</span>
+                  <div style="margin-top: auto; padding-top: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.72rem; color: var(--gold-light); font-weight: 600;">⏱️ ${srv.duration}</span>
+                    <span style="font-size: 0.85rem; font-weight: 700; color: #FFFFFF;">${formatRupiah(srv.price)}</span>
+                  </div>
                 </div>
               `).join('')}
             </div>
             <input type="hidden" id="service_name" name="service_name" value="${SERVICES[0].name}" />
+            <input type="hidden" id="total_price" name="total_price" value="${SERVICES[0].price}" />
           </div>
 
-          <!-- 4. Booking Date -->
-          <div class="form-group">
-            <label class="form-label" for="booking_date">
-              <span>Tanggal Pelaksanaan</span>
-              <span class="form-label-required">*Pilih tanggal</span>
-            </label>
-            <input 
-              type="date" 
-              id="booking_date" 
-              name="booking_date" 
-              class="form-input" 
-              min="${tomorrow}"
-              value="${tomorrow}"
-              required 
-            />
+          <!-- 4. Booking Date & Time Slot -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="booking_date">
+                <span>Tanggal Pelaksanaan</span>
+                <span class="form-label-required">*Pilih tanggal</span>
+              </label>
+              <input 
+                type="date" 
+                id="booking_date" 
+                name="booking_date" 
+                class="form-input" 
+                min="${tomorrow}"
+                value="${tomorrow}"
+                required 
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="booking_time">
+                <span>Pilih Jam Pelaksanaan</span>
+                <span class="form-label-required">*WITA</span>
+              </label>
+              <select id="booking_time" name="booking_time" class="form-select">
+                <option value="09:00">09:00 WITA (Sesi Pagi Utama)</option>
+                <option value="10:00">10:00 WITA (Sesi Pagi)</option>
+                <option value="11:30">11:30 WITA (Sesi Siang)</option>
+                <option value="14:00">14:00 WITA (Sesi Sore Awal)</option>
+                <option value="15:30">15:30 WITA (Sesi Sunset Meditasi)</option>
+              </select>
+            </div>
           </div>
 
-          <!-- Submit Button with Loading Spinner -->
-          <div style="margin-top: 0.75rem;">
+          <!-- Price Summary Preview -->
+          <div style="background: rgba(217, 163, 67, 0.08); border: 1px solid rgba(217, 163, 67, 0.25); border-radius: var(--radius-md); padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-secondary);">Total Biaya Reservasi:</span>
+              <div id="display-total-price" style="font-family: var(--font-heading); font-size: 1.35rem; font-weight: 800; color: #FFFFFF;">
+                ${formatRupiah(SERVICES[0].price)}
+              </div>
+            </div>
+            <span style="font-size: 0.75rem; color: var(--gold-light); font-weight: 600;">Status Awal: Pending</span>
+          </div>
+
+          <!-- Submit Button with Spinner -->
+          <div style="margin-top: 0.5rem;">
             <button type="submit" id="btn-submit-booking" class="btn btn-primary" style="width: 100%; padding: 0.85rem 1.5rem; font-size: 1rem;">
               <span id="btn-submit-text">Kirim Reservasi Sekarang ✨</span>
               <span id="btn-submit-spinner" class="spinner" style="display: none;"></span>
             </button>
           </div>
-
-          <p style="text-align: center; font-size: 0.78rem; color: var(--text-muted);">
-            🔒 Data pesanan diproteksi enkripsi Supabase Row Level Security (RLS). Status awal: <strong>Pending</strong>.
-          </p>
 
         </form>
       </div>
@@ -169,9 +214,6 @@ export function renderBookingPage() {
   `;
 }
 
-/**
- * Initialize Event Handlers for Booking Form
- */
 export function initBookingForm(onSuccessNavigate) {
   const form = document.getElementById('public-booking-form');
   const alertBox = document.getElementById('booking-alert');
@@ -180,115 +222,85 @@ export function initBookingForm(onSuccessNavigate) {
   const submitSpinner = document.getElementById('btn-submit-spinner');
   const serviceCards = document.querySelectorAll('.service-radio-card');
   const serviceInput = document.getElementById('service_name');
-  const linkOpenConfig = document.getElementById('link-open-config');
+  const priceInput = document.getElementById('total_price');
+  const displayTotal = document.getElementById('display-total-price');
 
-  if (linkOpenConfig) {
-    linkOpenConfig.addEventListener('click', () => {
-      window.dispatchEvent(new CustomEvent('open-supabase-config'));
-    });
-  }
-
-  // Handle service card selection
   serviceCards.forEach(card => {
     card.addEventListener('click', () => {
       serviceCards.forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
       const selectedService = card.getAttribute('data-service');
+      const selectedPrice = Number(card.getAttribute('data-price') || 0);
+
       if (serviceInput) serviceInput.value = selectedService;
+      if (priceInput) priceInput.value = selectedPrice;
+      if (displayTotal) displayTotal.textContent = formatRupiah(selectedPrice);
     });
   });
 
   if (!form) return;
 
-  // Handle Form Submission
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // 1. Ambil nilai field form
     const customerName = document.getElementById('customer_name')?.value?.trim();
+    const customerPhone = document.getElementById('customer_phone')?.value?.trim();
     const customerEmail = document.getElementById('customer_email')?.value?.trim();
     const serviceName = serviceInput?.value?.trim() || SERVICES[0].name;
+    const totalPrice = Number(priceInput?.value || SERVICES[0].price);
     const bookingDate = document.getElementById('booking_date')?.value;
+    const bookingTime = document.getElementById('booking_time')?.value || '09:00';
 
-    // 2. Validasi input
-    if (!customerName) {
-      showAlert('error', 'Silakan masukkan Nama Lengkap Anda.');
-      document.getElementById('customer_name')?.focus();
+    if (!customerName || !customerPhone || !customerEmail || !bookingDate) {
+      showAlert('error', 'Silakan lengkapi seluruh field formulir pemesanan.');
       return;
     }
 
-    if (!customerEmail || !customerEmail.includes('@') || !customerEmail.includes('.')) {
-      showAlert('error', 'Silakan masukkan alamat Email yang valid.');
-      document.getElementById('customer_email')?.focus();
-      return;
-    }
-
-    if (!bookingDate) {
-      showAlert('error', 'Silakan pilih Tanggal Pelaksanaan.');
-      document.getElementById('booking_date')?.focus();
-      return;
-    }
-
-    // 3. Set Indikator Loading
     setLoading(true);
     hideAlert();
 
     try {
-      // 4. Eksekusi INSERT ke Supabase
-      // Sesuai Tahap 2: supabase.from('bookings').insert([...])
       const payload = {
         customer_name: customerName,
         customer_email: customerEmail,
+        customer_phone: customerPhone,
         service_name: serviceName,
+        total_price: totalPrice,
         booking_date: bookingDate,
+        booking_time: bookingTime,
         status: 'Pending'
       };
-
-      console.log('Mengirim data booking ke Supabase:', payload);
 
       const { data, error } = await supabase
         .from('bookings')
         .insert([payload])
         .select();
 
-      if (error) {
-        throw error;
-      }
-
-      // 5. Sukses
-      const createdBooking = (data && data[0]) ? data[0] : payload;
-      const bookingId = createdBooking.id || 'BKG-' + Date.now().toString(36).toUpperCase();
+      if (error) throw error;
 
       showAlert(
         'success', 
-        `🎉 <strong>Reservasi Berhasil Diterima!</strong><br/>
-         Nomor Ref: <code>${bookingId}</code><br/>
-         Data pesanan untuk <strong>${customerName}</strong> (${serviceName}) pada tanggal <strong>${bookingDate}</strong> telah tersimpan ke database.`
+        `🎉 <strong>Reservasi Berhasil Dikirim!</strong><br/>
+         Pemesan: <strong>${customerName}</strong> (${customerPhone})<br/>
+         Layanan: <strong>${serviceName}</strong> (${formatRupiah(totalPrice)})<br/>
+         Jadwal: <strong>${bookingDate} pk ${bookingTime} WITA</strong>.<br/>
+         Data telah masuk ke database Supabase dan otomatis tampil di Web Admin.`
       );
 
-      // Reset form
       form.reset();
-      // Set default date back to tomorrow
       const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
       const dateEl = document.getElementById('booking_date');
       if (dateEl) dateEl.value = tomorrow;
 
-      // Reset selected card
-      serviceCards.forEach((c, idx) => {
-        c.classList.toggle('selected', idx === 0);
-      });
+      serviceCards.forEach((c, idx) => c.classList.toggle('selected', idx === 0));
       if (serviceInput) serviceInput.value = SERVICES[0].name;
+      if (priceInput) priceInput.value = SERVICES[0].price;
+      if (displayTotal) displayTotal.textContent = formatRupiah(SERVICES[0].price);
 
-      // Trigger global event agar admin dashboard langsung refresh jika aktif
-      window.dispatchEvent(new CustomEvent('booking-submitted', { detail: createdBooking }));
-
+      window.dispatchEvent(new CustomEvent('booking-submitted', { detail: payload }));
     } catch (err) {
-      console.error('Error saat menyimpan booking:', err);
-      showAlert(
-        'error', 
-        `❌ <strong>Gagal Mengirim Pesanan:</strong> ${err.message || 'Terjadi kesalahan jaringan atau konfigurasi RLS Supabase.'}<br/>
-         <small>Pastikan policy INSERT anon pada tabel 'bookings' sudah diaktifkan di Supabase.</small>`
-      );
+      console.error('Error saat submit booking:', err);
+      showAlert('error', `Gagal menyimpan pesanan: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -303,18 +315,19 @@ export function initBookingForm(onSuccessNavigate) {
   function showAlert(type, html) {
     if (!alertBox) return;
     alertBox.className = `alert alert-${type}`;
-    alertBox.innerHTML = `
-      <span>${type === 'success' ? '✅' : '⚠️'}</span>
-      <div style="flex: 1;">${html}</div>
-    `;
+    alertBox.innerHTML = `<span>${type === 'success' ? '✅' : '⚠️'}</span><div style="flex: 1;">${html}</div>`;
     alertBox.style.display = 'flex';
-    alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
   function hideAlert() {
-    if (alertBox) {
-      alertBox.style.display = 'none';
-      alertBox.innerHTML = '';
-    }
+    if (alertBox) alertBox.style.display = 'none';
   }
+}
+
+function formatRupiah(num) {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 0
+  }).format(num);
 }
