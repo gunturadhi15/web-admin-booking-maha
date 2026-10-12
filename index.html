@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sacred Journey Bali — Web Admin & Sistem Booking Online</title>
+  <meta name="description" content="Dashboard Web Admin dan Sistem Reservasi Booking Online Terintegrasi Supabase Realtime untuk Sacred Journey Bali." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛕</text></svg>" />
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+      <div class="navbar-inner">
+        
+        <!-- Brand Logo & Title -->
+        <a href="#/admin" class="brand" id="brand-link">
+          <div class="brand-icon">🛕</div>
+          <div class="brand-info">
+            <h1>Sacred Journey Bali</h1>
+            <p>Web Admin &amp; Booking Management</p>
+          </div>
+        </a>
+
+        <!-- View Switcher Tabs -->
+        <nav class="nav-tabs" aria-label="Mode Navigasi">
+          <button type="button" class="nav-tab-btn active" id="nav-tab-admin">
+            <span>⚙️ Web Admin</span>
+          </button>
+          <button type="button" class="nav-tab-btn" id="nav-tab-booking">
+            <span>🌺 Form Booking Publik</span>
+          </button>
+        </nav>
+
+        <!-- Navbar Actions & Live Status -->
+        <div class="nav-actions">
+          <div class="status-indicator" id="navbar-supabase-status" role="button" tabindex="0">
+            <span class="status-dot demo"></span>
+            <span>Memeriksa Supabase...</span>
+          </div>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Main Dynamic Viewport -->
+    <main id="main-viewport" class="main-content" role="main">
+      <!-- Dynamic content rendered by src/main.js -->
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
