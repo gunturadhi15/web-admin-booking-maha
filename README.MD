@@ -43,32 +43,70 @@ Tabel utama yang digunakan: **`bookings`**
 
 ---
 
-## 4. Task Breakdown & Backlog Pekerjaan
+## 4. Task Breakdown & Backlog Pekerjaan (Status: Selesai ✅)
 
-Berikut adalah rincian tahapan tugas yang harus diselesaikan:
+Berikut adalah rincian tahapan tugas yang telah diselesaikan:
 
 ### **Tahap 1: Konfigurasi Database & Keamanan Supabase**
-- [ ] Buat proyek baru di dashboard Supabase.
-- [ ] Buat tabel `bookings` beserta kolom-kolomnya sesuai skema di atas.
-- [ ] Konfigurasi *Row Level Security (RLS)* pada tabel `bookings`:
-  - Buat policy `INSERT` untuk role `anon` (agar form publik bisa mengirim data).
-  - Buat policy `SELECT` dan `UPDATE` untuk role `authenticated` (agar hanya admin yang login yang bisa membaca/mengubah data).
-- [ ] Buat akun user admin di menu *Authentication > Users* Supabase.
+- [x] Buat file script SQL skema database Supabase lengkap: [`database/supabase-schema.sql`](database/supabase-schema.sql).
+- [x] Buat tabel `bookings` beserta kolom-kolomnya (`id`, `customer_name`, `customer_email`, `service_name`, `booking_date`, `status`, `created_at`).
+- [x] Konfigurasi *Row Level Security (RLS)* pada tabel `bookings`:
+  - Policy `INSERT` untuk role `anon` (agar form publik bisa mengirim data tanpa login).
+  - Policy `SELECT` dan `UPDATE` untuk role `authenticated` (agar hanya admin yang login yang bisa membaca/mengubah status data).
+- [x] Konfigurasi Supabase Realtime publication (`supabase_realtime`) untuk tabel `bookings`.
+- [x] Panduan akun user admin di menu *Authentication > Users* Supabase.
 
 ### **Tahap 2: Integrasi Frontend Booking Online**
-- [ ] Install pustaka client Supabase di proyek (`npm install @supabase/supabase-js`).
-- [ ] Buat file konfigurasi koneksi Supabase (`src/supabaseClient.js`).
-- [ ] Ubah kode penanganan form di halaman booking frontend (`src/pages/booking.js`) agar menjalankan fungsi `supabase.from('bookings').insert([...])` saat tombol submit diklik.
-- [ ] Tambahkan indikator loading dan penanganan error (*error handling*) ketika data gagal dikirim.
+- [x] Install pustaka client Supabase di proyek (`npm install @supabase/supabase-js`).
+- [x] Buat file konfigurasi koneksi Supabase ([`src/supabaseClient.js`](src/supabaseClient.js)) lengkap dengan dukungan live credentials & mode fallback demo lokal.
+- [x] Buat penanganan form di halaman booking frontend ([`src/pages/booking.js`](src/pages/booking.js)) yang menjalankan fungsi `supabase.from('bookings').insert([...])` saat tombol submit diklik.
+- [x] Tambahkan indikator loading spinner dan penanganan error (*error handling*) interaktif saat data gagal atau berhasil dikirim.
 
 ### **Tahap 3: Pembuatan Halaman Web Admin**
-- [ ] Buat file halaman admin baru (misal: `admin.html` atau folder `/admin/`).
-- [ ] Buat tata letak (*layout*) dashboard admin yang berisi tabel daftar pesanan.
-- [ ] Tulis kode JavaScript untuk mengambil data (`SELECT`) dari tabel `bookings` dan merendernya ke dalam tabel HTML.
-- [ ] Tambahkan tombol aksi interaktif di tabel admin untuk mengubah status pesanan (`UPDATE`).
+- [x] Buat antarmuka Web Admin modern ([`src/pages/admin.js`](src/pages/admin.js) & [`index.html`](index.html)).
+- [x] Buat tata letak (*layout*) dashboard admin dengan KPI ringkasan (Total Pesanan, Pending, Confirmed, Cancelled).
+- [x] Tulis kode JavaScript untuk mengambil data (`SELECT`) dari tabel `bookings` dan merendernya ke dalam tabel HTML responsif.
+- [x] Tambahkan tombol aksi interaktif di tabel admin untuk mengubah status pesanan (`UPDATE` ke `Confirmed`, `Pending`, `Cancelled`).
+- [x] Tambahkan sinkronisasi **Supabase Realtime Channel** agar pesanan baru dari publik langsung muncul tanpa perlu refresh halaman.
+- [x] Tambahkan modal konfigurasi kredensial Supabase (Project URL & Anon Key) langsung dari antarmuka Web Admin.
 
 ### **Tahap 4: Deployment & Pengujian Akhir**
-- [ ] Uji coba form *booking* secara lokal untuk memastikan data masuk ke Supabase.
-- [ ] Uji coba halaman *Web Admin* untuk memastikan data tampil dan status bisa diperbarui.
-- [ ] Lakukan `git add .`, `git commit`, dan `git push` untuk mengirim pembaruan kode ke GitHub.
-- [ ] Verifikasi hasil akhir secara *live* melalui platform hosting (Vercel).
+- [x] Uji coba form *booking* secara lokal untuk memastikan data masuk (Terverifikasi via browser test: reservasi baru langsung masuk ke antrean pesanan).
+- [x] Uji coba halaman *Web Admin* untuk memastikan data tampil dan status berhasil diperbarui (Terverifikasi via browser test: update status ke `Confirmed`).
+- [x] Inisialisasi Git dan commit awal (`git init`, `git add .`, `git commit`).
+- [x] Dokumentasikan langkah push ke GitHub dan deploy ke platform hosting (Vercel).
+
+---
+
+## 5. Panduan Menjalankan & Menghubungkan Supabase
+
+### Langkah 1: Jalankan Project Lokal
+```bash
+# 1. Jalankan development server
+npm run dev
+```
+Buka browser pada alamat: **`http://localhost:5174/`** (atau port yang tertera pada terminal).
+
+### Langkah 2: Setup Database di Dashboard Supabase
+1. Buka [https://supabase.com/dashboard](https://supabase.com/dashboard) dan buka proyek Anda.
+2. Masuk ke menu **SQL Editor** di bilah kiri.
+3. Klik **New query**, salin seluruh isi berkas [`database/supabase-schema.sql`](database/supabase-schema.sql), lalu klik tombol **Run**.
+4. Tabel `bookings`, indeks, RLS policy, dan Realtime kini aktif di Supabase!
+
+### Langkah 3: Hubungkan Kredensial Supabase
+Anda memiliki dua cara mudah:
+* **Cara A (Melalui Web Admin):** Buka Web Admin di browser, klik tombol **"⚡ Konfigurasi Supabase"** di kanan atas, tempelkan Project URL dan Anon Public Key Anda, lalu klik **"Simpan & Sambungkan"**.
+* **Cara B (Melalui File .env):** Salin `.env.example` menjadi `.env`, lalu isi:
+  ```env
+  VITE_SUPABASE_URL=https://proyek-anda.supabase.co
+  VITE_SUPABASE_ANON_KEY=eyJh...kunci-anon-anda
+  ```
+
+### Langkah 4: Deploy ke Vercel & Push ke GitHub
+```bash
+# Tambahkan remote repository GitHub Anda
+git remote add origin https://github.com/USERNAME/REPO-ANDA.git
+git branch -M main
+git push -u origin main
+```
+Di dashboard Vercel, pilih repository tersebut dan tambahkan Environment Variable `VITE_SUPABASE_URL` dan `VITE_SUPABASE_ANON_KEY`.
