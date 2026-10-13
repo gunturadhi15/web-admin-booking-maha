@@ -51,8 +51,11 @@ export function renderDasborApp() {
   return `
     <div class="dasbor-layout">
       
-      <!-- Sidebar Navigation -->
-      <aside class="dasbor-sidebar">
+      <!-- Backdrop for Mobile Sidebar Drawer -->
+      <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+      <!-- Sidebar Navigation (Drawer on Mobile) -->
+      <aside class="dasbor-sidebar" id="dasbor-sidebar">
         <div class="sidebar-header">
           <div class="sidebar-logo">
             <span class="logo-icon">📊</span>
@@ -61,6 +64,7 @@ export function renderDasborApp() {
               <span class="logo-subtitle">Sistem Admin Bisnis</span>
             </div>
           </div>
+          <button class="btn-close-sidebar" id="btn-close-sidebar" aria-label="Tutup Menu">&times;</button>
         </div>
 
         <nav class="sidebar-menu">
@@ -115,6 +119,62 @@ export function renderDasborApp() {
       <!-- Main App Viewport -->
       <div class="dasbor-main">
         
+        <!-- Mobile Top App Bar (Visible on mobile screens) -->
+        <header class="mobile-top-bar">
+          <div class="mobile-brand">
+            <button id="btn-toggle-sidebar" class="mobile-menu-btn" aria-label="Buka Menu" title="Menu Navigasi">
+              <span class="menu-icon">☰</span>
+            </button>
+            <span class="logo-icon" style="font-size: 1.25rem; padding: 2px 6px;">📊</span>
+            <div class="mobile-logo-text">
+              <span class="logo-title-sm">Untung Usaha</span>
+              <span class="logo-subtitle-sm">Admin Bisnis</span>
+            </div>
+          </div>
+
+          <div class="mobile-top-actions">
+            <div class="conn-pill ${isConfigured ? 'live' : 'demo'}" id="mobile-db-status" title="Status Database">
+              <span class="status-dot ${isConfigured ? 'live' : 'demo'}"></span>
+              <span>${isConfigured ? 'Live' : 'Demo'}</span>
+            </div>
+            <button id="btn-mobile-quick-wa" class="btn btn-primary btn-icon-only" title="Catat Pesanan WhatsApp">
+              <span>💬</span>
+            </button>
+            <button id="btn-mobile-refresh" class="btn btn-secondary btn-icon-only" title="Muat Ulang Data">
+              <span>🔄</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Mobile Horizontal Quick Navigation Tabs -->
+        <nav class="mobile-nav-tabs" id="mobile-nav-tabs">
+          <button class="mobile-tab-btn active" data-mod="dashboard">
+            <span>🏠 Dashboard</span>
+          </button>
+          <button class="mobile-tab-btn" data-mod="orders">
+            <span>📋 Pesanan</span>
+            <span class="mobile-tab-badge" id="mobile-badge-order-count">0</span>
+          </button>
+          <button class="mobile-tab-btn" data-mod="profit">
+            <span>💰 Hitung Untung</span>
+          </button>
+          <button class="mobile-tab-btn" data-mod="customers">
+            <span>👥 Pelanggan</span>
+          </button>
+          <button class="mobile-tab-btn" data-mod="charts">
+            <span>📈 Grafik</span>
+          </button>
+          <button class="mobile-tab-btn" data-mod="bookkeeping">
+            <span>📒 Pembukuan</span>
+          </button>
+          <button class="mobile-tab-btn" data-mod="sync">
+            <span>🔄 Tarik Data</span>
+          </button>
+          <button class="mobile-tab-btn" data-mod="settings">
+            <span>⚙️ Akun</span>
+          </button>
+        </nav>
+
         <!-- Header Bar -->
         <header class="dasbor-header">
           <div class="header-left">
@@ -159,27 +219,75 @@ export async function initDasborApp() {
 }
 
 /**
+ * Helper Drawer Sidebar Mobile
+ */
+function toggleMobileSidebar() {
+  const sidebar = document.querySelector('.dasbor-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  if (!sidebar) return;
+  const isOpen = sidebar.classList.toggle('mobile-open');
+  backdrop?.classList.toggle('active', isOpen);
+}
+
+function closeMobileSidebar() {
+  const sidebar = document.querySelector('.dasbor-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  sidebar?.classList.remove('mobile-open');
+  backdrop?.classList.remove('active');
+}
+
+/**
  * Setup Event Navigasi
  */
 function setupNavigationEvents() {
+  // Sidebar Navigation Links
   document.querySelectorAll('.sidebar-link').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mod = btn.getAttribute('data-mod');
+      switchModule(mod);
+      closeMobileSidebar();
+    });
+  });
+
+  // Mobile Horizontal Tabs
+  document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const mod = btn.getAttribute('data-mod');
       switchModule(mod);
     });
   });
 
+  // Mobile Drawer Toggle & Close
+  document.getElementById('btn-toggle-sidebar')?.addEventListener('click', toggleMobileSidebar);
+  document.getElementById('btn-close-sidebar')?.addEventListener('click', closeMobileSidebar);
+  document.getElementById('sidebar-backdrop')?.addEventListener('click', closeMobileSidebar);
+
+  // Refresh Buttons
   document.getElementById('btn-global-refresh')?.addEventListener('click', async () => {
     await loadAllData();
     renderActiveModule();
     window.showToast?.('Data berhasil disegarkan!', 'info');
   });
+  document.getElementById('btn-mobile-refresh')?.addEventListener('click', async () => {
+    await loadAllData();
+    renderActiveModule();
+    window.showToast?.('Data berhasil disegarkan!', 'info');
+  });
 
+  // Quick WhatsApp Order Buttons
   document.getElementById('btn-quick-wa-order')?.addEventListener('click', () => {
     showAddOrderModal('whatsapp');
   });
+  document.getElementById('btn-mobile-quick-wa')?.addEventListener('click', () => {
+    showAddOrderModal('whatsapp');
+  });
 
+  // Database Status Pills Click
   document.getElementById('sidebar-db-status')?.addEventListener('click', () => {
+    switchModule('settings');
+    closeMobileSidebar();
+  });
+  document.getElementById('mobile-db-status')?.addEventListener('click', () => {
     switchModule('settings');
   });
 }
@@ -188,6 +296,13 @@ function switchModule(modName) {
   activeModule = modName;
   document.querySelectorAll('.sidebar-link').forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-mod') === modName);
+  });
+  document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
+    const isActive = btn.getAttribute('data-mod') === modName;
+    btn.classList.toggle('active', isActive);
+    if (isActive) {
+      btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
   });
   renderActiveModule();
 }
@@ -320,6 +435,8 @@ async function loadAllData() {
 
     const badge = document.getElementById('badge-order-count');
     if (badge) badge.textContent = ordersData.length;
+    const mobileBadge = document.getElementById('mobile-badge-order-count');
+    if (mobileBadge) mobileBadge.textContent = ordersData.length;
 
   } catch (err) {
     console.error('Error load data:', err);
@@ -460,7 +577,7 @@ function renderDashboardView() {
       </div>
 
       <!-- Dua Kolom: Pesanan Terbaru & Status Pesanan -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+      <div class="dashboard-two-col-grid">
         
         <!-- Kartu 1: Pesanan Terbaru -->
         <div class="card">
@@ -470,6 +587,10 @@ function renderDashboardView() {
               <p class="card-desc">5 transaksi terakhir yang masuk dari website atau WhatsApp.</p>
             </div>
             <button class="btn btn-action" id="btn-goto-all-orders">Lihat Semua</button>
+          </div>
+
+          <div class="table-scroll-hint">
+            <span>👉 Geser tabel ke kanan untuk melihat rincian &amp; status</span>
           </div>
 
           <div class="table-responsive">
@@ -622,6 +743,9 @@ function renderOrdersView() {
         </div>
 
         <!-- Orders Table -->
+        <div class="table-scroll-hint">
+          <span>👉 Geser tabel ke kanan untuk melihat rincian &amp; tombol aksi</span>
+        </div>
         <div class="table-responsive">
           <table class="data-table">
             <thead>
@@ -826,6 +950,164 @@ window.adminDeleteOrder = async function(orderId) {
   }
 };
 
+window.adminOpenEditOrder = function(orderId) {
+  const slot = document.getElementById('dasbor-modals-slot');
+  if (!slot) return;
+
+  const order = ordersData.find(o => o.id === orderId);
+  if (!order) {
+    window.showToast?.('Pesanan tidak ditemukan!', 'error');
+    return;
+  }
+
+  slot.innerHTML = `
+    <div class="modal-overlay" id="edit-order-overlay">
+      <div class="modal-dialog" style="max-width: 600px;">
+        <div class="modal-header">
+          <h3 class="card-title">✏️ Edit Pesanan — ${order.order_code}</h3>
+          <button class="btn-close-modal" id="btn-close-edit-order">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <form id="form-edit-order">
+            <div class="form-grid-2" style="margin-bottom: 1rem;">
+              <div class="form-group">
+                <label class="form-label">Kode Pesanan:</label>
+                <input type="text" class="form-input" value="${order.order_code}" readonly />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tanggal Pelaksanaan:</label>
+                <input type="date" id="edit-order-date" class="form-input" value="${order.order_date}" required />
+              </div>
+            </div>
+
+            <div class="form-grid-2" style="margin-bottom: 1rem;">
+              <div class="form-group">
+                <label class="form-label">Nama Pelanggan:</label>
+                <input type="text" id="edit-order-cust-name" class="form-input" value="${escapeHtml(order.customer_name)}" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nomor WhatsApp:</label>
+                <input type="tel" id="edit-order-cust-phone" class="form-input" value="${escapeHtml(order.customer_phone || '')}" required />
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label class="form-label">Paket Layanan / Barang:</label>
+              <input type="text" id="edit-order-item" class="form-input" value="${escapeHtml(order.service_or_item)}" required />
+            </div>
+
+            <div class="form-grid-2" style="margin-bottom: 1rem;">
+              <div class="form-group">
+                <label class="form-label">Nilai Pesanan (Rp):</label>
+                <input type="number" id="edit-order-amount" class="form-input" value="${order.subtotal_amount}" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Diskon (Rp):</label>
+                <input type="number" id="edit-order-discount" class="form-input" value="${order.discount_amount || 0}" />
+              </div>
+            </div>
+
+            <div class="form-grid-2" style="margin-bottom: 1rem;">
+              <div class="form-group">
+                <label class="form-label">Status Operasional:</label>
+                <select id="edit-order-status" class="form-select">
+                  <option value="Baru" ${order.status === 'Baru' ? 'selected' : ''}>Baru</option>
+                  <option value="Dikonfirmasi" ${order.status === 'Dikonfirmasi' ? 'selected' : ''}>Dikonfirmasi</option>
+                  <option value="Diproses" ${order.status === 'Diproses' ? 'selected' : ''}>Diproses</option>
+                  <option value="Selesai" ${order.status === 'Selesai' ? 'selected' : ''}>Selesai</option>
+                  <option value="Dibatalkan" ${order.status === 'Dibatalkan' ? 'selected' : ''}>Dibatalkan</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Status Pembayaran:</label>
+                <select id="edit-order-pay-status" class="form-select">
+                  <option value="Belum Dibayar" ${order.payment_status === 'Belum Dibayar' ? 'selected' : ''}>Belum Dibayar</option>
+                  <option value="DP" ${order.payment_status === 'DP' ? 'selected' : ''}>DP</option>
+                  <option value="Lunas" ${order.payment_status === 'Lunas' ? 'selected' : ''}>Lunas</option>
+                  <option value="Refund" ${order.payment_status === 'Refund' ? 'selected' : ''}>Refund</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+              <label class="form-label">Catatan Tambahan:</label>
+              <textarea id="edit-order-notes" class="form-textarea" rows="2">${escapeHtml(order.notes || '')}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+              💾 Simpan Perubahan Pesanan
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('btn-close-edit-order')?.addEventListener('click', () => { slot.innerHTML = ''; });
+  document.getElementById('edit-order-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'edit-order-overlay') slot.innerHTML = '';
+  });
+
+  document.getElementById('form-edit-order')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const date = document.getElementById('edit-order-date')?.value;
+    const name = document.getElementById('edit-order-cust-name')?.value.trim();
+    const phone = document.getElementById('edit-order-cust-phone')?.value.trim();
+    const item = document.getElementById('edit-order-item')?.value.trim();
+    const amount = Number(document.getElementById('edit-order-amount')?.value || 0);
+    const discount = Number(document.getElementById('edit-order-discount')?.value || 0);
+    const status = document.getElementById('edit-order-status')?.value;
+    const payStatus = document.getElementById('edit-order-pay-status')?.value;
+    const notes = document.getElementById('edit-order-notes')?.value.trim();
+
+    try {
+      let bkgStatus = 'pending';
+      if (payStatus === 'Lunas' || status === 'Selesai') bkgStatus = 'completed';
+      else if (status === 'Dikonfirmasi') bkgStatus = 'confirmed';
+      else if (status === 'Dibatalkan') bkgStatus = 'cancelled';
+
+      await Promise.allSettled([
+        supabase.from('bookings').update({
+          customer_name: name,
+          customer_phone: phone,
+          service_name: item,
+          booking_date: date,
+          total_price: Math.max(0, amount - discount),
+          status: bkgStatus
+        }).eq('id', orderId),
+        supabase.from('orders').update({
+          customer_name: name,
+          customer_phone: phone,
+          service_or_item: item,
+          order_date: date,
+          subtotal_amount: amount,
+          discount_amount: discount,
+          status,
+          payment_status: payStatus,
+          notes
+        }).eq('id', orderId)
+      ]);
+
+      await supabase.from('audit_logs').insert([{
+        actor_name: 'Admin',
+        action: 'UPDATE_ORDER',
+        entity_type: 'orders',
+        entity_id: orderId,
+        details: `Pesanan ${order.order_code} berhasil diperbarui`
+      }]).catch(() => {});
+
+      window.showToast?.(`Pesanan ${order.order_code} berhasil diperbarui!`, 'success');
+      slot.innerHTML = '';
+      await loadAllData();
+      renderActiveModule();
+    } catch (err) {
+      window.showToast?.(`Gagal memperbarui: ${err.message}`, 'error');
+    }
+  });
+};
+
+
 /* ==============================================================================
    3. MODUL: HITUNG UNTUNG OTOMATIS & MODAL/BIAYA (FASE 2)
    ============================================================================== */
@@ -881,6 +1163,8 @@ function renderProfitView() {
             <h3 class="card-title">💵 Rincian Untung per Pesanan (Transparan)</h3>
             <p class="card-desc">Kalkulasi keuntungan per transaksi berdasarkan formula resmi: Pendapatan - Diskon - Modal/HPP = Laba Kotor.</p>
           </div>
+        <div class="table-scroll-hint">
+          <span>👉 Geser tabel ke kanan untuk melihat rincian kalkulasi untung &amp; margin</span>
         </div>
 
         <div class="table-responsive">
@@ -967,6 +1251,10 @@ function renderCustomersView() {
             <span class="search-icon">🔍</span>
             <input type="text" id="cust-search-input" class="search-input" placeholder="Cari nama, nomor WhatsApp, email pelanggan..." />
           </div>
+        </div>
+
+        <div class="table-scroll-hint">
+          <span>👉 Geser tabel ke kanan untuk melihat rincian &amp; riwayat</span>
         </div>
 
         <div class="table-responsive">
@@ -1058,6 +1346,106 @@ function initCustomersEvents() {
   });
 }
 
+window.adminViewCustomerOrders = function(customerId) {
+  const slot = document.getElementById('dasbor-modals-slot');
+  if (!slot) return;
+
+  const customer = customersData.find(c => c.id === customerId);
+  if (!customer) {
+    window.showToast?.('Data pelanggan tidak ditemukan!', 'error');
+    return;
+  }
+
+  const custOrders = ordersData.filter(o => o.customer_id === customer.id || o.customer_name === customer.name);
+  const totalSpent = custOrders.reduce((sum, o) => sum + calculateOrderNetIncome(o), 0);
+  const cleanPhone = (customer.phone || '').replace(/[^0-9]/g, '');
+  const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=Halo%20${encodeURIComponent(customer.name)},%20kami%20dari%20admin%20Sacred%20Journey%20Bali:` : null;
+
+  slot.innerHTML = `
+    <div class="modal-overlay" id="customer-orders-overlay">
+      <div class="modal-dialog" style="max-width: 650px;">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--gold-dark), var(--gold-primary)); color: #0B0F17; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">
+              ${customer.name ? customer.name.charAt(0).toUpperCase() : 'C'}
+            </div>
+            <div>
+              <h3 class="card-title" style="margin: 0; font-size: 1.15rem;">${escapeHtml(customer.name)}</h3>
+              <span style="font-size: 0.75rem; color: var(--gold-light);">📞 ${escapeHtml(customer.phone || '-')}</span>
+            </div>
+          </div>
+          <button class="btn-close-modal" id="btn-close-cust-orders">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-grid-2" style="margin-bottom: 1.25rem;">
+            <div style="background: var(--bg-surface-elevated); padding: 0.85rem; border-radius: var(--radius-sm);">
+              <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Total Transaksi</span>
+              <div style="font-size: 1.25rem; font-weight: 800; color: #FFFFFF; margin-top: 2px;">
+                ${custOrders.length} Pesanan
+              </div>
+            </div>
+            <div style="background: var(--bg-surface-elevated); padding: 0.85rem; border-radius: var(--radius-sm);">
+              <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Total Nilai Belanja</span>
+              <div style="font-size: 1.25rem; font-weight: 800; color: #34D399; margin-top: 2px;">
+                ${formatRupiah(totalSpent)}
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: #FFFFFF;">Riwayat Pesanan Pelanggan:</h4>
+            ${waLink ? `
+              <a href="${waLink}" target="_blank" class="btn btn-action" style="color: #25D366; border-color: rgba(37, 211, 102, 0.4); font-size: 0.75rem;">
+                <span>💬 Chat WA</span>
+              </a>
+            ` : ''}
+          </div>
+
+          <div class="table-scroll-hint">
+            <span>👉 Geser tabel ke kanan untuk melihat status</span>
+          </div>
+
+          <div class="table-responsive" style="max-height: 280px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Kode &amp; Tanggal</th>
+                  <th>Layanan</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${custOrders.length === 0 ? `
+                  <tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Belum ada pesanan untuk pelanggan ini.</td></tr>
+                ` : custOrders.map(o => `
+                  <tr>
+                    <td>
+                      <strong style="color: #FFFFFF; font-size: 0.85rem;">${o.order_code}</strong>
+                      <div style="font-size: 0.72rem; color: var(--text-muted);">${o.order_date}</div>
+                    </td>
+                    <td><span class="service-badge" style="font-size: 0.72rem;">${escapeHtml(o.service_or_item)}</span></td>
+                    <td style="font-weight: 700; color: #FFFFFF;">${formatRupiah(calculateOrderNetIncome(o))}</td>
+                    <td>
+                      <span class="status-pill status-${o.status.toLowerCase()}">${o.status}</span>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('btn-close-cust-orders')?.addEventListener('click', () => { slot.innerHTML = ''; });
+  document.getElementById('customer-orders-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'customer-orders-overlay') slot.innerHTML = '';
+  });
+};
+
 /* ==============================================================================
    5. MODUL: GRAFIK KEUNTUNGAN & BANDINGKAN PERIODE (FASE 3)
    ============================================================================== */
@@ -1085,7 +1473,7 @@ function renderChartsView() {
       </div>
 
       <!-- Perbandingan Periode -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem;">
+      <div class="charts-two-col-grid">
         <div class="card">
           <h4 style="font-size: 1.05rem; font-weight: 700; color: #FFFFFF; margin-bottom: 0.5rem;">⚖️ Bandingkan Periode Bisnis</h4>
           <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Perbandingan performa bulan berjalan dengan bulan sebelumnya.</p>
@@ -1236,6 +1624,9 @@ function renderBookkeepingView() {
 
       <!-- Transactions Table Card -->
       <div class="card">
+        <div class="table-scroll-hint">
+          <span>👉 Geser tabel ke kanan untuk melihat rincian transaksi kas</span>
+        </div>
         <div class="table-responsive">
           <table class="data-table">
             <thead>
@@ -1280,6 +1671,9 @@ function renderBookkeepingView() {
       <!-- Riwayat Tutup Buku -->
       <div class="card" style="margin-top: 1.5rem;">
         <h4 style="font-size: 1.05rem; font-weight: 700; color: #FFFFFF; margin-bottom: 0.5rem;">🔒 Riwayat Tutup Buku (Closing Periods)</h4>
+        <div class="table-scroll-hint">
+          <span>👉 Geser tabel ke kanan untuk melihat status &amp; laporan penutupan</span>
+        </div>
         <div class="table-responsive">
           <table class="data-table">
             <thead>
@@ -1378,7 +1772,7 @@ function renderSyncView() {
           </button>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem;">
+        <div class="sync-overview-grid">
           <div style="padding: 1rem; background: var(--bg-surface-elevated); border-radius: var(--radius-sm);">
             <span style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase;">Status Terakhir</span>
             <div style="font-size: 1.25rem; font-weight: 700; color: #34D399; margin-top: 4px;">
@@ -1405,6 +1799,9 @@ function renderSyncView() {
       <!-- Sync Runs Log Table -->
       <div class="card">
         <h4 style="font-size: 1.05rem; font-weight: 700; color: #FFFFFF; margin-bottom: 0.5rem;">📜 Riwayat Penarikan Data (Sync Runs)</h4>
+        <div class="table-scroll-hint">
+          <span>👉 Geser tabel ke kanan untuk melihat rincian sync</span>
+        </div>
         <div class="table-responsive">
           <table class="data-table">
             <thead>
@@ -1531,7 +1928,11 @@ function renderSettingsView() {
         <h3 class="card-title">🛡️ Catatan Aktivitas &amp; Audit Log</h3>
         <p class="card-desc">Riwayat perubahan penting pada transaksi, status pesanan, dan keuangan.</p>
 
-        <div class="table-responsive" style="margin-top: 1rem;">
+        <div class="table-scroll-hint" style="margin-top: 1rem;">
+          <span>👉 Geser tabel ke kanan untuk melihat rincian log</span>
+        </div>
+
+        <div class="table-responsive">
           <table class="data-table">
             <thead>
               <tr>
@@ -1617,7 +2018,7 @@ function showAddOrderModal(sourceType = 'whatsapp') {
 
         <div class="modal-body">
           <form id="form-create-order">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-grid-2" style="margin-bottom: 1rem;">
               <div class="form-group">
                 <label class="form-label">Kode Pesanan (Otomatis):</label>
                 <input type="text" id="inp-order-code" class="form-input" value="${nextCode}" readonly />
@@ -1628,7 +2029,7 @@ function showAddOrderModal(sourceType = 'whatsapp') {
               </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-grid-2" style="margin-bottom: 1rem;">
               <div class="form-group">
                 <label class="form-label">Nama Pelanggan:</label>
                 <input type="text" id="inp-order-cust-name" class="form-input" placeholder="Contoh: Ni Luh Putu" required />
@@ -1644,7 +2045,7 @@ function showAddOrderModal(sourceType = 'whatsapp') {
               <input type="text" id="inp-order-item" class="form-input" placeholder="Contoh: Spiritual Temple Tour / Yoga Retreat" required />
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-grid-2" style="margin-bottom: 1rem;">
               <div class="form-group">
                 <label class="form-label">Nilai Pesanan (Rp):</label>
                 <input type="number" id="inp-order-amount" class="form-input" placeholder="650000" required />
@@ -1655,7 +2056,7 @@ function showAddOrderModal(sourceType = 'whatsapp') {
               </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-grid-2" style="margin-bottom: 1rem;">
               <div class="form-group">
                 <label class="form-label">Status Operasional:</label>
                 <select id="inp-order-status" class="form-select">
@@ -1789,7 +2190,7 @@ window.adminOpenOrderCosts = function(orderId) {
         </div>
 
         <div class="modal-body">
-          <div style="background: var(--bg-surface-elevated); padding: 0.85rem; border-radius: var(--radius-sm); margin-bottom: 1rem; display: flex; justify-content: space-between;">
+          <div class="cost-modal-summary-grid">
             <div>
               <span style="font-size: 0.75rem; color: var(--text-secondary);">Pendapatan Bersih:</span>
               <div style="font-weight: 700; color: #FFFFFF;">${formatRupiah(netIncome)}</div>
@@ -1827,7 +2228,7 @@ window.adminOpenOrderCosts = function(orderId) {
           <div style="border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
             <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--gold-light); margin-bottom: 0.75rem;">+ Tambah Komponen Biaya Baru</h4>
             <form id="form-add-cost">
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <div class="form-grid-2" style="margin-bottom: 0.75rem;">
                 <div class="form-group">
                   <label class="form-label">Kategori Biaya:</label>
                   <select id="inp-cost-category" class="form-select" required>
@@ -1980,7 +2381,7 @@ function showAddTransactionModal() {
         </div>
         <div class="modal-body">
           <form id="form-create-trx">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+            <div class="form-grid-2" style="margin-bottom: 1rem;">
               <div class="form-group">
                 <label class="form-label">Kode:</label>
                 <input type="text" class="form-input" value="${nextCode}" readonly />
@@ -1991,7 +2392,7 @@ function showAddTransactionModal() {
               </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+            <div class="form-grid-2" style="margin-bottom: 1rem;">
               <div class="form-group">
                 <label class="form-label">Jenis:</label>
                 <select id="trx-new-type" class="form-select">
