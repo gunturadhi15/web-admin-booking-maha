@@ -1,161 +1,321 @@
 /**
- * Supabase Client Configuration & Initialization
- * Sacred Journey Bali - Dedicated Web Admin & Booking System
+ * Supabase Client & Local Mock Storage — Dasbor Untung Usaha
+ * Mendukung Cloud Supabase dan Mode Demo Browser Offline
  */
 
 import { createClient } from '@supabase/supabase-js';
 
-// Default Demo Mock Storage Keys
-const MOCK_STORAGE_KEY_BOOKINGS = 'sacred_journey_mock_bookings';
-const MOCK_STORAGE_KEY_MESSAGES = 'sacred_journey_mock_messages';
+// Kunci LocalStorage untuk Mode Demo
+const STORAGE_KEYS = {
+  orders: 'dasbor_untung_orders',
+  order_costs: 'dasbor_untung_order_costs',
+  customers: 'dasbor_untung_customers',
+  financial_transactions: 'dasbor_untung_transactions',
+  closing_periods: 'dasbor_untung_closing',
+  sync_runs: 'dasbor_untung_sync_runs',
+  audit_logs: 'dasbor_untung_audit_logs',
+  admins: 'dasbor_untung_admins'
+};
 
-// Initial Mock Bookings with Pricing, Date, Time & Phone
-const INITIAL_MOCK_BOOKINGS = [
-  {
-    id: 'e1a3b5c7-1234-4567-89ab-cdef01234567',
-    customer_name: 'Budi Santoso',
-    customer_email: 'budi.santoso@example.com',
-    customer_phone: '+6281234567890',
-    service_name: 'Spiritual Temple Tour',
-    total_price: 650000,
-    booking_date: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
-    booking_time: '09:00',
-    status: 'Confirmed',
-    created_at: new Date(Date.now() - 2 * 3600000).toISOString()
-  },
-  {
-    id: 'f2b4c6d8-2345-5678-9abc-def012345678',
-    customer_name: 'Sarah Jenkins',
-    customer_email: 'sarah.j@outlook.com',
-    customer_phone: '+6281987654321',
-    service_name: 'Yoga & Meditation Retreat',
-    total_price: 1200000,
-    booking_date: new Date(Date.now() + 4 * 86400000).toISOString().split('T')[0],
-    booking_time: '10:00',
-    status: 'Pending',
-    created_at: new Date(Date.now() - 40 * 60000).toISOString()
-  },
-  {
-    id: 'a3c5e7f9-3456-6789-abcd-ef0123456789',
-    customer_name: 'Wayan Arya Wiguna',
-    customer_email: 'wayan.arya@bali.com',
-    customer_phone: '+6287711223344',
-    service_name: 'Healing & Purification',
-    total_price: 450000,
-    booking_date: new Date(Date.now() + 1 * 86400000).toISOString().split('T')[0],
-    booking_time: '14:00',
-    status: 'Confirmed',
-    created_at: new Date(Date.now() - 24 * 3600000).toISOString()
-  },
-  {
-    id: 'b4d6f8a0-4567-789a-bcde-f01234567890',
-    customer_name: 'Elena Rostova',
-    customer_email: 'elena.rostova@mail.ru',
-    customer_phone: '+79161234567',
-    service_name: 'Numerology Consultation',
-    total_price: 350000,
-    booking_date: new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
-    booking_time: '11:00',
-    status: 'Pending',
-    created_at: new Date(Date.now() - 15 * 60000).toISOString()
-  },
-  {
-    id: 'c5e7f9b1-5678-90ab-cdef-123456789012',
-    customer_name: 'David Miller',
-    customer_email: 'david.m@gmail.com',
-    customer_phone: '+6281355443322',
-    service_name: 'Spiritual Temple Tour',
-    total_price: 1200000,
-    booking_date: new Date(Date.now() - 15 * 86400000).toISOString().split('T')[0],
-    booking_time: '09:00',
-    status: 'Confirmed',
-    created_at: new Date(Date.now() - 16 * 86400000).toISOString()
-  },
-  {
-    id: 'd6f8a0c2-6789-01bc-def1-234567890123',
-    customer_name: 'Ayu Pradnya',
-    customer_email: 'ayu.pradnya@gmail.com',
-    customer_phone: '+628199887766',
-    service_name: 'Healing & Purification',
-    total_price: 650000,
-    booking_date: new Date(Date.now() - 40 * 86400000).toISOString().split('T')[0],
-    booking_time: '13:00',
-    status: 'Confirmed',
-    created_at: new Date(Date.now() - 41 * 86400000).toISOString()
-  },
-  {
-    id: 'e7a1b3d5-7890-12cd-ef23-456789012345',
-    customer_name: 'Michael Chang',
-    customer_email: 'm.chang@yahoo.com',
-    customer_phone: '+628122334455',
-    service_name: 'Yoga & Meditation Retreat',
-    total_price: 1800000,
-    booking_date: new Date(Date.now() - 70 * 86400000).toISOString().split('T')[0],
-    booking_time: '09:30',
-    status: 'Confirmed',
-    created_at: new Date(Date.now() - 72 * 86400000).toISOString()
-  }
-];
+// Data Awal Seed Demo
+const SEED_DATA = {
+  customers: [
+    {
+      id: 'cust-001',
+      name: 'Budi Santoso',
+      phone: '+62 812-3456-7890',
+      phone_normalized: '6281234567890',
+      email: 'budi.santoso@gmail.com',
+      address: 'Denpasar, Bali',
+      notes: 'Pelanggan setia tour spiritual',
+      created_at: new Date(Date.now() - 5 * 86400000).toISOString()
+    },
+    {
+      id: 'cust-002',
+      name: 'Sarah Jenkins',
+      phone: '+62 819-8765-4321',
+      phone_normalized: '6281987654321',
+      email: 'sarah.j@outlook.com',
+      address: 'Ubud, Gianyar',
+      notes: 'Wisatawan Australia - Retreat Yoga',
+      created_at: new Date(Date.now() - 3 * 86400000).toISOString()
+    },
+    {
+      id: 'cust-003',
+      name: 'Wayan Arya Wiguna',
+      phone: '+62 877-1122-3344',
+      phone_normalized: '6287711223344',
+      email: 'wayan.arya@bali.com',
+      address: 'Tampaksiring, Gianyar',
+      notes: 'Paket Melukat Tirta Empul',
+      created_at: new Date(Date.now() - 2 * 86400000).toISOString()
+    },
+    {
+      id: 'cust-004',
+      name: 'Elena Rostova',
+      phone: '+7 916 123-45-67',
+      phone_normalized: '79161234567',
+      email: 'elena.rostova@mail.ru',
+      address: 'Canggu, Badung',
+      notes: 'Konsultasi Numerologi Online',
+      created_at: new Date(Date.now() - 1 * 86400000).toISOString()
+    }
+  ],
+  orders: [
+    {
+      id: 'ord-001',
+      order_code: 'ORD-202610-001',
+      customer_id: 'cust-001',
+      customer_name: 'Budi Santoso',
+      customer_phone: '+62 812-3456-7890',
+      service_or_item: 'Spiritual Temple Tour (Divine Journey)',
+      source: 'website',
+      external_order_id: 'WEB-7721',
+      order_date: new Date().toISOString().split('T')[0],
+      order_time: '09:00',
+      status: 'Selesai',
+      payment_status: 'Lunas',
+      subtotal_amount: 650000,
+      discount_amount: 0,
+      additional_income_amount: 50000,
+      refund_amount: 0,
+      notes: 'Selesai tepat waktu. Tamu sangat puas.',
+      is_closed: false,
+      created_at: new Date(Date.now() - 4 * 3600000).toISOString()
+    },
+    {
+      id: 'ord-002',
+      order_code: 'ORD-202610-002',
+      customer_id: 'cust-002',
+      customer_name: 'Sarah Jenkins',
+      customer_phone: '+62 819-8765-4321',
+      service_or_item: 'Yoga & Meditation Retreat (Full Day)',
+      source: 'whatsapp',
+      external_order_id: null,
+      order_date: new Date().toISOString().split('T')[0],
+      order_time: '10:00',
+      status: 'Diproses',
+      payment_status: 'DP',
+      subtotal_amount: 1200000,
+      discount_amount: 50000,
+      additional_income_amount: 0,
+      refund_amount: 0,
+      notes: 'DP 50% diterima. Pelunasan di lokasi.',
+      is_closed: false,
+      created_at: new Date(Date.now() - 2 * 3600000).toISOString()
+    },
+    {
+      id: 'ord-003',
+      order_code: 'ORD-202610-003',
+      customer_id: 'cust-003',
+      customer_name: 'Wayan Arya Wiguna',
+      customer_phone: '+62 877-1122-3344',
+      service_or_item: 'Healing & Purification (Melukat Sebatu)',
+      source: 'whatsapp',
+      external_order_id: null,
+      order_date: new Date().toISOString().split('T')[0],
+      order_time: '14:00',
+      status: 'Dikonfirmasi',
+      payment_status: 'Lunas',
+      subtotal_amount: 450000,
+      discount_amount: 0,
+      additional_income_amount: 0,
+      refund_amount: 0,
+      notes: 'Jadwal terkonfirmasi pemangku pura.',
+      is_closed: false,
+      created_at: new Date(Date.now() - 1 * 3600000).toISOString()
+    },
+    {
+      id: 'ord-004',
+      order_code: 'ORD-202610-004',
+      customer_id: 'cust-004',
+      customer_name: 'Elena Rostova',
+      customer_phone: '+7 916 123-45-67',
+      service_or_item: 'Numerology Consultation (Personal)',
+      source: 'website',
+      external_order_id: 'WEB-7729',
+      order_date: new Date().toISOString().split('T')[0],
+      order_time: '11:00',
+      status: 'Baru',
+      payment_status: 'Belum Dibayar',
+      subtotal_amount: 350000,
+      discount_amount: 0,
+      additional_income_amount: 0,
+      refund_amount: 0,
+      notes: 'Menunggu konfirmasi pembayaran via WA.',
+      is_closed: false,
+      created_at: new Date(Date.now() - 30 * 60000).toISOString()
+    }
+  ],
+  order_costs: [
+    {
+      id: 'cost-001',
+      order_id: 'ord-001',
+      category: 'Modal/HPP',
+      description: 'Tiket Masuk Pura & Sarana Pejati',
+      amount: 150000,
+      cost_date: new Date().toISOString().split('T')[0],
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 'cost-002',
+      order_id: 'ord-001',
+      category: 'Transportasi',
+      description: 'Bensin & Driver Antar Jemput',
+      amount: 120000,
+      cost_date: new Date().toISOString().split('T')[0],
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 'cost-003',
+      order_id: 'ord-002',
+      category: 'Modal/HPP',
+      description: 'Sewa Studio Yoga & Instruktur',
+      amount: 400000,
+      cost_date: new Date().toISOString().split('T')[0],
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 'cost-004',
+      order_id: 'ord-002',
+      category: 'Biaya Bahan',
+      description: 'Healthy Lunch & Herbal Drink',
+      amount: 150000,
+      cost_date: new Date().toISOString().split('T')[0],
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 'cost-005',
+      order_id: 'ord-003',
+      category: 'Fee Pemandu/Terapis',
+      description: 'Banten Melukat & Sesari Pemangku',
+      amount: 150000,
+      cost_date: new Date().toISOString().split('T')[0],
+      created_at: new Date().toISOString()
+    }
+  ],
+  financial_transactions: [
+    {
+      id: 'trx-001',
+      transaction_code: 'TRX-202610-001',
+      transaction_date: new Date().toISOString().split('T')[0],
+      type: 'income',
+      category: 'Pendapatan Pesanan',
+      description: 'Pembayaran ORD-202610-001 Budi Santoso',
+      amount: 700000,
+      source_type: 'order',
+      payment_method: 'QRIS',
+      is_closed: false,
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 'trx-002',
+      transaction_date: new Date().toISOString().split('T')[0],
+      transaction_code: 'TRX-202610-002',
+      type: 'expense',
+      category: 'HPP Pesanan',
+      description: 'Biaya Tiket & Sarana Pejati ORD-202610-001',
+      amount: 150000,
+      source_type: 'order_cost',
+      payment_method: 'Kas Kecil',
+      is_closed: false,
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 'trx-003',
+      transaction_date: new Date().toISOString().split('T')[0],
+      transaction_code: 'TRX-202610-003',
+      type: 'expense',
+      category: 'Operasional Kantor',
+      description: 'Biaya Internet & Listrik Operasional',
+      amount: 250000,
+      source_type: 'operational',
+      payment_method: 'Transfer Bank',
+      is_closed: false,
+      created_at: new Date().toISOString()
+    }
+  ],
+  closing_periods: [
+    {
+      id: 'cls-001',
+      period_start: '2026-09-01',
+      period_end: '2026-09-30',
+      status: 'closed',
+      total_revenue: 18500000,
+      total_cost: 7200000,
+      net_profit: 11300000,
+      closed_by: 'Pemilik Usaha',
+      closed_at: '2026-10-01T00:00:00Z',
+      notes: 'Tutup buku bulan September 2026.'
+    }
+  ],
+  sync_runs: [
+    {
+      id: 'sync-001',
+      source_name: 'Website Utama (Sacred Journey Bali)',
+      started_at: new Date(Date.now() - 15 * 60000).toISOString(),
+      finished_at: new Date(Date.now() - 14 * 60000).toISOString(),
+      status: 'Berhasil',
+      records_seen: 4,
+      records_created: 1,
+      records_updated: 3,
+      records_skipped: 0,
+      error_summary: null,
+      triggered_by: 'Otomatis Scheduler'
+    }
+  ],
+  audit_logs: [
+    {
+      id: 'aud-001',
+      actor_name: 'Admin',
+      action: 'UPDATE_STATUS',
+      entity_type: 'orders',
+      entity_id: 'ord-001',
+      details: 'Status pesanan diubah ke Selesai',
+      created_at: new Date(Date.now() - 3 * 3600000).toISOString()
+    }
+  ],
+  admins: [
+    {
+      id: 'adm-001',
+      name: 'Pemilik Usaha / Admin',
+      email: 'admin@dasboruntung.com',
+      role: 'Admin',
+      is_active: true
+    }
+  ]
+};
 
-// Initial Mock Messages (Inbox Pesan & Kendala)
-const INITIAL_MOCK_MESSAGES = [
-  {
-    id: 'msg-001',
-    sender_name: 'Sarah Jenkins',
-    sender_email: 'sarah.j@outlook.com',
-    sender_phone: '+6281987654321',
-    message_content: 'Halo admin, apakah untuk sesi Yoga & Meditation Retreat tanggal lusa saya perlu membawa matras yoga sendiri?',
-    is_resolved: false,
-    created_at: new Date(Date.now() - 2 * 3600000).toISOString()
-  },
-  {
-    id: 'msg-002',
-    sender_name: 'Ketut Sujana',
-    sender_email: 'ketut.sujana@gmail.com',
-    sender_phone: '+6287812345678',
-    message_content: 'Selamat siang, saya ingin menanyakan apakah ada penjemputan gratis dari hotel daerah Seminyak untuk paket Temple Tour?',
-    is_resolved: false,
-    created_at: new Date(Date.now() - 6 * 3600000).toISOString()
-  },
-  {
-    id: 'msg-003',
-    sender_name: 'Elena Rostova',
-    sender_email: 'elena.rostova@mail.ru',
-    sender_phone: '+79161234567',
-    message_content: 'Sudah melakukan pembayaran untuk konsultasi numerologi, mohon link konfirmasi WhatsApp-nya dikirimkan segera ya.',
-    is_resolved: true,
-    created_at: new Date(Date.now() - 24 * 3600000).toISOString()
-  }
-];
-
-function getMockData(key, fallback) {
+function getLocalTable(table) {
+  const key = STORAGE_KEYS[table] || `dasbor_untung_${table}`;
   const stored = localStorage.getItem(key);
   if (!stored) {
-    localStorage.setItem(key, JSON.stringify(fallback));
-    return [...fallback];
+    const initial = SEED_DATA[table] || [];
+    localStorage.setItem(key, JSON.stringify(initial));
+    return [...initial];
   }
   try {
     return JSON.parse(stored);
   } catch {
-    return [...fallback];
+    return [...(SEED_DATA[table] || [])];
   }
 }
 
-function saveMockData(key, data) {
+function saveLocalTable(table, data) {
+  const key = STORAGE_KEYS[table] || `dasbor_untung_${table}`;
   localStorage.setItem(key, JSON.stringify(data));
 }
 
-// In-memory listeners for Mock Realtime
-const mockRealtimeListeners = new Set();
-
-function notifyMockRealtime(payload) {
-  mockRealtimeListeners.forEach(listener => {
-    try { listener(payload); } catch (err) { console.error('Realtime listener error:', err); }
+// In-Memory Realtime Subscribers
+const realtimeSubscribers = new Set();
+function notifyRealtime(payload) {
+  realtimeSubscribers.forEach(cb => {
+    try { cb(payload); } catch (e) { console.error('Realtime cb error:', e); }
   });
 }
 
 /**
- * Retrieve credentials from Vite env or LocalStorage
+ * Mendapatkan Kredensial Supabase
  */
 export function getSupabaseCredentials() {
   const envUrl = import.meta.env?.VITE_SUPABASE_URL || '';
@@ -197,81 +357,66 @@ function createMockClient() {
   return {
     isMock: true,
     auth: {
-      async getSession() {
-        const sessionStr = localStorage.getItem('mock_admin_session');
-        if (sessionStr) {
-          try { return { data: { session: JSON.parse(sessionStr) }, error: null }; } catch {}
-        }
-        return { data: { session: null }, error: null };
-      },
       async getUser() {
-        const sessionStr = localStorage.getItem('mock_admin_session');
-        if (sessionStr) {
-          try {
-            const session = JSON.parse(sessionStr);
-            return { data: { user: session.user }, error: null };
-          } catch {}
+        const str = localStorage.getItem('dasbor_admin_user');
+        if (str) {
+          try { return { data: { user: JSON.parse(str) }, error: null }; } catch {}
         }
         return { data: { user: null }, error: null };
       },
       async signInWithPassword({ email, password }) {
-        if (!email || !password) {
-          return { data: null, error: { message: 'Email dan password harus diisi.' } };
-        }
-        if (password.length < 6) {
-          return { data: null, error: { message: 'Password minimal 6 karakter.' } };
-        }
+        if (!email || !password) return { data: null, error: { message: 'Email dan password wajib diisi.' } };
+        if (password.length < 5) return { data: null, error: { message: 'Password minimal 5 karakter.' } };
         const user = {
-          id: 'admin-uuid-001',
+          id: 'adm-001',
           email,
-          role: 'authenticated',
-          user_metadata: { full_name: 'Administrator Sacred Journey' }
+          user_metadata: { full_name: 'Pemilik Usaha' }
         };
-        const session = { access_token: 'mock-jwt-token', user };
-        localStorage.setItem('mock_admin_session', JSON.stringify(session));
-        return { data: { user, session }, error: null };
+        localStorage.setItem('dasbor_admin_user', JSON.stringify(user));
+        return { data: { user }, error: null };
       },
       async signOut() {
-        localStorage.removeItem('mock_admin_session');
+        localStorage.removeItem('dasbor_admin_user');
         return { error: null };
       }
     },
     from(table) {
-      const storageKey = table === 'messages' ? MOCK_STORAGE_KEY_MESSAGES : MOCK_STORAGE_KEY_BOOKINGS;
-      const initialFallback = table === 'messages' ? INITIAL_MOCK_MESSAGES : INITIAL_MOCK_BOOKINGS;
-
       return {
         select(columns = '*') {
           return {
             order(col, { ascending = true } = {}) {
-              const list = getMockData(storageKey, initialFallback);
+              const list = getLocalTable(table);
               list.sort((a, b) => {
-                const valA = a[col] || '';
-                const valB = b[col] || '';
-                return ascending ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
+                const vA = a[col] || '';
+                const vB = b[col] || '';
+                return ascending ? (vA > vB ? 1 : -1) : (vA < vB ? 1 : -1);
               });
               return Promise.resolve({ data: list, error: null });
             },
+            eq(col, val) {
+              const list = getLocalTable(table).filter(i => i[col] === val);
+              return Promise.resolve({ data: list, error: null });
+            },
             then(resolve, reject) {
-              const list = getMockData(storageKey, initialFallback);
+              const list = getLocalTable(table);
               return Promise.resolve({ data: list, error: null }).then(resolve, reject);
             }
           };
         },
         async insert(records) {
           const list = Array.isArray(records) ? records : [records];
-          const current = getMockData(storageKey, initialFallback);
+          const current = getLocalTable(table);
           const newEntries = list.map(item => ({
-            id: (table === 'messages' ? 'msg-' : 'bkg-') + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 5),
+            id: item.id || (table.slice(0, 3) + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 4)),
             ...item,
-            created_at: new Date().toISOString()
+            created_at: item.created_at || new Date().toISOString()
           }));
 
           const updated = [...newEntries, ...current];
-          saveMockData(storageKey, updated);
+          saveLocalTable(table, updated);
 
           newEntries.forEach(entry => {
-            notifyMockRealtime({
+            notifyRealtime({
               schema: 'public',
               table,
               eventType: 'INSERT',
@@ -287,19 +432,19 @@ function createMockClient() {
             eq(col, val) {
               return {
                 async select() {
-                  const current = getMockData(storageKey, initialFallback);
+                  const current = getLocalTable(table);
                   let updatedItem = null;
                   const updated = current.map(item => {
                     if (item[col] === val) {
-                      updatedItem = { ...item, ...updates };
+                      updatedItem = { ...item, ...updates, updated_at: new Date().toISOString() };
                       return updatedItem;
                     }
                     return item;
                   });
-                  saveMockData(storageKey, updated);
+                  saveLocalTable(table, updated);
 
                   if (updatedItem) {
-                    notifyMockRealtime({
+                    notifyRealtime({
                       schema: 'public',
                       table,
                       eventType: 'UPDATE',
@@ -319,13 +464,13 @@ function createMockClient() {
         delete() {
           return {
             eq(col, val) {
-              const current = getMockData(storageKey, initialFallback);
+              const current = getLocalTable(table);
               const deletedItem = current.find(i => i[col] === val);
               const remaining = current.filter(i => i[col] !== val);
-              saveMockData(storageKey, remaining);
+              saveLocalTable(table, remaining);
 
               if (deletedItem) {
-                notifyMockRealtime({
+                notifyRealtime({
                   schema: 'public',
                   table,
                   eventType: 'DELETE',
@@ -342,17 +487,15 @@ function createMockClient() {
     channel(name) {
       return {
         on(type, filter, callback) {
-          this._callback = callback;
+          this._cb = callback;
           return this;
         },
-        subscribe(statusCallback) {
-          if (this._callback) {
-            mockRealtimeListeners.add(this._callback);
-          }
-          if (statusCallback) statusCallback('SUBSCRIBED');
+        subscribe(statusCb) {
+          if (this._cb) realtimeSubscribers.add(this._cb);
+          if (statusCb) statusCb('SUBSCRIBED');
           return {
             unsubscribe: () => {
-              if (this._callback) mockRealtimeListeners.delete(this._callback);
+              if (this._cb) realtimeSubscribers.delete(this._cb);
             }
           };
         }
@@ -367,19 +510,16 @@ export function initSupabaseClient() {
   if (isConfigured) {
     try {
       clientInstance = createClient(url, anonKey, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true
-        }
+        auth: { persistSession: true, autoRefreshToken: true }
       });
       isMockClient = false;
-      console.log('✅ Supabase live client initialized:', url);
+      console.log('✅ Supabase live client aktif:', url);
     } catch (err) {
-      console.warn('⚠️ Gagal inisialisasi live client Supabase, menggunakan Demo Browser:', err);
+      console.warn('⚠️ Gagal terhubung ke Supabase live, beralih ke Demo Browser:', err);
       clientInstance = createMockClient();
     }
   } else {
-    console.log('ℹ️ Menggunakan Demo Browser Client (Data tersimpan di localStorage).');
+    console.log('ℹ️ Menggunakan Mode Demo Browser Lokal (Dasbor Untung Usaha).');
     clientInstance = createMockClient();
   }
 
@@ -402,7 +542,7 @@ export function isUsingMock() {
 export async function testSupabaseConnection(url, anonKey) {
   try {
     const testClient = createClient(url, anonKey);
-    const { data, error } = await testClient.from('bookings').select('id').limit(1);
+    const { data, error } = await testClient.from('orders').select('id').limit(1);
     if (error) return { success: false, message: error.message };
     return { success: true, message: 'Koneksi ke Supabase berhasil!' };
   } catch (err) {

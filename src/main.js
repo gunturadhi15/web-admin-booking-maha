@@ -1,17 +1,12 @@
 /**
- * Application Entry Point
- * Sacred Journey Bali — Web Admin & Booking System
+ * Application Entry Point — Dasbor Untung Usaha
+ * Sacred Journey Bali — Internal Web Admin
  */
 
 import './styles/index.css';
-import { renderAdminPage, initAdminPage } from './pages/admin.js';
-import { renderBookingPage, initBookingForm } from './pages/booking.js';
-import { getSupabaseCredentials } from './supabaseClient.js';
+import { renderDasborApp, initDasborApp } from './pages/dasborUntung.js';
 
-// Application State
-let activeView = 'admin'; // 'admin' | 'booking'
-
-// Initialize Toast System
+// Setup Toast Notification System
 window.showToast = function(message, type = 'info') {
   const container = document.getElementById('toast-container');
   if (!container) return;
@@ -32,98 +27,24 @@ window.showToast = function(message, type = 'info') {
 
   container.appendChild(toast);
 
-  // Auto remove after 4.5 seconds
   setTimeout(() => {
     toast.style.opacity = '0';
     toast.style.transform = 'translateX(100%)';
     toast.style.transition = 'all 0.3s ease';
     setTimeout(() => toast.remove(), 300);
-  }, 4500);
+  }, 4000);
 };
 
-/**
- * Switch Active View
- */
-function switchView(viewName) {
-  activeView = viewName;
-
-  // Update tabs styling
-  const tabAdmin = document.getElementById('nav-tab-admin');
-  const tabBooking = document.getElementById('nav-tab-booking');
-  const contentArea = document.getElementById('main-viewport');
-
-  if (tabAdmin) tabAdmin.classList.toggle('active', viewName === 'admin');
-  if (tabBooking) tabBooking.classList.toggle('active', viewName === 'booking');
-
-  if (!contentArea) return;
-
-  // Render view
-  if (viewName === 'admin') {
-    contentArea.innerHTML = renderAdminPage();
-    setTimeout(() => initAdminPage(), 50);
-  } else if (viewName === 'booking') {
-    contentArea.innerHTML = renderBookingPage();
-    setTimeout(() => {
-      initBookingForm(() => {
-        // Callback after booking
-        switchView('admin');
-      });
-    }, 50);
-  }
-
-  // Update URL hash without reload
-  window.location.hash = `#/${viewName}`;
-}
-
-/**
- * Update Navbar Connection Badge
- */
-function updateNavbarBadge() {
-  const indicator = document.getElementById('navbar-supabase-status');
-  if (!indicator) return;
-
-  const { isConfigured, url } = getSupabaseCredentials();
-
-  indicator.innerHTML = `
-    <span class="status-dot ${isConfigured ? 'live' : 'demo'}"></span>
-    <span>${isConfigured ? 'Supabase Live' : 'Demo Browser'}</span>
-  `;
-
-  indicator.title = isConfigured 
-    ? `Terkoneksi ke: ${url}` 
-    : 'Klik untuk menghubungkan URL & Anon Key Supabase Anda';
-
-  indicator.onclick = () => {
-    window.dispatchEvent(new CustomEvent('open-supabase-config'));
-  };
-}
-
-/**
- * Initialize App
- */
 function initApp() {
-  updateNavbarBadge();
+  const appContainer = document.getElementById('app-root');
+  if (!appContainer) return;
 
-  // Tab buttons
-  document.getElementById('nav-tab-admin')?.addEventListener('click', () => switchView('admin'));
-  document.getElementById('nav-tab-booking')?.addEventListener('click', () => switchView('booking'));
-
-  // Listen to hash changes
-  const initialHash = window.location.hash.replace('#/', '');
-  if (initialHash === 'booking') {
-    switchView('booking');
-  } else {
-    switchView('admin');
-  }
-
-  // Brand click returns to admin
-  document.getElementById('brand-link')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    switchView('admin');
-  });
+  appContainer.innerHTML = renderDasborApp();
+  setTimeout(() => {
+    initDasborApp();
+  }, 50);
 }
 
-// Kick off when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initApp);
 } else {
