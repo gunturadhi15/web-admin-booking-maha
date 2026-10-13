@@ -57,7 +57,9 @@
 }
 
 /* Base Reset */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -70,7 +72,7 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
-  background-image: 
+  background-image:
     radial-gradient(circle at 10% 20%, rgba(217, 163, 67, 0.05) 0%, transparent 40%),
     radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.04) 0%, transparent 40%),
     radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.6) 0%, transparent 100%);
@@ -243,8 +245,15 @@ body {
 }
 
 @keyframes pulse-ring {
-  0% { transform: scale(1); opacity: 0.8; }
-  100% { transform: scale(2.4); opacity: 0; }
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
 }
 
 /* Main Content Area */
@@ -329,10 +338,25 @@ body {
   flex-shrink: 0;
 }
 
-.kpi-total .kpi-icon-wrap { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
-.kpi-pending .kpi-icon-wrap { background: var(--status-pending-bg); color: var(--status-pending); }
-.kpi-confirmed .kpi-icon-wrap { background: var(--status-confirmed-bg); color: var(--status-confirmed); }
-.kpi-cancelled .kpi-icon-wrap { background: var(--status-cancelled-bg); color: var(--status-cancelled); }
+.kpi-total .kpi-icon-wrap {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60A5FA;
+}
+
+.kpi-pending .kpi-icon-wrap {
+  background: var(--status-pending-bg);
+  color: var(--status-pending);
+}
+
+.kpi-confirmed .kpi-icon-wrap {
+  background: var(--status-confirmed-bg);
+  color: var(--status-confirmed);
+}
+
+.kpi-cancelled .kpi-icon-wrap {
+  background: var(--status-cancelled-bg);
+  color: var(--status-cancelled);
+}
 
 .kpi-info {
   display: flex;
@@ -722,7 +746,9 @@ body {
   font-size: 0.75rem;
 }
 
-.form-input, .form-select, .form-textarea {
+.form-input,
+.form-select,
+.form-textarea {
   width: 100%;
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-subtle);
@@ -734,14 +760,17 @@ body {
   transition: all var(--transition-fast);
 }
 
-.form-input:focus, .form-select:focus, .form-textarea:focus {
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
   outline: none;
   border-color: var(--gold-primary);
   box-shadow: 0 0 0 3px var(--gold-glow);
   background: #1A2333;
 }
 
-.form-input::placeholder, .form-textarea::placeholder {
+.form-input::placeholder,
+.form-textarea::placeholder {
   color: var(--text-muted);
 }
 
@@ -802,7 +831,9 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Alerts & Toasts */
@@ -864,8 +895,15 @@ body {
 }
 
 @keyframes slide-in {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .toast.toast-success {
@@ -912,13 +950,25 @@ body {
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes modal-scale {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .modal-header {
@@ -1009,10 +1059,12 @@ body {
     flex-direction: column;
     align-items: stretch;
   }
+
   .nav-tabs {
     order: 3;
     justify-content: center;
   }
+
   .nav-actions {
     justify-content: space-between;
   }
@@ -1023,15 +1075,19 @@ body {
     flex-direction: column;
     align-items: stretch;
   }
+
   .search-box {
     max-width: 100%;
   }
+
   .filter-group {
     justify-content: stretch;
   }
+
   .filter-group select {
     flex: 1;
   }
+
   .hero-title {
     font-size: 1.75rem;
   }
@@ -1265,39 +1321,80 @@ body {
 }
 
 /* Status Badges untuk Dasbor Untung */
-.status-baru { background: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.3); }
-.status-dikonfirmasi { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
-.status-diproses { background: rgba(139, 92, 246, 0.15); color: #A78BFA; border: 1px solid rgba(139, 92, 246, 0.3); }
-.status-selesai { background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); }
-.status-dibatalkan { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.status-baru {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60A5FA;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
 
-.status-lunas { background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); }
-.status-dp { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
-.status-belum-dibayar { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+.status-dikonfirmasi {
+  background: rgba(245, 158, 11, 0.15);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-diproses {
+  background: rgba(139, 92, 246, 0.15);
+  color: #A78BFA;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.status-selesai {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-dibatalkan {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-lunas {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-dp {
+  background: rgba(245, 158, 11, 0.15);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-belum-dibayar {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
 
 @media (max-width: 900px) {
   .dasbor-layout {
     flex-direction: column;
   }
+
   .dasbor-sidebar {
     width: 100%;
     height: auto;
     position: static;
   }
+
   .sidebar-menu {
     flex-direction: row;
     overflow-x: auto;
     padding: 0.5rem;
   }
+
   .menu-group-label {
     display: none;
   }
+
   .dasbor-header {
     padding: 1rem 1.25rem;
   }
+
   .dasbor-content {
     padding: 1.25rem 1rem;
   }
 }
-
-

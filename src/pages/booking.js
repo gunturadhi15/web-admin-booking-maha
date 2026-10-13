@@ -279,7 +279,7 @@ export function initBookingForm(onSuccessNavigate) {
       if (error) throw error;
 
       showAlert(
-        'success', 
+        'success',
         `🎉 <strong>Reservasi Berhasil Dikirim!</strong><br/>
          Pemesan: <strong>${customerName}</strong> (${customerPhone})<br/>
          Layanan: <strong>${serviceName}</strong> (${formatRupiah(totalPrice)})<br/>

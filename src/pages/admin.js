@@ -10,13 +10,13 @@
  */
 
 import Chart from 'chart.js/auto';
-import { 
-  supabase, 
-  isUsingMock, 
-  getSupabaseCredentials, 
-  saveSupabaseCredentials, 
+import {
+  supabase,
+  isUsingMock,
+  getSupabaseCredentials,
+  saveSupabaseCredentials,
   clearSupabaseCredentials,
-  testSupabaseConnection 
+  testSupabaseConnection
 } from '../supabaseClient.js';
 
 // Dashboard State
@@ -74,10 +74,10 @@ export function renderAdminPage() {
         <div style="display: flex; align-items: center; gap: 0.75rem;">
           <span class="status-dot ${isConfigured ? 'live' : 'demo'}"></span>
           <span style="font-size: 0.85rem; font-weight: 600;">
-            ${isConfigured 
-              ? `<span style="color: var(--status-confirmed);">Terkoneksi ke Supabase Live:</span> <span style="font-family: monospace; color: var(--text-muted); font-size: 0.8rem;">${url}</span>`
-              : `<span style="color: var(--status-pending);">Mode Demo Browser:</span> Data tersimpan lokal di browser. Hubungkan Supabase untuk integrasi cloud.`
-            }
+            ${isConfigured
+      ? `<span style="color: var(--status-confirmed);">Terkoneksi ke Supabase Live:</span> <span style="font-family: monospace; color: var(--text-muted); font-size: 0.8rem;">${url}</span>`
+      : `<span style="color: var(--status-pending);">Mode Demo Browser:</span> Data tersimpan lokal di browser. Hubungkan Supabase untuk integrasi cloud.`
+    }
           </span>
         </div>
 
@@ -350,7 +350,7 @@ function renderBookingsTableRows() {
 
   return filtered.map(b => {
     const initials = (b.customer_name || 'U').split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
-    
+
     // Format Tanggal & Hari
     let dateStr = '-';
     if (b.booking_date) {
@@ -454,7 +454,7 @@ function initBookingsViewEvents() {
   });
 }
 
-window.adminUpdateBookingStatus = async function(id, newStatus) {
+window.adminUpdateBookingStatus = async function (id, newStatus) {
   try {
     const target = allBookings.find(b => b.id === id);
     if (target) target.status = newStatus;
@@ -825,7 +825,7 @@ function updateInboxUI() {
   document.getElementById('filter-msg-resolved')?.classList.toggle('active', currentMessageFilter === 'RESOLVED');
 }
 
-window.adminToggleMessageResolved = async function(id, newStatus) {
+window.adminToggleMessageResolved = async function (id, newStatus) {
   try {
     const target = allMessages.find(m => m.id === id);
     if (target) target.is_resolved = newStatus;
@@ -905,7 +905,7 @@ async function checkAuthSession() {
  */
 function setupRealtimeChannels() {
   if (realtimeChannel) {
-    try { realtimeChannel.unsubscribe(); } catch {}
+    try { realtimeChannel.unsubscribe(); } catch { }
   }
 
   try {

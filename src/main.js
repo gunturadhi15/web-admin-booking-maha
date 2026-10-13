@@ -7,13 +7,13 @@ import './styles/index.css';
 import { renderDasborApp, initDasborApp } from './pages/dasborUntung.js';
 
 // Setup Toast Notification System
-window.showToast = function(message, type = 'info') {
+window.showToast = function (message, type = 'info') {
   const container = document.getElementById('toast-container');
   if (!container) return;
 
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
-  
+
   let icon = 'ℹ️';
   if (type === 'success') icon = '✅';
   if (type === 'error') icon = '❌';

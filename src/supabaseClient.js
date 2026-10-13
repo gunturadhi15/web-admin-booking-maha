@@ -7,6 +7,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Kunci LocalStorage untuk Mode Demo
 const STORAGE_KEYS = {
+  bookings: 'dasbor_untung_bookings',
   orders: 'dasbor_untung_orders',
   order_costs: 'dasbor_untung_order_costs',
   customers: 'dasbor_untung_customers',
@@ -19,6 +20,60 @@ const STORAGE_KEYS = {
 
 // Data Awal Seed Demo
 const SEED_DATA = {
+  bookings: [
+    {
+      id: 'bkg-001',
+      invoice: 'ORD-202610-001',
+      customer_name: 'Budi Santoso',
+      customer_phone: '+62 812-3456-7890',
+      customer_email: 'budi.santoso@gmail.com',
+      service_name: 'Spiritual Temple Tour (Divine Journey)',
+      booking_date: new Date().toISOString().split('T')[0],
+      booking_time: '09:00',
+      total_price: 650000,
+      status: 'completed',
+      created_at: new Date(Date.now() - 4 * 3600000).toISOString()
+    },
+    {
+      id: 'bkg-002',
+      invoice: 'ORD-202610-002',
+      customer_name: 'Sarah Jenkins',
+      customer_phone: '+62 819-8765-4321',
+      customer_email: 'sarah.j@outlook.com',
+      service_name: 'Yoga & Meditation Retreat (Full Day)',
+      booking_date: new Date().toISOString().split('T')[0],
+      booking_time: '10:00',
+      total_price: 1200000,
+      status: 'pending',
+      created_at: new Date(Date.now() - 2 * 3600000).toISOString()
+    },
+    {
+      id: 'bkg-003',
+      invoice: 'ORD-202610-003',
+      customer_name: 'Wayan Arya Wiguna',
+      customer_phone: '+62 877-1122-3344',
+      customer_email: 'wayan.arya@bali.com',
+      service_name: 'Healing & Purification (Melukat Sebatu)',
+      booking_date: new Date().toISOString().split('T')[0],
+      booking_time: '14:00',
+      total_price: 450000,
+      status: 'paid',
+      created_at: new Date(Date.now() - 1 * 3600000).toISOString()
+    },
+    {
+      id: 'bkg-004',
+      invoice: 'ORD-202610-004',
+      customer_name: 'Elena Rostova',
+      customer_phone: '+7 916 123-45-67',
+      customer_email: 'elena.rostova@mail.ru',
+      service_name: 'Numerology Consultation (Personal)',
+      booking_date: new Date().toISOString().split('T')[0],
+      booking_time: '11:00',
+      total_price: 350000,
+      status: 'pending',
+      created_at: new Date(Date.now() - 30 * 60000).toISOString()
+    }
+  ],
   customers: [
     {
       id: 'cust-001',
@@ -318,17 +373,32 @@ function notifyRealtime(payload) {
  * Mendapatkan Kredensial Supabase
  */
 export function getSupabaseCredentials() {
-  const envUrl = import.meta.env?.VITE_SUPABASE_URL || '';
-  const envKey = import.meta.env?.VITE_SUPABASE_ANON_KEY || '';
+  const envUrl = 
+    import.meta.env?.NEXT_PUBLIC_SUPABASE_URL ||
+    import.meta.env?.VITE_SUPABASE_URL ||
+    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_SUPABASE_URL) ||
+    '';
+
+  const envKey = 
+    import.meta.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    import.meta.env?.VITE_SUPABASE_ANON_KEY ||
+    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
+    '';
 
   const localUrl = localStorage.getItem('supabase_url') || '';
   const localKey = localStorage.getItem('supabase_anon_key') || '';
 
-  const url = localUrl || envUrl;
-  const anonKey = localKey || envKey;
+  const url = (localUrl || envUrl || '').trim();
+  const anonKey = (localKey || envKey || '').trim();
 
-  const isValidUrl = url && (url.startsWith('https://') || url.startsWith('http://'));
-  const isConfigured = Boolean(isValidUrl && anonKey && !anonKey.includes('YOUR_'));
+  const isValidUrl = Boolean(url && (url.startsWith('https://') || url.startsWith('http://')));
+  const isConfigured = Boolean(
+    isValidUrl && 
+    anonKey && 
+    !anonKey.includes('your-project-id') && 
+    !anonKey.includes('your-anon-key') &&
+    !anonKey.includes('YOUR_')
+  );
 
   return { url, anonKey, isConfigured };
 }
@@ -360,7 +430,7 @@ function createMockClient() {
       async getUser() {
         const str = localStorage.getItem('dasbor_admin_user');
         if (str) {
-          try { return { data: { user: JSON.parse(str) }, error: null }; } catch {}
+          try { return { data: { user: JSON.parse(str) }, error: null }; } catch { }
         }
         return { data: { user: null }, error: null };
       },

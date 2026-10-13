@@ -193,11 +193,60 @@ function switchModule(modName) {
 }
 
 /**
- * Load Semua Data dari Supabase / Mock Storage
+ * Helper: Konversi record tabel bookings ke struktur orders di Dasbor
+ */
+function bookingToOrder(b) {
+  const statusRaw = String(b.status || 'pending').toLowerCase();
+  let mappedStatus = 'Baru';
+  let mappedPayment = 'Belum Dibayar';
+
+  if (['completed', 'selesai', 'paid', 'lunas'].includes(statusRaw)) {
+    mappedStatus = 'Selesai';
+    mappedPayment = 'Lunas';
+  } else if (['confirmed', 'dikonfirmasi'].includes(statusRaw)) {
+    mappedStatus = 'Dikonfirmasi';
+    mappedPayment = 'Lunas';
+  } else if (['cancelled', 'batal', 'dibatalkan'].includes(statusRaw)) {
+    mappedStatus = 'Dibatalkan';
+    mappedPayment = 'Refund';
+  } else {
+    mappedStatus = 'Baru';
+    mappedPayment = 'Belum Dibayar';
+  }
+
+  const rawPrice = Number(b.total_price || b.subtotal_amount || 0);
+
+  return {
+    id: b.id,
+    order_code: b.invoice || (b.id ? 'BKG-' + String(b.id).slice(0, 8).toUpperCase() : 'ORD-001'),
+    customer_id: b.customer_id || ('cust-' + b.id),
+    customer_name: b.customer_name || 'Pelanggan',
+    customer_phone: b.customer_phone || '-',
+    customer_email: b.customer_email || '',
+    service_or_item: b.service_name || b.service_or_item || 'Paket Wisata',
+    source: b.source || 'website',
+    external_order_id: b.invoice || null,
+    order_date: b.booking_date || (b.created_at ? b.created_at.split('T')[0] : new Date().toISOString().split('T')[0]),
+    order_time: b.booking_time || '09:00',
+    status: mappedStatus,
+    payment_status: mappedPayment,
+    subtotal_amount: rawPrice,
+    discount_amount: 0,
+    additional_income_amount: 0,
+    refund_amount: 0,
+    notes: b.notes || 'Pemesanan Web Booking',
+    is_closed: false,
+    created_at: b.created_at || new Date().toISOString()
+  };
+}
+
+/**
+ * Load Semua Data dari Supabase (Tabel bookings terintegrasi)
  */
 async function loadAllData() {
   try {
-    const [resOrders, resCosts, resCustomers, resTrx, resClosing, resSync, resAudit] = await Promise.all([
+    const [resBookings, resOrders, resCosts, resCustomers, resTrx, resClosing, resSync, resAudit] = await Promise.all([
+      supabase.from('bookings').select('*').order('created_at', { ascending: false }),
       supabase.from('orders').select('*').order('created_at', { ascending: false }),
       supabase.from('order_costs').select('*').order('created_at', { ascending: false }),
       supabase.from('customers').select('*').order('created_at', { ascending: false }),
@@ -207,10 +256,64 @@ async function loadAllData() {
       supabase.from('audit_logs').select('*').order('created_at', { ascending: false })
     ]);
 
-    ordersData = resOrders.data || [];
+    const bookingsList = resBookings.data || [];
+    const directOrders = resOrders.data || [];
+
+    // Jika tabel bookings berisi data, petakan ke ordersData
+    if (bookingsList.length > 0) {
+      const mappedBookingOrders = bookingsList.map(bookingToOrder);
+      const existingIds = new Set(mappedBookingOrders.map(b => b.id));
+      const additional = directOrders.filter(o => !existingIds.has(o.id));
+      ordersData = [...mappedBookingOrders, ...additional];
+    } else {
+      ordersData = directOrders;
+    }
+
+    // Auto-populate customersData dari ordersData jika data pelanggan kosong
+    if ((!resCustomers.data || resCustomers.data.length === 0) && ordersData.length > 0) {
+      const custMap = new Map();
+      ordersData.forEach(o => {
+        if (o.customer_name && !custMap.has(o.customer_name)) {
+          custMap.set(o.customer_name, {
+            id: o.customer_id || 'cust-' + o.id,
+            name: o.customer_name,
+            phone: o.customer_phone,
+            phone_normalized: (o.customer_phone || '').replace(/[^0-9]/g, ''),
+            email: o.customer_email || '',
+            address: 'Bali',
+            notes: 'Pelanggan Terintegrasi Web Booking',
+            created_at: o.created_at
+          });
+        }
+      });
+      customersData = Array.from(custMap.values());
+    } else {
+      customersData = resCustomers.data || [];
+    }
+
+    // Auto-populate financial_transactions jika transaksi kosong
+    if ((!resTrx.data || resTrx.data.length === 0) && ordersData.length > 0) {
+      transactionsData = ordersData
+        .filter(o => o.payment_status === 'Lunas' || o.status === 'Selesai')
+        .map(o => ({
+          id: 'trx-' + o.id,
+          transaction_code: 'TRX-' + (o.order_code || o.id),
+          transaction_date: o.order_date,
+          type: 'income',
+          category: 'Pendapatan Pesanan',
+          description: `Pembayaran ${o.order_code} - ${o.customer_name}`,
+          amount: o.subtotal_amount,
+          source_type: 'order',
+          source_id: o.id,
+          payment_method: 'Transfer Bank / Online',
+          is_closed: false,
+          created_at: o.created_at
+        }));
+    } else {
+      transactionsData = resTrx.data || [];
+    }
+
     costsData = resCosts.data || [];
-    customersData = resCustomers.data || [];
-    transactionsData = resTrx.data || [];
     closingData = resClosing.data || [];
     syncRunsData = resSync.data || [];
     auditLogsData = resAudit.data || [];
@@ -621,6 +724,9 @@ function renderOrderRows(orders) {
             <button class="btn-action" title="Edit Pesanan" onclick="window.adminOpenEditOrder('${o.id}')">
               <span>✏️</span>
             </button>
+            <button class="btn-action" title="Hapus Pesanan" style="color: #EF4444; border-color: rgba(239, 68, 68, 0.4);" onclick="window.adminDeleteOrder('${o.id}')">
+              <span>🗑️</span>
+            </button>
           </div>
         </td>
       </tr>
@@ -665,14 +771,25 @@ function initOrdersEvents() {
 window.adminChangeOrderStatus = async function(orderId, newStatus) {
   try {
     const target = ordersData.find(o => o.id === orderId);
-    if (target) target.status = newStatus;
+    if (target) {
+      target.status = newStatus;
+      if (newStatus === 'Selesai') target.payment_status = 'Lunas';
+      if (newStatus === 'Dibatalkan') target.payment_status = 'Refund';
+    }
 
-    const { error } = await supabase
-      .from('orders')
-      .update({ status: newStatus })
-      .eq('id', orderId);
+    // Map status ke tabel bookings
+    let bkgStatus = 'pending';
+    if (newStatus === 'Selesai') bkgStatus = 'completed';
+    else if (newStatus === 'Dikonfirmasi') bkgStatus = 'confirmed';
+    else if (newStatus === 'Dibatalkan') bkgStatus = 'cancelled';
 
-    if (error) throw error;
+    await Promise.allSettled([
+      supabase.from('bookings').update({ status: bkgStatus }).eq('id', orderId),
+      supabase.from('orders').update({ 
+        status: newStatus,
+        payment_status: newStatus === 'Selesai' ? 'Lunas' : (newStatus === 'Dibatalkan' ? 'Refund' : 'Belum Dibayar')
+      }).eq('id', orderId)
+    ]);
 
     // Catat audit log
     await supabase.from('audit_logs').insert([{
@@ -681,11 +798,31 @@ window.adminChangeOrderStatus = async function(orderId, newStatus) {
       entity_type: 'orders',
       entity_id: orderId,
       details: `Status diubah menjadi: ${newStatus}`
-    }]);
+    }]).catch(() => {});
 
     window.showToast?.(`Status ${target?.order_code || 'pesanan'} diubah ke "${newStatus}"!`, 'success');
+    renderActiveModule();
   } catch (err) {
     window.showToast?.(`Gagal update status: ${err.message}`, 'error');
+  }
+};
+
+window.adminDeleteOrder = async function(orderId) {
+  const target = ordersData.find(o => o.id === orderId);
+  const code = target?.order_code || orderId;
+  if (!confirm(`Apakah Anda yakin ingin menghapus pesanan ${code} dari database?`)) return;
+
+  try {
+    await Promise.allSettled([
+      supabase.from('bookings').delete().eq('id', orderId),
+      supabase.from('orders').delete().eq('id', orderId)
+    ]);
+
+    ordersData = ordersData.filter(o => o.id !== orderId);
+    window.showToast?.(`Pesanan ${code} berhasil dihapus dari database!`, 'success');
+    renderActiveModule();
+  } catch (err) {
+    window.showToast?.(`Gagal menghapus pesanan: ${err.message}`, 'error');
   }
 };
 
@@ -1582,23 +1719,36 @@ function showAddOrderModal(sourceType = 'whatsapp') {
         if (newCust && newCust[0]) cust = newCust[0];
       }
 
-      // 2. Simpan Pesanan
-      const { data: newOrder, error } = await supabase.from('orders').insert([{
-        order_code: code,
-        customer_id: cust ? cust.id : null,
+      // 2. Simpan Pesanan (Sync ke tabel bookings & orders)
+      const bkgStatus = (payStatus === 'Lunas' || status === 'Selesai') ? 'paid' : (status === 'Dibatalkan' ? 'cancelled' : 'pending');
+      const bookingPayload = {
+        invoice: code,
         customer_name: name,
         customer_phone: phone,
-        service_or_item: item,
-        source: 'whatsapp',
-        order_date: date,
-        status,
-        payment_status: payStatus,
-        subtotal_amount: amount,
-        discount_amount: discount,
-        notes
-      }]).select();
+        service_name: item,
+        total_price: Math.max(0, amount - discount),
+        booking_date: date,
+        booking_time: '09:00',
+        status: bkgStatus
+      };
 
-      if (error) throw error;
+      await Promise.allSettled([
+        supabase.from('bookings').insert([bookingPayload]),
+        supabase.from('orders').insert([{
+          order_code: code,
+          customer_id: cust ? cust.id : null,
+          customer_name: name,
+          customer_phone: phone,
+          service_or_item: item,
+          source: 'whatsapp',
+          order_date: date,
+          status,
+          payment_status: payStatus,
+          subtotal_amount: amount,
+          discount_amount: discount,
+          notes
+        }])
+      ]);
 
       // 3. Catat Audit Log
       await supabase.from('audit_logs').insert([{
@@ -1995,6 +2145,13 @@ function setupRealtime() {
   try {
     realtimeChannel = supabase
       .channel('dasbor_realtime_channel')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, async (payload) => {
+        console.log('[Supabase Realtime bookings]', payload);
+        await loadAllData();
+        renderActiveModule();
+        const custName = payload.new?.customer_name || 'Pelanggan';
+        window.showToast?.(`✨ Pesanan baru dari Web Booking: <strong>${custName}</strong>!`, 'realtime');
+      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, async () => {
         await loadAllData();
         renderActiveModule();
