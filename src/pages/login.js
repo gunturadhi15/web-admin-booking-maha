@@ -18,20 +18,13 @@ export function renderLoginPage() {
         <!-- Header Kartu -->
         <div class="login-header">
           <div class="login-brand-badge">
-            <span class="login-logo-icon">📊</span>
+            <span class="brand-badge-icon brand-badge-sm" style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; background: #0F172A; color: #FFFFFF;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </span>
             <span class="login-brand-title">Untung Usaha</span>
           </div>
           <h1 class="login-title">Masuk</h1>
           <p class="login-desc">Masuk ke sistem web admin untuk mengelola booking dan operasional.</p>
-        </div>
-
-        <!-- Banner Akun Terkunci (Jika terkena rate limit) -->
-        <div id="login-lockout-banner" class="alert-lockout" style="display: none;">
-          <span class="alert-icon">⚠️</span>
-          <div class="alert-content">
-            <div class="alert-title">Akun Terkunci Sementara</div>
-            <div id="login-lockout-desc" class="alert-desc">Terlalu banyak percobaan gagal. Silakan tunggu 15 menit.</div>
-          </div>
         </div>
 
         <!-- Form Login -->
@@ -66,7 +59,7 @@ export function renderLoginPage() {
                 id="login-password" 
                 name="password" 
                 class="form-input" 
-                placeholder="Minimal 10 karakter" 
+                placeholder="Masukkan kata sandi" 
                 autocomplete="current-password" 
                 required 
               />
@@ -96,7 +89,7 @@ export function renderLoginPage() {
 
           <!-- Info Default Akun untuk Demo -->
           <div class="login-demo-hint">
-            <div>💡 <strong>Akun Demo Terdaftar:</strong></div>
+            <div>💡 <strong>Akun Terdaftar:</strong></div>
             <div style="margin-top: 4px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-secondary);">
               Admin: <code>admin@dasboruntung.com</code> (Sandi: <code>Admin12345!</code>)<br/>
               Staf: <code>staf@dasboruntung.com</code> (Sandi: <code>Staf12345!</code>)
@@ -129,8 +122,6 @@ export function initLoginPage() {
   const btnText = document.getElementById('btn-login-text');
   const errorContainer = document.getElementById('login-error-container');
   const errorText = document.getElementById('login-error-text');
-  const lockoutBanner = document.getElementById('login-lockout-banner');
-  const lockoutDesc = document.getElementById('login-lockout-desc');
 
   // Toggle Visibility Password
   toggleBtn?.addEventListener('click', () => {
@@ -138,21 +129,6 @@ export function initLoginPage() {
     passwordInput.type = isPassword ? 'text' : 'password';
     toggleBtn.textContent = isPassword ? '🙈' : '👁️';
     toggleBtn.setAttribute('title', isPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
-  });
-
-  // Check rate limit on email blur
-  emailInput?.addEventListener('blur', () => {
-    const email = emailInput.value.trim();
-    if (!email) return;
-    const limit = checkLoginRateLimit(email);
-    if (limit.isLocked) {
-      lockoutBanner.style.display = 'flex';
-      lockoutDesc.textContent = limit.message;
-      submitBtn.disabled = true;
-    } else {
-      lockoutBanner.style.display = 'none';
-      submitBtn.disabled = false;
-    }
   });
 
   // Submit Handler
@@ -165,17 +141,9 @@ export function initLoginPage() {
     // Sembunyikan error sebelumnya
     errorContainer.style.display = 'none';
 
-    // Cek batas percobaan
-    const rateCheck = checkLoginRateLimit(email);
-    if (rateCheck.isLocked) {
-      lockoutBanner.style.display = 'flex';
-      lockoutDesc.textContent = rateCheck.message;
-      return;
-    }
-
     if (!email || !password) {
       errorContainer.style.display = 'flex';
-      errorText.textContent = 'Email atau kata sandi salah.';
+      errorText.textContent = 'Email atau kata sandi tidak boleh kosong.';
       return;
     }
 
@@ -202,15 +170,7 @@ export function initLoginPage() {
       btnText.textContent = 'Masuk';
 
       errorContainer.style.display = 'flex';
-      // Pesan error generik
       errorText.textContent = err.message || 'Email atau kata sandi salah.';
-
-      const updatedLimit = checkLoginRateLimit(email);
-      if (updatedLimit.isLocked) {
-        lockoutBanner.style.display = 'flex';
-        lockoutDesc.textContent = updatedLimit.message;
-        submitBtn.disabled = true;
-      }
     }
   });
 

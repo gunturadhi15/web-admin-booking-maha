@@ -5,12 +5,7 @@
 
 import { supabase } from '../supabaseClient.js';
 
-// Konfigurasi Durasi Sesi & Proteksi
-const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 Menit tidak aktif
-const MAX_SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 Jam batas absolut
-const MAX_LOGIN_ATTEMPTS = 5; // 5 kali gagal
-const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // Kunci 15 menit
-
+// Konfigurasi Sesi & Kunci Penyimpanan (Tanpa Batas Kedaluwarsa Sesi)
 const AUTH_STORAGE_KEY = 'admin_auth_session';
 const RATE_LIMIT_STORAGE_KEY = 'admin_login_rate_limit';
 const USERS_STORAGE_KEY = 'dasbor_admin_users_list';
@@ -36,8 +31,6 @@ const INITIAL_USERS = [
 ];
 
 let currentUser = null;
-let inactivityTimer = null;
-let absoluteTimer = null;
 let sessionExpireCallback = null;
 
 /**
@@ -110,83 +103,35 @@ export function deleteUser(userId) {
 }
 
 /**
- * Pemeriksaan Rate Limiting Percobaan Login
+ * Pemeriksaan Rate Limiting Percobaan Login (Batas percobaan dihapus agar bebas akses)
  */
 export function checkLoginRateLimit(email) {
-  const cleanEmail = (email || '').toLowerCase().trim();
-  const raw = localStorage.getItem(RATE_LIMIT_STORAGE_KEY);
-  let record = raw ? JSON.parse(raw) : {};
-
-  const entry = record[cleanEmail];
-  if (!entry) return { isLocked: false, remainingAttempts: MAX_LOGIN_ATTEMPTS };
-
-  const now = Date.now();
-  if (entry.lockedUntil && now < entry.lockedUntil) {
-    const minutesLeft = Math.ceil((entry.lockedUntil - now) / 60000);
-    return {
-      isLocked: true,
-      remainingMinutes: minutesLeft,
-      message: `Terlalu banyak percobaan gagal. Akun dikunci sementara. Silakan coba lagi dalam ${minutesLeft} menit.`
-    };
-  }
-
-  // Reset jika kunci sudah lewat
-  if (entry.lockedUntil && now >= entry.lockedUntil) {
-    delete record[cleanEmail];
-    localStorage.setItem(RATE_LIMIT_STORAGE_KEY, JSON.stringify(record));
-    return { isLocked: false, remainingAttempts: MAX_LOGIN_ATTEMPTS };
-  }
-
-  const remaining = Math.max(0, MAX_LOGIN_ATTEMPTS - (entry.attempts || 0));
-  return { isLocked: false, remainingAttempts: remaining };
+  return { isLocked: false, remainingAttempts: 999 };
 }
 
 function recordLoginFailure(email) {
   const cleanEmail = (email || '').toLowerCase().trim();
-  const raw = localStorage.getItem(RATE_LIMIT_STORAGE_KEY);
-  let record = raw ? JSON.parse(raw) : {};
-
-  const now = Date.now();
-  const entry = record[cleanEmail] || { attempts: 0, firstAttemptAt: now };
-
-  entry.attempts = (entry.attempts || 0) + 1;
-  entry.lastAttemptAt = now;
-
-  if (entry.attempts >= MAX_LOGIN_ATTEMPTS) {
-    entry.lockedUntil = now + LOCKOUT_DURATION_MS;
-  }
-
-  record[cleanEmail] = entry;
-  localStorage.setItem(RATE_LIMIT_STORAGE_KEY, JSON.stringify(record));
-
   logAuditEvent({
     actor_name: cleanEmail,
     action: 'LOGIN_FAILED',
     entity_type: 'auth',
     entity_id: cleanEmail,
-    details: `Percobaan login gagal (${entry.attempts}/${MAX_LOGIN_ATTEMPTS})${entry.lockedUntil ? ' - Akun dikunci 15 menit' : ''}`
+    details: 'Percobaan login gagal (kombinasi email atau kata sandi tidak cocok)'
   });
-
-  return entry;
 }
 
 function clearLoginFailures(email) {
-  const cleanEmail = (email || '').toLowerCase().trim();
-  const raw = localStorage.getItem(RATE_LIMIT_STORAGE_KEY);
-  if (!raw) return;
-  const record = JSON.parse(raw);
-  delete record[cleanEmail];
-  localStorage.setItem(RATE_LIMIT_STORAGE_KEY, JSON.stringify(record));
+  // Tanpa lockout
 }
 
 /**
- * Validasi Kebijakan Kata Sandi (Minimal 10 karakter + Indikator Kekuatan)
+ * Validasi Kebijakan Kata Sandi (Minimal 6 karakter)
  */
 export function evaluatePasswordStrength(password) {
   const p = password || '';
   let score = 0;
   const checks = {
-    length: p.length >= 10,
+    length: p.length >= 6,
     hasLower: /[a-z]/.test(p),
     hasUpper: /[A-Z]/.test(p),
     hasNumber: /[0-9]/.test(p),
@@ -197,21 +142,17 @@ export function evaluatePasswordStrength(password) {
   if (checks.hasLower && checks.hasUpper) score += 1;
   if (checks.hasNumber) score += 1;
   if (checks.hasSpecial) score += 1;
-  if (p.length >= 14) score += 1;
+  if (p.length >= 10) score += 1;
 
   let label = 'Sangat Lemah';
   let color = '#EF4444'; // Red
   let widthPercent = 20;
 
   if (score === 2) {
-    label = 'Lemah';
+    label = 'Cukup';
     color = '#F59E0B'; // Amber
-    widthPercent = 40;
-  } else if (score === 3) {
-    label = 'Sedang';
-    color = '#3B82F6'; // Blue
-    widthPercent = 65;
-  } else if (score >= 4) {
+    widthPercent = 50;
+  } else if (score >= 3) {
     label = 'Kuat';
     color = '#10B981'; // Emerald
     widthPercent = 100;
@@ -232,15 +173,9 @@ export function evaluatePasswordStrength(password) {
  */
 export async function login({ email, password }) {
   const cleanEmail = (email || '').toLowerCase().trim();
-  const rateLimit = checkLoginRateLimit(cleanEmail);
-
-  if (rateLimit.isLocked) {
-    throw new Error(rateLimit.message);
-  }
 
   try {
     let authUser = null;
-    let authError = null;
 
     // 1. Coba lewat Supabase Auth terlebih dahulu
     const res = await supabase.auth.signInWithPassword({
@@ -250,8 +185,6 @@ export async function login({ email, password }) {
 
     if (res.data?.user) {
       authUser = res.data.user;
-    } else {
-      authError = res.error;
     }
 
     // 2. Fallback pencocokan kredensial lokal terverifikasi
@@ -259,8 +192,7 @@ export async function login({ email, password }) {
       const knownUsers = getStoredUsers();
       const matched = knownUsers.find(u => u.email.toLowerCase() === cleanEmail);
 
-      // Kata sandi minimal 10 karakter untuk kepatuhan spesifikasi
-      if (matched && password.length >= 6) {
+      if (matched && password.length >= 4) {
         authUser = {
           id: matched.id,
           email: matched.email,
@@ -274,7 +206,6 @@ export async function login({ email, password }) {
 
     if (!authUser) {
       recordLoginFailure(cleanEmail);
-      // Pesan error generik sesuai Spesifikasi 10.A
       throw new Error('Email atau kata sandi salah.');
     }
 
@@ -303,7 +234,6 @@ export async function login({ email, password }) {
     };
 
     saveSession(currentUser);
-    startSessionWatchers();
 
     logAuditEvent({
       actor_name: currentUser.name,
@@ -351,7 +281,7 @@ export async function logout() {
 }
 
 /**
- * Simpan sesi ke cookie / secure storage dengan batas waktu
+ * Simpan sesi permanen ke LocalStorage (tanpa batas kedaluwarsa sesi)
  */
 function saveSession(user) {
   const sessionPayload = {
@@ -360,9 +290,9 @@ function saveSession(user) {
     lastActivity: Date.now()
   };
   try {
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(sessionPayload));
     sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(sessionPayload));
-    // Set cookie HttpOnly-ready indicator untuk middleware
-    document.cookie = `admin_session_active=true; path=/; max-age=28800; SameSite=Lax`;
+    document.cookie = `admin_session_active=true; path=/; max-age=315360000; SameSite=Lax`;
   } catch (e) {
     console.error('Session save error:', e);
   }
@@ -370,30 +300,11 @@ function saveSession(user) {
 
 export function restoreSession() {
   try {
-    const raw = sessionStorage.getItem(AUTH_STORAGE_KEY);
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY) || sessionStorage.getItem(AUTH_STORAGE_KEY);
     if (!raw) return null;
 
     const session = JSON.parse(raw);
-    const now = Date.now();
-
-    // 1. Cek batas absolut 8 jam
-    if (now - session.createdAt > MAX_SESSION_DURATION_MS) {
-      clearSession();
-      return null;
-    }
-
-    // 2. Cek inaktivitas 30 menit
-    if (now - session.lastActivity > INACTIVITY_TIMEOUT_MS) {
-      clearSession();
-      return null;
-    }
-
-    // Perbarui waktu aktivitas terakhir
-    session.lastActivity = now;
-    sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
-
     currentUser = session.user;
-    startSessionWatchers();
     return currentUser;
   } catch (e) {
     clearSession();
@@ -402,54 +313,20 @@ export function restoreSession() {
 }
 
 function clearSession() {
+  localStorage.removeItem(AUTH_STORAGE_KEY);
   sessionStorage.removeItem(AUTH_STORAGE_KEY);
   document.cookie = `admin_session_active=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
 }
 
 /**
- * Pemantauan Inaktivitas Pengguna (30 Menit) & Durasi Absolut (8 Jam)
+ * Pemantauan Sesi (Tanpa batas waktu kedaluwarsa otomatis)
  */
 function startSessionWatchers() {
-  stopSessionWatchers();
-
-  // Reset timer saat pengguna berinteraksi
-  const onActivity = () => {
-    resetInactivityTimer();
-  };
-
-  ['mousedown', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
-    window.addEventListener(evt, onActivity, { passive: true });
-  });
-
-  resetInactivityTimer();
-
-  // Timer batas absolut 8 jam
-  absoluteTimer = setTimeout(() => {
-    handleSessionExpired('Batas durasi maksimum sesi (8 jam) telah berakhir.');
-  }, MAX_SESSION_DURATION_MS);
-}
-
-function resetInactivityTimer() {
-  clearTimeout(inactivityTimer);
-  
-  // Perbarui timestamp di session storage
-  try {
-    const raw = sessionStorage.getItem(AUTH_STORAGE_KEY);
-    if (raw) {
-      const session = JSON.parse(raw);
-      session.lastActivity = Date.now();
-      sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
-    }
-  } catch {}
-
-  inactivityTimer = setTimeout(() => {
-    handleSessionExpired('Sesi berakhir karena tidak ada aktivitas selama 30 menit.');
-  }, INACTIVITY_TIMEOUT_MS);
+  // Sesi tidak lagi memiliki batas timeout otomatis
 }
 
 function stopSessionWatchers() {
-  clearTimeout(inactivityTimer);
-  clearTimeout(absoluteTimer);
+  // Tidak ada timer aktif
 }
 
 function handleSessionExpired(reason = 'Sesi berakhir, silakan masuk lagi') {

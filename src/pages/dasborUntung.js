@@ -136,10 +136,6 @@ export function renderDasborApp() {
           </button>
 
           <div class="menu-group-label">PENGATURAN</div>
-          <button class="sidebar-link" data-mod="sync">
-            <span class="link-icon">${icon('sync', { size: 16 })}</span>
-            <span>Tarik Data Web</span>
-          </button>
           <button class="sidebar-link" data-mod="settings">
             <span class="link-icon">${icon('settings', { size: 16 })}</span>
             <span>Pengaturan Akun</span>
@@ -220,9 +216,6 @@ export function renderDasborApp() {
           </button>
           <button class="mobile-tab-btn" data-mod="bookkeeping">
             ${icon('bookkeeping', { size: 14 })} <span>Buku Kas</span>
-          </button>
-          <button class="mobile-tab-btn" data-mod="sync">
-            ${icon('sync', { size: 14 })} <span>Tarik Data</span>
           </button>
           <button class="mobile-tab-btn" data-mod="settings">
             ${icon('settings', { size: 14 })} <span>Akun</span>
@@ -453,7 +446,6 @@ function switchModule(modName) {
     customers: 'Data Pelanggan',
     charts: 'Grafik Keuntungan',
     bookkeeping: 'Pembukuan Harian',
-    sync: 'Tarik Data Web',
     settings: 'Pengaturan Akun',
     users: 'Manajemen Pengguna',
     audit: 'Log Aktivitas'
@@ -668,10 +660,7 @@ function renderActiveModule() {
       break;
 
     case 'sync':
-      heading.textContent = 'Integrasi Data & Sinkronisasi Database';
-      subheading.textContent = 'Arsitektur sinkronisasi dua arah antara website pemesanan dan basis data Supabase PostgreSQL.';
-      viewport.innerHTML = renderSyncView();
-      initSyncEvents();
+      switchModule('dashboard');
       break;
 
     case 'settings':
@@ -888,86 +877,9 @@ function renderDashboardView() {
             </div>
           </div>
 
-          <!-- ELEMEN BUKTI (PROOF OF WORK): Diagram Alur Kerja Konkret Arsitektur Data -->
-          <div class="workflow-proof-card">
-            <div class="workflow-proof-header">
-              <div style="display: flex; align-items: center; gap: 0.65rem;">
-                <div class="brand-badge-icon brand-badge-sm" style="background: #EEF2FF; color: #4F46E5; box-shadow: none;">
-                  ${icon('sync', { size: 16 })}
-                </div>
-                <div>
-                  <h4 class="workflow-proof-title" style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Alur Sinkronisasi &amp; Otomasi Keuangan</h4>
-                  <p class="workflow-proof-desc" style="margin: 2px 0 0; font-size: 0.78rem; color: var(--text-muted);">Penyelarasan data pemesanan dari form pengguna hingga perhitungan laba bersih riil.</p>
-                </div>
-              </div>
-              <div class="node-status-pill" style="font-size: 0.75rem; padding: 4px 10px; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: var(--radius-full); color: #065F46; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
-                <span class="status-dot live"></span>
-                <span>Sinkron Realtime Terhubung</span>
-              </div>
-            </div>
-
-            <!-- Pipeline Step Nodes -->
-            <div class="workflow-pipeline">
-              <div class="pipeline-node active-node">
-                <span class="node-step-tag">LANGKAH 01</span>
-                <div class="node-title">${icon('orders', { size: 14 })} Web Booking Publik</div>
-                <div class="node-desc">Pelanggan mengirim formulir reservasi layanan spiritual.</div>
-                <div class="node-status-pill">● Form Client OK</div>
-              </div>
-
-              <div class="pipeline-node active-node">
-                <span class="node-step-tag">LANGKAH 02</span>
-                <div class="node-title">${icon('database', { size: 14 })} PostgreSQL Database</div>
-                <div class="node-desc">Data tersimpan di tabel <code>public.bookings</code> via REST API.</div>
-                <div class="node-status-pill">● Schema RLS Valid</div>
-              </div>
-
-              <div class="pipeline-node active-node">
-                <span class="node-step-tag">LANGKAH 03</span>
-                <div class="node-title">${icon('refresh', { size: 14 })} Supabase Realtime</div>
-                <div class="node-desc">Kanal WebSocket <code>postgres_changes</code> mendeteksi INSERT/UPDATE.</div>
-                <div class="node-status-pill">● WebSocket Aktif</div>
-              </div>
-
-              <div class="pipeline-node active-node">
-                <span class="node-step-tag">LANGKAH 04</span>
-                <div class="node-title">${icon('dashboard', { size: 14 })} Dasbor Untung Usaha</div>
-                <div class="node-desc">State lokal ter-update seketika tanpa refresh halaman.</div>
-                <div class="node-status-pill">● Live Sync Ready</div>
-              </div>
-
-              <div class="pipeline-node active-node">
-                <span class="node-step-tag">LANGKAH 05</span>
-                <div class="node-title">${icon('profit', { size: 14 })} Kalkulasi Laba &amp; Kas</div>
-                <div class="node-desc">HPP dialokasikan otomatis untuk menghasilkan laba bersih riil.</div>
-                <div class="node-status-pill">● Buku Besar Siap</div>
-              </div>
-            </div>
-
-            <!-- Technical Specification Proof Parameters -->
-            <div class="pipeline-specs-grid">
-              <div class="pipeline-spec-item">
-                <span class="spec-key">Tabel Sumber Utama</span>
-                <span class="spec-val">public.bookings &amp; public.orders</span>
-              </div>
-              <div class="pipeline-spec-item">
-                <span class="spec-key">Event Listener</span>
-                <span class="spec-val">postgres_changes (ALL)</span>
-              </div>
-              <div class="pipeline-spec-item">
-                <span class="spec-key">Kunci Unik (Idempotent)</span>
-                <span class="spec-val">invoice_number / order_code</span>
-              </div>
-              <div class="pipeline-spec-item">
-                <span class="spec-key">Mesin Hitung Laba</span>
-                <span class="spec-val">profitCalculator.js (Net = Omzet - HPP - Op)</span>
-              </div>
-            </div>
-          </div>
-
         </div>
 
-        <!-- KOLOM SAMPING (32%): Distribusi Status Berbobot & Telemetri Sistem -->
+        <!-- KOLOM SAMPING (32%): Distribusi Status Berbobot & Pintasan Cepat -->
         <div class="dashboard-rail-col">
           
           <!-- Kartu 1: Distribusi Status Alur Pesanan (Weighted Horizontal Bars) -->
@@ -1047,54 +959,6 @@ function renderDashboardView() {
             </div>
           </div>
 
-          <!-- Kartu 2: Status Sambungan Supabase & Telemetri -->
-          <div class="card">
-            <div class="card-header">
-              <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <div class="brand-badge-icon brand-badge-sm" style="background: #F8FAFC; color: #475569; border: 1px solid var(--border-subtle); box-shadow: none;">
-                  ${icon('database', { size: 16 })}
-                </div>
-                <div>
-                  <h3 class="card-title" style="margin: 0; font-size: 0.95rem; font-weight: 700;">Telemetri Basis Data</h3>
-                  <p class="card-desc" style="margin: 2px 0 0;">Parameter teknis koneksi backend dan listener real-time.</p>
-                </div>
-              </div>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.8rem;">
-              <div style="display: flex; justify-content: space-between; padding: 0.65rem 0.85rem; background: var(--bg-surface-elevated); border-radius: var(--radius-sm);">
-                <span style="color: var(--text-muted);">Mode Operasi:</span>
-                <strong style="color: ${isConfigured ? '#059669' : '#D97706'}; font-weight: 600;">${isConfigured ? 'Supabase PostgreSQL Cloud' : 'Mode Demo Browser'}</strong>
-              </div>
-
-              <div style="display: flex; justify-content: space-between; padding: 0.65rem 0.85rem; background: var(--bg-surface-elevated); border-radius: var(--radius-sm);">
-                <span style="color: var(--text-muted);">WebSocket Realtime:</span>
-                <strong style="color: #059669; font-weight: 600;">postgres_changes (Aktif)</strong>
-              </div>
-
-              <div style="display: flex; justify-content: space-between; padding: 0.65rem 0.85rem; background: var(--bg-surface-elevated); border-radius: var(--radius-sm);">
-                <span style="color: var(--text-muted);">Total Record Pesanan:</span>
-                <strong style="font-family: var(--font-mono); color: var(--text-primary); font-weight: 600;">${ordersData.length} Data</strong>
-              </div>
-
-              <div style="display: flex; justify-content: space-between; padding: 0.65rem 0.85rem; background: var(--bg-surface-elevated); border-radius: var(--radius-sm);">
-                <span style="color: var(--text-muted);">Akumulasi Laba Usaha:</span>
-                <strong style="font-family: var(--font-mono); color: #059669; font-weight: 700;">${formatRupiah(overallSummary.netProfit)}</strong>
-              </div>
-            </div>
-
-            <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
-              <button class="btn btn-secondary" id="btn-goto-profit-calc" style="flex: 1; font-size: 0.78rem;">
-                ${icon('profit', { size: 14 })}
-                <span>Hitung Untung</span>
-              </button>
-              <button class="btn btn-secondary" id="btn-quick-config-db" style="flex: 1; font-size: 0.78rem;">
-                ${icon('settings', { size: 14 })}
-                <span>Pengaturan DB</span>
-              </button>
-            </div>
-          </div>
-
         </div>
 
       </div>
@@ -1105,8 +969,6 @@ function renderDashboardView() {
 
 function initDashboardEvents() {
   document.getElementById('btn-goto-all-orders')?.addEventListener('click', () => switchModule('orders'));
-  document.getElementById('btn-goto-profit-calc')?.addEventListener('click', () => switchModule('profit'));
-  document.getElementById('btn-quick-config-db')?.addEventListener('click', () => switchModule('settings'));
 }
 
 /* ==============================================================================
@@ -2145,55 +2007,175 @@ window.adminOpenEditOrder = function(orderId) {
    ============================================================================== */
 function renderProfitView() {
   const overallSummary = calculatePeriodSummary(ordersData, costsData, transactionsData.filter(t => t.type === 'expense' && t.source_type === 'operational'));
+  
+  const rev = overallSummary.totalRevenue || 0;
+  const cost = overallSummary.totalOrderCosts || 0;
+  const op = overallSummary.totalOperational || 0;
+  const gross = overallSummary.grossProfit || 0;
+  const net = overallSummary.netProfit || 0;
+
+  const costRatio = rev > 0 ? ((cost / rev) * 100).toFixed(1) : '0';
+  const opRatio = rev > 0 ? ((op / rev) * 100).toFixed(1) : '0';
+  const grossMargin = rev > 0 ? Math.round((gross / rev) * 100) : 0;
+  const netMargin = rev > 0 ? ((net / rev) * 100).toFixed(1) : '0';
 
   return `
     <div class="view-container">
       
-      <!-- Top Financial Summary Cards -->
-      <div class="kpi-grid">
-        <div class="kpi-card" style="border-left: 4px solid var(--accent-brand);">
-          <div class="kpi-icon-wrap" style="background: rgba(37, 99, 235, 0.1); color: var(--accent-brand);">
-            ${icon('charts', { size: 20 })}
+      <!-- 1. Empat Kartu Metrik Finansial Eksekutif (Berdiameter Jelas & Bernapas) -->
+      <div class="profit-cards-grid">
+        
+        <!-- Kartu 1: Omzet Penjualan -->
+        <div class="profit-stat-card">
+          <div class="profit-stat-header">
+            <span class="profit-stat-title">Total Pendapatan (Omzet)</span>
+            <div class="brand-badge-icon brand-badge-sm" style="background: #EFF6FF; color: #2563EB;">
+              ${icon('orders', { size: 16 })}
+            </div>
           </div>
-          <div class="kpi-info">
-            <span class="kpi-label">Total Pendapatan Bersih</span>
-            <span class="kpi-value">${formatRupiah(overallSummary.totalRevenue)}</span>
-            <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Nilai Pesanan - Diskon</span>
+          <div class="profit-stat-value" style="color: var(--text-primary);">
+            ${formatRupiah(rev)}
           </div>
-        </div>
-
-        <div class="kpi-card" style="border-left: 4px solid #EF4444;">
-          <div class="kpi-icon-wrap" style="background: rgba(239, 68, 68, 0.1); color: #DC2626;">
-            ${icon('profit', { size: 20 })}
-          </div>
-          <div class="kpi-info">
-            <span class="kpi-label">Total Modal / HPP &amp; Biaya</span>
-            <span class="kpi-value" style="color: #DC2626;">${formatRupiah(overallSummary.totalOrderCosts)}</span>
-            <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Seluruh Biaya Langsung</span>
+          <div class="profit-stat-footer">
+            <span>Basis 100% Penjualan</span>
+            <span class="badge-subtle badge-completed">Bruto</span>
           </div>
         </div>
 
-        <div class="kpi-card" style="border-left: 4px solid #10B981;">
-          <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.1); color: #059669;">
-            ${icon('database', { size: 20 })}
+        <!-- Kartu 2: Modal Langsung (HPP) -->
+        <div class="profit-stat-card" style="background: #FEF2F2; border-color: #FECACA;">
+          <div class="profit-stat-header">
+            <span class="profit-stat-title" style="color: #991B1B;">Total Modal (HPP &amp; Biaya)</span>
+            <div class="brand-badge-icon brand-badge-sm" style="background: #FEE2E2; color: #DC2626;">
+              ${icon('profit', { size: 16 })}
+            </div>
           </div>
-          <div class="kpi-info">
-            <span class="kpi-label">Laba Kotor Usaha</span>
-            <span class="kpi-value" style="color: #059669;">${formatRupiah(overallSummary.grossProfit)}</span>
-            <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Pendapatan - Modal/HPP</span>
+          <div class="profit-stat-value" style="color: #DC2626;">
+            ${formatRupiah(cost)}
+          </div>
+          <div class="profit-stat-footer" style="border-top-color: #FECACA; color: #B91C1C;">
+            <span>Biaya Langsung Layanan</span>
+            <span class="badge-subtle badge-cancelled" style="font-weight: 700;">${costRatio}% Omzet</span>
           </div>
         </div>
 
-        <div class="kpi-card" style="border-left: 4px solid #8B5CF6;">
-          <div class="kpi-icon-wrap" style="background: rgba(139, 92, 246, 0.1); color: #7C3AED;">
-            ${icon('sparkles', { size: 20 })}
+        <!-- Kartu 3: Laba Kotor Usaha -->
+        <div class="profit-stat-card">
+          <div class="profit-stat-header">
+            <span class="profit-stat-title">Laba Kotor Usaha</span>
+            <div class="brand-badge-icon brand-badge-sm" style="background: #ECFDF5; color: #059669;">
+              ${icon('database', { size: 16 })}
+            </div>
           </div>
-          <div class="kpi-info">
-            <span class="kpi-label">Laba Bersih Akhir</span>
-            <span class="kpi-value" style="color: #7C3AED;">${formatRupiah(overallSummary.netProfit)}</span>
-            <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Setelah Biaya Operasional</span>
+          <div class="profit-stat-value" style="color: #059669;">
+            ${formatRupiah(gross)}
+          </div>
+          <div class="profit-stat-footer">
+            <span>Omzet &minus; Modal Langsung</span>
+            <span class="badge-subtle badge-confirmed" style="font-weight: 700;">Margin ${grossMargin}%</span>
           </div>
         </div>
+
+        <!-- Kartu 4: Laba Bersih Akhir (Bintang Utama Dasbor) -->
+        <div class="profit-stat-card card-highlight-net">
+          <div class="profit-stat-header">
+            <span class="profit-stat-title" style="color: #065F46; font-weight: 700;">Laba Bersih Riil (Net Profit)</span>
+            <div class="brand-badge-icon brand-badge-sm" style="background: #DCFCE7; color: #059669;">
+              ${icon('sparkles', { size: 16 })}
+            </div>
+          </div>
+          <div class="profit-stat-value" style="color: #047857; font-size: 1.65rem;">
+            ${formatRupiah(net)}
+          </div>
+          <div class="profit-stat-footer" style="border-top-color: #BBF7D0; color: #065F46;">
+            <span>Uang Bersih Siap Tarik</span>
+            <span class="badge-subtle badge-confirmed" style="font-weight: 700; background: #DCFCE7; color: #065F46;">${netMargin}% Riil</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 2. Visualisasi Alur Formula Keuangan & Bar Alokasi Persentase -->
+      <div class="profit-overview-card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+              ${icon('charts', { size: 16 })}
+              <span>Struktur Alur Perhitungan Laba &amp; Alokasi Modal</span>
+            </h4>
+            <p style="margin: 3px 0 0; font-size: 0.78rem; color: var(--text-muted);">
+              Penjelasan visual perbedaan antara uang masuk (omzet), modal langsung yang dikeluarkan, dan laba bersih yang tersisa.
+            </p>
+          </div>
+          <span class="badge-subtle badge-completed" style="font-size: 0.75rem;">
+            Formula Terintegrasi
+          </span>
+        </div>
+
+        <!-- Visual Flow Strip (Persamaan Finansial Konkret) -->
+        <div class="financial-flow-container">
+          
+          <div class="financial-flow-box flow-revenue">
+            <span class="flow-box-tag">1. Pendapatan (Omzet)</span>
+            <div class="flow-box-amount" style="color: #2563EB;">${formatRupiah(rev)}</div>
+            <span class="flow-box-sub">Uang Masuk dari Pelanggan</span>
+          </div>
+
+          <div class="financial-flow-operator" title="Dikurangi Modal">&minus;</div>
+
+          <div class="financial-flow-box flow-cost">
+            <span class="flow-box-tag" style="color: #991B1B;">2. Modal Langsung (HPP)</span>
+            <div class="flow-box-amount" style="color: #DC2626;">${formatRupiah(cost)}</div>
+            <span class="flow-box-sub">Biaya Logistik &amp; Paket (${costRatio}%)</span>
+          </div>
+
+          <div class="financial-flow-operator" title="Dikurangi Operasional">&minus;</div>
+
+          <div class="financial-flow-box flow-operational">
+            <span class="flow-box-tag" style="color: #92400E;">3. Biaya Operasional</span>
+            <div class="flow-box-amount" style="color: #D97706;">${formatRupiah(op)}</div>
+            <span class="flow-box-sub">Beban Kantor &amp; Kasir (${opRatio}%)</span>
+          </div>
+
+          <div class="financial-flow-operator" style="background: #DCFCE7; border-color: #86EFAC; color: #059669;" title="Hasil Laba Bersih">&equals;</div>
+
+          <div class="financial-flow-box flow-net" style="box-shadow: 0 1px 3px rgba(5, 150, 105, 0.1);">
+            <span class="flow-box-tag" style="color: #065F46;">4. Laba Bersih Riil</span>
+            <div class="flow-box-amount" style="color: #047857;">${formatRupiah(net)}</div>
+            <span class="flow-box-sub" style="color: #065F46; font-weight: 600;">Keuntungan Riil (${netMargin}%)</span>
+          </div>
+
+        </div>
+
+        <!-- Progress Bar Alokasi Persentase Multi-Segmen -->
+        <div class="financial-allocation-wrap">
+          <div class="financial-allocation-header">
+            <span><strong>Proporsi Distribusi Dana Usaha:</strong></span>
+            <span>Basis: ${formatRupiah(rev)}</span>
+          </div>
+
+          <div class="financial-meter-track" title="Alokasi Dana: Laba Bersih (${netMargin}%), Modal HPP (${costRatio}%), Operasional (${opRatio}%)">
+            <div class="meter-segment" style="width: ${Math.max(0, netMargin)}%; background: #10B981;" title="Laba Bersih: ${netMargin}%"></div>
+            <div class="meter-segment" style="width: ${costRatio}%; background: #EF4444;" title="Modal HPP: ${costRatio}%"></div>
+            <div class="meter-segment" style="width: ${opRatio}%; background: #F59E0B;" title="Operasional: ${opRatio}%"></div>
+          </div>
+
+          <div class="financial-meter-legend">
+            <div class="legend-item">
+              <span class="legend-dot" style="background: #10B981;"></span>
+              <span><strong>Laba Bersih Usaha:</strong> ${formatRupiah(net)} (${netMargin}%)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot" style="background: #EF4444;"></span>
+              <span><strong>Modal Pokok (HPP):</strong> ${formatRupiah(cost)} (${costRatio}%)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot" style="background: #F59E0B;"></span>
+              <span><strong>Beban Operasional:</strong> ${formatRupiah(op)} (${opRatio}%)</span>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Detail Untung per Pesanan Table -->

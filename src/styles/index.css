@@ -2119,3 +2119,233 @@ body {
   color: var(--text-primary);
   font-weight: 600;
 }
+
+/* ==============================================================================
+   ENHANCED PROFIT & FINANCIAL FLOW BREAKDOWN (B2B SaaS Financial UI)
+   ============================================================================== */
+.profit-overview-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-xs);
+}
+
+.financial-flow-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.financial-flow-box {
+  flex: 1;
+  min-width: 180px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.financial-flow-box:hover {
+  border-color: var(--border-strong);
+}
+
+.financial-flow-box.flow-revenue {
+  border-left: 3.5px solid #2563EB;
+}
+
+.financial-flow-box.flow-cost {
+  border-left: 3.5px solid #DC2626;
+  background: #FEF2F2;
+}
+
+.financial-flow-box.flow-operational {
+  border-left: 3.5px solid #F59E0B;
+  background: #FFFBEB;
+}
+
+.financial-flow-box.flow-net {
+  border-left: 3.5px solid #059669;
+  background: #ECFDF5;
+}
+
+.flow-box-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.flow-box-amount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.flow-box-sub {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.financial-flow-operator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* Multi-Segment Allocation Bar */
+.financial-allocation-wrap {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.financial-allocation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.financial-meter-track {
+  display: flex;
+  height: 12px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background: #E2E8F0;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.meter-segment {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.financial-meter-legend {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  color: var(--text-primary);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* 4 Executive Metric Cards */
+.profit-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.profit-stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 125px;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.profit-stat-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-xs);
+}
+
+.profit-stat-card.card-highlight-net {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F0FDF4 100%);
+  border-color: #86EFAC;
+}
+
+.profit-stat-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.profit-stat-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.profit-stat-value {
+  font-size: 1.55rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.profit-stat-footer {
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.73rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 1024px) {
+  .profit-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .profit-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .financial-flow-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .financial-flow-operator {
+    margin: 0 auto;
+    transform: rotate(90deg);
+  }
+}
