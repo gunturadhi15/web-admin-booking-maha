@@ -1216,6 +1216,79 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Floating Real-Time Booking Alert Toast (Top-Right) per Nontifikasi.md */
+.booking-alert-container {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 10000;
+  max-width: 400px;
+  width: calc(100vw - 2.5rem);
+  pointer-events: none;
+}
+
+.booking-alert-toast {
+  pointer-events: auto;
+  position: relative;
+  background: #0F172A;
+  color: #F8FAFC;
+  border-radius: 12px;
+  padding: 13px 16px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(13, 148, 136, 0.45);
+  border-left: 4px solid #0D9488;
+  animation: slideInAlertToast 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: all 0.28s ease;
+  font-family: inherit;
+  backdrop-filter: blur(8px);
+}
+
+.booking-alert-toast.fade-out {
+  opacity: 0;
+  transform: translateX(35px) scale(0.95);
+}
+
+@keyframes slideInAlertToast {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.btn-toggle-sound {
+  height: 36px;
+  padding: 0 11px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.btn-toggle-sound:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--border-focus);
+}
+
+.btn-toggle-sound.sound-off {
+  color: var(--text-muted);
+  background: var(--bg-surface-elevated);
+  border-color: var(--border-subtle);
+}
+
 /* Mobile Top Bar & Drawer */
 .mobile-top-bar {
   display: none;

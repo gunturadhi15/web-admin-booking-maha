@@ -57,6 +57,16 @@ import {
   InitialEmptyState
 } from '../components/ui.js';
 import { icon } from '../components/icons.js';
+import {
+  playBookingNotificationSound,
+  isSoundEnabled,
+  toggleSound,
+  showBookingAlertToast
+} from '../services/soundAlert.js';
+
+// Anti-Spam Sound Alert & New Booking Tracking (Section 2 Nontifikasi.md)
+const knownBookingIds = new Set();
+let isInitialLoad = true;
 
 // Application State
 let activeModule = 'dashboard'; // 'dashboard' | 'orders' | 'profit' | 'customers' | 'charts' | 'bookkeeping' | 'sync' | 'settings' | 'users' | 'audit'
@@ -186,6 +196,9 @@ export function renderDasborApp() {
             <button id="btn-mobile-quick-wa" class="btn btn-primary btn-icon-only" title="Catat Pesanan WhatsApp" aria-label="Catat WhatsApp">
               ${icon('whatsapp', { size: 16 })}
             </button>
+            <button id="btn-mobile-toggle-sound" class="btn btn-secondary btn-icon-only" onclick="window.toggleAdminSound?.()" title="Toggle Bunyi Notifikasi" aria-label="Toggle Suara">
+              <span id="mobile-sound-toggle-icon">${isSoundEnabled() ? '🔊' : '🔇'}</span>
+            </button>
             <button id="btn-mobile-refresh" class="btn btn-secondary btn-icon-only" title="Muat Ulang Data" aria-label="Segarkan">
               ${icon('refresh', { size: 16 })}
             </button>
@@ -252,6 +265,12 @@ export function renderDasborApp() {
             <button id="btn-header-export" class="btn btn-secondary" title="Ekspor Data Booking ke CSV">
               ${icon('export', { size: 15 })}
               <span>Ekspor CSV</span>
+            </button>
+
+            <!-- Tombol Toggle Suara Notifikasi (Mute/Unmute per Nontifikasi.md) -->
+            <button id="btn-toggle-sound" class="btn-toggle-sound ${isSoundEnabled() ? '' : 'sound-off'}" onclick="window.toggleAdminSound?.()" title="Klik untuk mengaktifkan/membisukan bunyi notifikasi baru">
+              <span id="sound-toggle-icon">${isSoundEnabled() ? '🔊' : '🔇'}</span>
+              <span id="sound-toggle-label">${isSoundEnabled() ? 'Suara Aktif' : 'Bisu'}</span>
             </button>
 
             <!-- Tombol Refresh Data -->
@@ -367,6 +386,47 @@ function setupNavigationEvents() {
     renderActiveModule();
     window.showToast?.('Data berhasil disegarkan!', 'info');
   });
+
+  // Sound Notification Toggle (Mute/Unmute per Nontifikasi.md)
+  function updateSoundButtonUI() {
+    const enabled = isSoundEnabled();
+    const iconEl = document.getElementById('sound-toggle-icon');
+    const labelEl = document.getElementById('sound-toggle-label');
+    const btnEl = document.getElementById('btn-toggle-sound');
+    const mobileIconEl = document.getElementById('mobile-sound-toggle-icon');
+
+    if (iconEl) iconEl.textContent = enabled ? '🔊' : '🔇';
+    if (labelEl) labelEl.textContent = enabled ? 'Suara Aktif' : 'Bisu';
+    if (btnEl) btnEl.className = `btn-toggle-sound ${enabled ? '' : 'sound-off'}`;
+    if (mobileIconEl) mobileIconEl.textContent = enabled ? '🔊' : '🔇';
+  }
+
+  const handleToggleSound = () => {
+    const nextState = toggleSound();
+    updateSoundButtonUI();
+    if (nextState) {
+      window.showToast?.('🔊 Bunyi notifikasi pesanan diaktifkan.', 'info');
+      // Tampilkan toast alert demo sebagai konfirmasi visual & audio
+      showBookingAlertToast({
+        booking_id: 'MWJ-DEMO-ALERT-001',
+        customer_name: 'Tes Bunyi & Notifikasi',
+        package_name: 'Suara Lonceng Wellness Aktif',
+        booking_date: new Date().toISOString().split('T')[0],
+        booking_time: '09:00 WITA',
+        pax: 2,
+        total_amount: 650000
+      });
+    } else {
+      window.showToast?.('🔇 Bunyi notifikasi pesanan dibisukan.', 'info');
+    }
+  };
+
+  document.getElementById('btn-toggle-sound')?.addEventListener('click', handleToggleSound);
+  document.getElementById('btn-mobile-toggle-sound')?.addEventListener('click', handleToggleSound);
+
+  window.toggleAdminSound = handleToggleSound;
+  window.playBookingNotificationSound = playBookingNotificationSound;
+  window.showBookingAlertToast = showBookingAlertToast;
 
   // Quick WhatsApp Order Buttons
   document.getElementById('btn-quick-wa-order')?.addEventListener('click', () => {
@@ -682,9 +742,44 @@ function bookingToOrder(b) {
 }
 
 /**
- * Load Semua Data dari Supabase (Tabel bookings terintegrasi)
+ * Helper untuk mendeteksi perubahan data booking / order
  */
-async function loadAllData() {
+function hasDataChanged(prevOrders, newOrders) {
+  if (!prevOrders || !newOrders) return true;
+  if (prevOrders.length !== newOrders.length) return true;
+  for (let i = 0; i < prevOrders.length; i++) {
+    const p = prevOrders[i];
+    const n = newOrders[i];
+    if (!n) return true;
+    if (
+      p.id !== n.id ||
+      p.status !== n.status ||
+      p.payment_status !== n.payment_status ||
+      p.order_date !== n.order_date ||
+      p.order_time !== n.order_time ||
+      p.subtotal_amount !== n.subtotal_amount ||
+      p.customer_name !== n.customer_name ||
+      p.customer_phone !== n.customer_phone
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+let isFetchingSilently = false;
+
+/**
+ * Pengambilan Data Latar Belakang Tanpa Kedip (Silent Data Fetching)
+ * Sesuai spesifikasi realtimedatabase.md:
+ * - Mengambil data terbaru di latar belakang
+ * - Tidak menampilkan skeleton atau loading spinner layar penuh (no flicker)
+ * - Memperbarui state tabel & kartu KPI secara real-time
+ */
+async function fetchBookingsSilently() {
+  if (isFetchingSilently) return;
+  isFetchingSilently = true;
+
   try {
     const [resBookings, resOrders, resCosts, resCustomers, resTrx, resClosing, resSync, resAudit] = await Promise.all([
       supabase.from('bookings').select('*').order('created_at', { ascending: false }),
@@ -700,17 +795,61 @@ async function loadAllData() {
     const bookingsList = resBookings.data || [];
     const directOrders = resOrders.data || [];
 
-    // Jika tabel bookings berisi data, petakan ke ordersData
+    let newOrders = [];
     if (bookingsList.length > 0) {
       const mappedBookingOrders = bookingsList.map(bookingToOrder);
       const existingIds = new Set(mappedBookingOrders.map(b => b.id));
       const additional = directOrders.filter(o => !existingIds.has(o.id)).map(bookingToOrder);
-      ordersData = [...mappedBookingOrders, ...additional];
+      newOrders = [...mappedBookingOrders, ...additional];
     } else {
-      ordersData = directOrders.map(bookingToOrder);
+      newOrders = directOrders.map(bookingToOrder);
     }
 
-    // Auto-populate customersData dari ordersData jika data pelanggan kosong (dengan nationality & DOB)
+    const ordersChanged = hasDataChanged(ordersData, newOrders);
+    ordersData = newOrders;
+
+    // 🔔 Deteksi Pesanan Baru untuk Sound Alert & Pop-up Toast (Anti-Spam saat Refresh per Nontifikasi.md)
+    if (isInitialLoad) {
+      // Saat pertama kali buka halaman, catat semua ID tanpa membunyikan alarm
+      newOrders.forEach(b => {
+        const id = b.id || b.booking_id || b.order_code;
+        if (id) knownBookingIds.add(id);
+      });
+      isInitialLoad = false;
+    } else {
+      // Cek apakah ada booking_id yang belum pernah tercatat sebelumnya
+      const newEntries = newOrders.filter(b => {
+        const id = b.id || b.booking_id || b.order_code;
+        return id && !knownBookingIds.has(id);
+      });
+
+      if (newEntries.length > 0) {
+        newEntries.forEach(b => {
+          const id = b.id || b.booking_id || b.order_code;
+          if (id) knownBookingIds.add(id);
+        });
+
+        const newest = newEntries[0];
+
+        // 1. Bunyikan suara lonceng jika fitur suara aktif
+        if (isSoundEnabled()) {
+          playBookingNotificationSound();
+        }
+
+        // 2. Tampilkan Pop-up Toast di pojok kanan atas selama 6 detik
+        showBookingAlertToast({
+          booking_id: newest.order_code || newest.booking_id || newest.id,
+          customer_name: newest.customer_name || 'Tamu Baru',
+          package_name: newest.service_or_item || newest.service_name || 'Paket Wellness',
+          booking_date: newest.order_date || newest.booking_date || '-',
+          booking_time: newest.order_time || newest.booking_time || '-',
+          pax: newest.pax || 1,
+          total_amount: newest.subtotal_amount || newest.total_amount || 0
+        });
+      }
+    }
+
+    // Auto-populate customersData dari ordersData jika data pelanggan kosong
     if ((!resCustomers.data || resCustomers.data.length === 0) && ordersData.length > 0) {
       const custMap = new Map();
       ordersData.forEach(o => {
@@ -762,15 +901,83 @@ async function loadAllData() {
     syncRunsData = resSync.data || [];
     auditLogsData = resAudit.data || [];
 
+    // Perbarui badge jumlah total booking secara hening
     const badge = document.getElementById('badge-order-count');
     if (badge) badge.textContent = ordersData.length;
     const mobileBadge = document.getElementById('mobile-badge-order-count');
     if (mobileBadge) mobileBadge.textContent = ordersData.length;
 
+    // Perbarui modul yang sedang aktif tanpa kedipan
+    updateActiveModuleSilently(ordersChanged);
   } catch (err) {
-    console.error('Error load data:', err);
-    window.showToast?.(`Gagal memuat data: ${err.message}`, 'error');
+    console.warn('[SilentFetch] Gagal sinkronisasi latar belakang:', err);
+  } finally {
+    isFetchingSilently = false;
   }
+}
+
+/**
+ * Perbarui Tampilan Modul Secara Hening (Mencegah Kehilangan Fokus Input Search)
+ */
+function updateActiveModuleSilently(ordersChanged) {
+  if (!ordersChanged) return;
+
+  const viewport = document.getElementById('dasbor-viewport');
+  if (!viewport) return;
+
+  if (activeModule === 'dashboard') {
+    viewport.innerHTML = renderDashboardView();
+    initDashboardEvents();
+  } else if (activeModule === 'orders') {
+    const isInputFocused = document.activeElement && (
+      document.activeElement.tagName === 'INPUT' ||
+      document.activeElement.tagName === 'TEXTAREA' ||
+      document.activeElement.tagName === 'SELECT'
+    );
+
+    if (isInputFocused) {
+      // Pertahankan elemen input yang sedang diketik user, cukup perbarui isi tbody & cards
+      const { paginatedOrders, totalCount, totalPages, startIndex } = getFilteredAndSortedOrders();
+      const tbody = document.getElementById('orders-table-tbody');
+      if (tbody) tbody.innerHTML = renderOrderRows(paginatedOrders);
+
+      const cardsContainer = document.querySelector('.orders-cards-container');
+      if (cardsContainer) cardsContainer.innerHTML = renderOrderCards(paginatedOrders);
+
+      const statusCounts = getStatusCounts();
+      document.querySelectorAll('#status-segmented-control .segmented-btn').forEach(btn => {
+        const st = btn.getAttribute('data-status') || 'ALL';
+        const countSpan = btn.querySelector('.segmented-count');
+        if (countSpan) countSpan.textContent = statusCounts[st] ?? 0;
+      });
+
+      const paginationInfo = document.querySelector('.pagination-left span[style*="tabular-nums"]');
+      if (paginationInfo) {
+        paginationInfo.textContent = totalCount > 0
+          ? `Menampilkan ${startIndex + 1} - ${Math.min(startIndex + orderPageSize, totalCount)} dari ${totalCount} booking`
+          : '0 booking';
+      }
+      const pageNumSpan = document.querySelector('.pagination-buttons span[style*="tabular-nums"]');
+      if (pageNumSpan) {
+        pageNumSpan.textContent = `Halaman ${orderCurrentPage} dari ${totalPages}`;
+      }
+    } else {
+      refreshOrdersView();
+    }
+  } else if (activeModule === 'calendar') {
+    refreshCalendarView();
+  } else if (activeModule === 'customers') {
+    renderActiveModule();
+  } else if (activeModule === 'profit' || activeModule === 'charts') {
+    renderActiveModule();
+  }
+}
+
+/**
+ * Load Semua Data dari Supabase (Wrapper pemanggilan awal)
+ */
+async function loadAllData() {
+  await fetchBookingsSilently();
 }
 
 /**
@@ -2036,7 +2243,7 @@ function renderOrderRows(orders) {
     const isChecked = selectedBookingIds.has(o.id);
 
     return `
-      <tr class="${isChecked ? 'row-selected' : ''}">
+      <tr class="${isChecked ? 'row-selected' : ''}" data-id="${o.id}" id="order-row-${o.id}">
         <!-- 1. Checkbox -->
         <td style="text-align: center;">
           <input type="checkbox" class="table-checkbox row-checkbox" data-id="${o.id}" ${isChecked ? 'checked' : ''} />
@@ -2555,11 +2762,50 @@ window.adminOpenRescheduleModal = function (orderId) {
       return;
     }
 
-    try {
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Menyimpan...';
+    const oldDate = order.order_date;
+    const oldTime = order.order_time;
 
-      // Update in Supabase (PostgreSQL)
+    // 1. OPTIMISTIC UI: Perbarui memori & tutup modal seketika
+    order.order_date = newDate;
+    order.booking_date = newDate;
+    order.tour_date = newDate;
+    order.order_time = `${newTime} WITA`;
+    order.booking_time = `${newTime} WITA`;
+
+    slot.innerHTML = '';
+    window.showToast?.(`Jadwal ${order.order_code} berhasil diubah ke ${formatTanggal(newDate)} pk ${newTime} WITA!`, 'success');
+
+    // 2. OPTIMISTIC DOM: Perbarui tampilan baris tabel & kartu seketika
+    const rowEl = document.getElementById('order-row-' + order.id) || document.querySelector(`tr[data-id="${order.id}"]`);
+    if (rowEl) {
+      const scheduleCell = rowEl.children[4];
+      if (scheduleCell) {
+        scheduleCell.innerHTML = `
+          <div class="tabular-nums" style="font-weight: 500; font-size: 0.82rem; color: var(--text-primary); display: flex; align-items: center; gap: 4px;">
+            ${icon('calendar', { size: 13, strokeWidth: 1.5 })}
+            <span>${formatTanggal(newDate)}</span>
+          </div>
+          <div class="tabular-nums" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; padding-left: 17px;">pk ${formatJam(newTime)} WITA</div>
+        `;
+      }
+    }
+    const cardEl = document.querySelector(`.booking-mobile-card[data-id="${order.id}"]`);
+    if (cardEl) {
+      const sched = cardEl.querySelector('.bmc-schedule');
+      if (sched) {
+        sched.innerHTML = `
+          ${icon('calendar', { size: 12, strokeWidth: 1.5 })}
+          <span>${formatTanggal(newDate)} • pk ${formatJam(newTime)} WITA</span>
+        `;
+      }
+    }
+
+    if (activeModule === 'dashboard' || activeModule === 'calendar') {
+      renderActiveModule();
+    }
+
+    try {
+      // 3. Kirim update ke Supabase di latar belakang
       await Promise.allSettled([
         supabase.from('bookings').update({
           booking_date: newDate,
@@ -2572,13 +2818,6 @@ window.adminOpenRescheduleModal = function (orderId) {
         }).eq('id', order.id)
       ]);
 
-      // Update local memory
-      order.order_date = newDate;
-      order.booking_date = newDate;
-      order.tour_date = newDate;
-      order.order_time = `${newTime} WITA`;
-      order.booking_time = `${newTime} WITA`;
-
       await logAuditEvent({
         action: 'RESCHEDULE_BOOKING',
         entity_type: 'orders',
@@ -2586,13 +2825,17 @@ window.adminOpenRescheduleModal = function (orderId) {
         details: `Jadwal ${order.order_code} dijadwalkan ulang ke ${newDate} pk ${newTime} WITA`
       });
 
-      slot.innerHTML = '';
-      window.showToast?.(`Jadwal ${order.order_code} berhasil diubah ke ${formatTanggal(newDate)} pk ${newTime} WITA!`, 'success');
-      renderActiveModule();
+      // Panggil ulang fetchBookingsSilently() setelah request API selesai sesuai realtimedatabase.md
+      fetchBookingsSilently();
     } catch (err) {
+      // Rollback jika gagal
+      order.order_date = oldDate;
+      order.booking_date = oldDate;
+      order.tour_date = oldDate;
+      order.order_time = oldTime;
+      order.booking_time = oldTime;
       window.showToast?.(`Gagal reschedule: ${err.message}`, 'error');
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Simpan Jadwal Baru';
+      fetchBookingsSilently();
     }
   });
 };
@@ -2751,54 +2994,116 @@ window.adminViewBookingDetail = function (orderId) {
 };
 
 /**
- * Update Status Pesanan dengan Idempotency Guard
- * Sesuai Section 6.4 di Penyelarasan.md:
- * - Mencegah duplikasi transaksi finansial dan perhitungan omzet ganda pada order_id yang sama
- * - Pelepasan kunci slot 2 jam otomatis (auto-release) jika status diubah ke 'Dibatalkan' / 'cancelled'
+/**
+ * Optimistic DOM Update: Perbarui Baris & Kartu di Layar Seketika Tanpa Menunggu Request Jaringan
+ * Sesuai Bagian 3 pada realtimedatabase.md
+ */
+function optimisticUpdateOrderStatusDOM(orderId, newStatus, newPaymentStatus) {
+  // 1. Baris Tabel Desktop
+  const rowEl = document.getElementById('order-row-' + orderId) || document.querySelector(`tr[data-id="${orderId}"]`);
+  if (rowEl && newStatus !== 'DELETED') {
+    const statusCell = rowEl.children[5];
+    if (statusCell) statusCell.innerHTML = StatusBadge(newStatus);
+    const payCell = rowEl.children[6];
+    if (payCell) {
+      const target = ordersData.find(o => o.id === orderId);
+      const netIncome = target ? calculateOrderNetIncome(target) : 0;
+      payCell.innerHTML = `
+        <div class="tabular-nums" style="font-weight: 700; font-size: 0.88rem; color: var(--text-primary);">${formatRupiah(netIncome)}</div>
+        <div style="font-size: 0.72rem; color: ${newPaymentStatus === 'Lunas' ? '#047857' : '#B45309'}; font-weight: 600; margin-top: 1px;">${newPaymentStatus || 'Belum Dibayar'}</div>
+      `;
+    }
+  }
+
+  // 2. Kartu Responsif Mobile
+  const cardEl = document.querySelector(`.booking-mobile-card[data-id="${orderId}"]`);
+  if (cardEl && newStatus !== 'DELETED') {
+    const cardStatus = cardEl.querySelector('.bmc-status');
+    if (cardStatus) cardStatus.innerHTML = StatusBadge(newStatus);
+    const payPill = cardEl.querySelector('.bmc-payment-pill');
+    if (payPill) {
+      payPill.textContent = newPaymentStatus || 'Belum Dibayar';
+      payPill.className = `bmc-payment-pill ${newPaymentStatus === 'Lunas' ? 'paid' : 'unpaid'}`;
+    }
+  }
+
+  // 3. Segmented Control Filter Badge Numbers
+  const statusCounts = getStatusCounts();
+  document.querySelectorAll('#status-segmented-control .segmented-btn').forEach(btn => {
+    const st = btn.getAttribute('data-status') || 'ALL';
+    const countSpan = btn.querySelector('.segmented-count');
+    if (countSpan) countSpan.textContent = statusCounts[st] ?? 0;
+  });
+
+  // 4. Jika sedang di Dashboard, perbarui kartu KPI seketika
+  if (activeModule === 'dashboard') {
+    const viewport = document.getElementById('dasbor-viewport');
+    if (viewport) {
+      viewport.innerHTML = renderDashboardView();
+      initDashboardEvents();
+    }
+  }
+}
+
+/**
+ * Update Status Pesanan dengan Optimistic UI dan Idempotency Guard
+ * Sesuai Section 3 di realtimedatabase.md & Section 6.4 di Penyelarasan.md
  */
 window.adminChangeOrderStatus = async function (orderId, newStatus, showToastMessage = true) {
+  const target = ordersData.find(o => o.id === orderId);
+  if (!target) return;
+
+  // Idempotency check: jika status sudah sama, hindari pemrosesan ganda
+  if (target.status === newStatus && (newStatus !== 'Selesai' || target.payment_status === 'Lunas')) {
+    if (showToastMessage) window.showToast?.(`Pesanan ${target.order_code} sudah berstatus "${newStatus}".`, 'info');
+    return;
+  }
+
+  const oldStatus = target.status;
+  const oldPaymentStatus = target.payment_status;
+
+  // 1. OPTIMISTIC UI: Perbarui status di memori detik itu juga
+  target.status = newStatus;
+  if (newStatus === 'Selesai') target.payment_status = 'Lunas';
+  if (newStatus === 'Dibatalkan') target.payment_status = 'Refund';
+
+  // 2. OPTIMISTIC DOM: Perbarui tampilan tabel dan kartu di layar langsung (0ms delay)
+  optimisticUpdateOrderStatusDOM(orderId, newStatus, target.payment_status);
+
+  if (showToastMessage) {
+    window.showToast?.(`Status ${target.order_code || 'booking'} diubah ke "${newStatus}"!`, 'success');
+  }
+
+  let bkgStatus = 'pending';
+  if (newStatus === 'Selesai') bkgStatus = 'completed';
+  else if (newStatus === 'Dikonfirmasi') bkgStatus = 'confirmed';
+  else if (newStatus === 'Dibatalkan') bkgStatus = 'cancelled';
+
+  // Idempotency Guard untuk Transaksi Finansial
+  if (newStatus === 'Selesai' || target.payment_status === 'Lunas') {
+    const existingTrx = transactionsData.find(t => t.source_id === orderId || t.transaction_code === 'TRX-' + (target.order_code || target.id));
+    if (!existingTrx) {
+      const newTrx = {
+        id: 'trx-' + target.id,
+        transaction_code: 'TRX-' + (target.order_code || target.id),
+        transaction_date: target.order_date || new Date().toISOString().split('T')[0],
+        type: 'income',
+        category: 'Pendapatan Pesanan',
+        description: `Pembayaran ${target.order_code} - ${target.customer_name}`,
+        amount: target.subtotal_amount,
+        source_type: 'order',
+        source_id: target.id,
+        payment_method: 'Transfer Bank / Online',
+        is_closed: false,
+        created_at: new Date().toISOString()
+      };
+      transactionsData.unshift(newTrx);
+      supabase.from('financial_transactions').insert(newTrx);
+    }
+  }
+
   try {
-    const target = ordersData.find(o => o.id === orderId);
-    if (!target) return;
-
-    // Idempotency check: jika status sudah sama, hindari pemrosesan ganda
-    if (target.status === newStatus && (newStatus !== 'Selesai' || target.payment_status === 'Lunas')) {
-      if (showToastMessage) window.showToast?.(`Pesanan ${target.order_code} sudah berstatus "${newStatus}".`, 'info');
-      return;
-    }
-
-    target.status = newStatus;
-    if (newStatus === 'Selesai') target.payment_status = 'Lunas';
-    if (newStatus === 'Dibatalkan') target.payment_status = 'Refund';
-
-    let bkgStatus = 'pending';
-    if (newStatus === 'Selesai') bkgStatus = 'completed';
-    else if (newStatus === 'Dikonfirmasi') bkgStatus = 'confirmed';
-    else if (newStatus === 'Dibatalkan') bkgStatus = 'cancelled';
-
-    // Idempotency Guard untuk Transaksi Finansial: Pastikan TRX unik per order_id
-    if (newStatus === 'Selesai' || target.payment_status === 'Lunas') {
-      const existingTrx = transactionsData.find(t => t.source_id === orderId || t.transaction_code === 'TRX-' + (target.order_code || target.id));
-      if (!existingTrx) {
-        const newTrx = {
-          id: 'trx-' + target.id,
-          transaction_code: 'TRX-' + (target.order_code || target.id),
-          transaction_date: target.order_date || new Date().toISOString().split('T')[0],
-          type: 'income',
-          category: 'Pendapatan Pesanan',
-          description: `Pembayaran ${target.order_code} - ${target.customer_name}`,
-          amount: target.subtotal_amount,
-          source_type: 'order',
-          source_id: target.id,
-          payment_method: 'Transfer Bank / Online',
-          is_closed: false,
-          created_at: new Date().toISOString()
-        };
-        transactionsData.unshift(newTrx);
-        await supabase.from('financial_transactions').insert(newTrx);
-      }
-    }
-
+    // 3. Kirim request update ke Supabase di latar belakang
     await Promise.allSettled([
       supabase.from('bookings').update({ status: bkgStatus }).eq('id', orderId),
       supabase.from('orders').update({
@@ -2814,12 +3119,15 @@ window.adminChangeOrderStatus = async function (orderId, newStatus, showToastMes
       details: `Status ${target?.order_code || orderId} diubah menjadi: ${newStatus}`
     });
 
-    if (showToastMessage) {
-      window.showToast?.(`Status ${target?.order_code || 'booking'} diubah ke "${newStatus}"!`, 'success');
-      renderActiveModule();
-    }
+    // Panggil ulang fungsi fetch data setelah request API selesai sesuai realtimedatabase.md
+    fetchBookingsSilently();
   } catch (err) {
+    // Rollback jika request gagal
+    target.status = oldStatus;
+    target.payment_status = oldPaymentStatus;
+    optimisticUpdateOrderStatusDOM(orderId, oldStatus, oldPaymentStatus);
     if (showToastMessage) window.showToast?.(`Gagal update status: ${err.message}`, 'error');
+    fetchBookingsSilently();
   }
 };
 
@@ -2836,14 +3144,42 @@ window.adminDeleteOrder = async function (orderId) {
   // Wajib Dialog Konfirmasi
   if (!confirm(`Apakah Anda yakin ingin menghapus booking ${code} secara permanen dari database? Tindakan ini tidak dapat dibatalkan.`)) return;
 
+  // 1. OPTIMISTIC UI: Hapus dari memori seketika
+  const oldOrders = [...ordersData];
+  ordersData = ordersData.filter(o => o.id !== orderId);
+  selectedBookingIds.delete(orderId);
+
+  // Perbarui badge counter di header seketika
+  const badge = document.getElementById('badge-order-count');
+  if (badge) badge.textContent = ordersData.length;
+  const mobileBadge = document.getElementById('mobile-badge-order-count');
+  if (mobileBadge) mobileBadge.textContent = ordersData.length;
+
+  // 2. OPTIMISTIC DOM: Hilangkan baris tabel & kartu seketika dengan animasi halus
+  const rowEl = document.getElementById('order-row-' + orderId) || document.querySelector(`tr[data-id="${orderId}"]`);
+  if (rowEl) {
+    rowEl.style.transition = 'opacity 0.2s, transform 0.2s';
+    rowEl.style.opacity = '0';
+    rowEl.style.transform = 'translateX(-10px)';
+    setTimeout(() => rowEl.remove(), 200);
+  }
+  const cardEl = document.querySelector(`.booking-mobile-card[data-id="${orderId}"]`);
+  if (cardEl) {
+    cardEl.style.transition = 'opacity 0.2s';
+    cardEl.style.opacity = '0';
+    setTimeout(() => cardEl.remove(), 200);
+  }
+
+  // Perbarui angka filter status
+  optimisticUpdateOrderStatusDOM(orderId, 'DELETED', '');
+  window.showToast?.(`Booking ${code} berhasil dihapus!`, 'success');
+
   try {
+    // 3. Kirim delete ke Supabase di latar belakang
     await Promise.allSettled([
       supabase.from('bookings').delete().eq('id', orderId),
       supabase.from('orders').delete().eq('id', orderId)
     ]);
-
-    ordersData = ordersData.filter(o => o.id !== orderId);
-    selectedBookingIds.delete(orderId);
 
     await logAuditEvent({
       action: 'DELETE_BOOKING',
@@ -2852,10 +3188,13 @@ window.adminDeleteOrder = async function (orderId) {
       details: `Booking ${code} dihapus secara permanen`
     });
 
-    window.showToast?.(`Booking ${code} berhasil dihapus!`, 'success');
-    renderActiveModule();
+    // Panggil ulang fetchBookingsSilently() setelah request API selesai
+    fetchBookingsSilently();
   } catch (err) {
+    // Rollback jika gagal
+    ordersData = oldOrders;
     window.showToast?.(`Gagal menghapus booking: ${err.message}`, 'error');
+    fetchBookingsSilently();
   }
 };
 
@@ -4766,28 +5105,140 @@ function showClosingPeriodModal() {
   });
 }
 
+let silentPollingInterval = null;
+let isRealtimeListenerSetup = false;
+
 function setupRealtime() {
+  // 1. Bersihkan subscription channel lama jika ada
   if (realtimeChannel) {
+    try { supabase.removeChannel(realtimeChannel); } catch { }
     try { realtimeChannel.unsubscribe(); } catch { }
+    realtimeChannel = null;
   }
+
+  // 1. Supabase Realtime WebSocket Listener (Utama)
   try {
     realtimeChannel = supabase
-      .channel('dasbor_realtime_channel')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, async (payload) => {
-        console.log('[Supabase Realtime bookings]', payload);
-        await loadAllData();
-        renderActiveModule();
-        const custName = payload.new?.customer_name || 'Pelanggan';
-        window.showToast?.(`✨ Pesanan baru dari Web Booking: <strong>${custName}</strong>!`, 'realtime');
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, async () => {
-        await loadAllData();
-        renderActiveModule();
-        window.showToast?.('Data pesanan diperbarui secara real-time!', 'realtime');
-      })
-      .subscribe();
+      .channel('admin-realtime-bookings')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bookings' },
+        (payload) => {
+          console.log('[Supabase Realtime bookings]', payload);
+          if (payload.eventType === 'INSERT' && payload.new) {
+            const newRow = payload.new;
+            const id = newRow.id || newRow.booking_id || newRow.invoice_number;
+            if (id && !knownBookingIds.has(id)) {
+              knownBookingIds.add(id);
+              if (isSoundEnabled()) {
+                playBookingNotificationSound();
+              }
+              showBookingAlertToast({
+                booking_id: newRow.invoice_number || newRow.booking_id || newRow.id || id,
+                customer_name: newRow.customer_name || 'Tamu Baru',
+                package_name: newRow.package_name || newRow.service_name || 'Paket Wellness',
+                booking_date: newRow.booking_date || newRow.tour_date || '-',
+                booking_time: newRow.booking_time || '-',
+                pax: newRow.pax || 1,
+                total_amount: newRow.total_amount || newRow.total_price || 0
+              });
+            }
+          }
+          fetchBookingsSilently();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        (payload) => {
+          console.log('[Supabase Realtime orders]', payload);
+          if (payload.eventType === 'INSERT' && payload.new) {
+            const newRow = payload.new;
+            const id = newRow.id || newRow.order_code;
+            if (id && !knownBookingIds.has(id)) {
+              knownBookingIds.add(id);
+              if (isSoundEnabled()) {
+                playBookingNotificationSound();
+              }
+              showBookingAlertToast({
+                booking_id: newRow.order_code || newRow.id || id,
+                customer_name: newRow.customer_name || 'Tamu Baru',
+                package_name: newRow.service_or_item || 'Paket Wellness',
+                booking_date: newRow.order_date || '-',
+                booking_time: newRow.order_time || '-',
+                pax: newRow.pax || 1,
+                total_amount: newRow.subtotal_amount || 0
+              });
+            }
+          }
+          fetchBookingsSilently();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'payments' },
+        () => {
+          console.log('[Supabase Realtime payments]');
+          fetchBookingsSilently();
+        }
+      )
+      .subscribe((status) => {
+        console.log('[Realtime Subscription Status]:', status);
+      });
   } catch (err) {
-    console.warn('Realtime error:', err);
+    console.warn('[Realtime] WebSocket error:', err);
+  }
+
+  // 2. Silent Background Polling (Cadangan Anti-Gagal setiap 7 detik)
+  if (silentPollingInterval) {
+    clearInterval(silentPollingInterval);
+  }
+  silentPollingInterval = setInterval(() => {
+    fetchBookingsSilently();
+  }, 7000);
+
+  // 3. Window Focus & Visibility Change Listener (Hanya didaftarkan sekali)
+  if (!isRealtimeListenerSetup && typeof window !== 'undefined') {
+    isRealtimeListenerSetup = true;
+
+    window.addEventListener('focus', () => {
+      fetchBookingsSilently();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        fetchBookingsSilently();
+      }
+    });
+
+    window.addEventListener('storage', (e) => {
+      if (e.key && (e.key.includes('booking') || e.key.includes('order') || e.key.includes('payment'))) {
+        fetchBookingsSilently();
+      }
+    });
+
+    window.addEventListener('booking-submitted', (e) => {
+      const b = e.detail;
+      if (b) {
+        const id = b.id || b.booking_id || b.invoice_number;
+        if (id && !knownBookingIds.has(id)) {
+          knownBookingIds.add(id);
+          if (isSoundEnabled()) {
+            playBookingNotificationSound();
+          }
+          showBookingAlertToast({
+            booking_id: id,
+            customer_name: b.customer_name || 'Tamu Baru',
+            package_name: b.service_name || b.package_name || 'Paket Wellness',
+            booking_date: b.booking_date || '-',
+            booking_time: b.booking_time || '-',
+            pax: b.pax || 1,
+            total_amount: b.total_price || b.total_amount || 0
+          });
+        }
+      }
+      fetchBookingsSilently();
+    });
   }
 }
 

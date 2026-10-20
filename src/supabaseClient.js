@@ -496,6 +496,21 @@ function notifyRealtime(payload) {
   });
 }
 
+// Cross-tab storage synchronization for Mock Demo Mode
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key && Object.values(STORAGE_KEYS).includes(e.key)) {
+      notifyRealtime({
+        schema: 'public',
+        table: e.key.replace('dasbor_untung_', ''),
+        eventType: 'SYNC',
+        new: null,
+        old: null
+      });
+    }
+  });
+}
+
 /**
  * Mendapatkan Kredensial Supabase
  */
@@ -682,21 +697,37 @@ function createMockClient() {
       };
     },
     channel(name) {
-      return {
+      const subscriptions = [];
+      const chObj = {
+        name,
         on(type, filter, callback) {
-          this._cb = callback;
-          return this;
+          if (typeof callback === 'function') {
+            const table = filter?.table || '*';
+            const handler = (payload) => {
+              if (table === '*' || !payload.table || payload.table === table) {
+                callback(payload);
+              }
+            };
+            subscriptions.push({ rawCb: callback, handler });
+          }
+          return chObj;
         },
         subscribe(statusCb) {
-          if (this._cb) realtimeSubscribers.add(this._cb);
+          subscriptions.forEach(s => realtimeSubscribers.add(s.handler));
           if (statusCb) statusCb('SUBSCRIBED');
-          return {
-            unsubscribe: () => {
-              if (this._cb) realtimeSubscribers.delete(this._cb);
-            }
-          };
+          return chObj;
+        },
+        unsubscribe() {
+          subscriptions.forEach(s => realtimeSubscribers.delete(s.handler));
+          return chObj;
         }
       };
+      return chObj;
+    },
+    removeChannel(ch) {
+      if (ch && typeof ch.unsubscribe === 'function') {
+        ch.unsubscribe();
+      }
     }
   };
 }
