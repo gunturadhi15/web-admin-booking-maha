@@ -11,6 +11,7 @@ const STORAGE_KEYS = {
   orders: 'dasbor_untung_orders',
   order_costs: 'dasbor_untung_order_costs',
   customers: 'dasbor_untung_customers',
+  payments: 'dasbor_untung_payments',
   financial_transactions: 'dasbor_untung_transactions',
   closing_periods: 'dasbor_untung_closing',
   sync_runs: 'dasbor_untung_sync_runs',
@@ -18,194 +19,308 @@ const STORAGE_KEYS = {
   admins: 'dasbor_untung_admins'
 };
 
-// Data Awal Seed Demo
+// Data Awal Seed Demo Mahawellnessjourney
 const SEED_DATA = {
   bookings: [
     {
-      id: 'bkg-001',
-      invoice: 'ORD-202610-001',
-      customer_name: 'Budi Santoso',
-      customer_phone: '+62 812-3456-7890',
-      customer_email: 'budi.santoso@gmail.com',
-      service_name: 'Spiritual Temple Tour (Divine Journey)',
+      id: 'MWJ-SACRED-DISCOVERY-20261020-7491',
+      booking_id: 'MWJ-SACRED-DISCOVERY-20261020-7491',
+      invoice_number: 'INV-46289160',
+      order_id: 'TRX-102-20261020113000-A9F2',
+      service_id: 'SRV001',
+      service_name: 'Spiritual Temple Tour',
+      package_id: 'PKG001',
+      package_name: 'Sacred Discovery',
+      customer_name: 'Sarah Jenkins',
+      customer_phone: '6281234567890',
+      customer_email: 'sarah.jenkins@example.com',
       booking_date: new Date().toISOString().split('T')[0],
       booking_time: '09:00',
-      total_price: 650000,
-      status: 'completed',
-      created_at: new Date(Date.now() - 4 * 3600000).toISOString()
+      pax: 2,
+      total_amount: 700000,
+      total_price: 700000,
+      tax: 0,
+      status: 'pending',
+      notes: '[Origin: Australia] | [Category: Tour] | [Pax: 2] | [Time: 09:00 WITA] | [DOB: 1992-06-14] | [Payment: QRIS] | User Notes: Mohon disiapkan sarung sembahyang ukuran M.',
+      created_at: new Date(Date.now() - 30 * 60000).toISOString()
     },
     {
-      id: 'bkg-002',
-      invoice: 'ORD-202610-002',
-      customer_name: 'Sarah Jenkins',
-      customer_phone: '+62 819-8765-4321',
-      customer_email: 'sarah.j@outlook.com',
-      service_name: 'Yoga & Meditation Retreat (Full Day)',
+      id: 'MWJ-YOGA-RETREAT-20261020-5821',
+      booking_id: 'MWJ-YOGA-RETREAT-20261020-5821',
+      invoice_number: 'INV-46289161',
+      order_id: 'TRX-103-20261020121500-C3B1',
+      service_id: 'SRV002',
+      service_name: 'Yoga & Meditation Retreat',
+      package_id: 'PKG002',
+      package_name: 'Mindfulness Full Day',
+      customer_name: 'Budi Santoso',
+      customer_phone: '6281987654321',
+      customer_email: 'budi.santoso@gmail.com',
       booking_date: new Date().toISOString().split('T')[0],
       booking_time: '10:00',
+      pax: 1,
+      total_amount: 1200000,
       total_price: 1200000,
-      status: 'pending',
+      tax: 0,
+      status: 'confirmed',
+      notes: '[Origin: Indonesia] | [Category: Retreat] | [Pax: 1] | [Time: 10:00 WITA] | [DOB: 1988-11-20] | [Payment: BCA_VA] | User Notes: Sesi yoga hening di Ubud.',
       created_at: new Date(Date.now() - 2 * 3600000).toISOString()
     },
     {
-      id: 'bkg-003',
-      invoice: 'ORD-202610-003',
+      id: 'MWJ-MELUKAT-HEALING-20261020-3104',
+      booking_id: 'MWJ-MELUKAT-HEALING-20261020-3104',
+      invoice_number: 'INV-46289162',
+      order_id: 'TRX-104-20261020130000-E7D9',
+      service_id: 'SRV004',
+      service_name: 'Healing & Purification',
+      package_id: 'PKG004',
+      package_name: 'Melukat Sebatu Sacred Water',
       customer_name: 'Wayan Arya Wiguna',
-      customer_phone: '+62 877-1122-3344',
+      customer_phone: '6287711223344',
       customer_email: 'wayan.arya@bali.com',
-      service_name: 'Healing & Purification (Melukat Sebatu)',
       booking_date: new Date().toISOString().split('T')[0],
       booking_time: '14:00',
-      total_price: 450000,
+      pax: 2,
+      total_amount: 900000,
+      total_price: 900000,
+      tax: 0,
       status: 'paid',
-      created_at: new Date(Date.now() - 1 * 3600000).toISOString()
+      notes: '[Origin: Indonesia] | [Category: Healing] | [Pax: 2] | [Time: 14:00 WITA] | [DOB: 1995-03-08] | [Payment: QRIS] | User Notes: Pembersihan tirta suci Sebatu Gianyar.',
+      created_at: new Date(Date.now() - 4 * 3600000).toISOString()
     },
     {
-      id: 'bkg-004',
-      invoice: 'ORD-202610-004',
+      id: 'MWJ-NUMEROLOGY-GUIDE-20261020-8942',
+      booking_id: 'MWJ-NUMEROLOGY-GUIDE-20261020-8942',
+      invoice_number: 'INV-46289163',
+      order_id: 'TRX-105-20261020143000-F1A8',
+      service_id: 'SRV003',
+      service_name: 'Numerology Consultation',
+      package_id: 'PKG003',
+      package_name: 'Sacred Life Matrix',
       customer_name: 'Elena Rostova',
-      customer_phone: '+7 916 123-45-67',
+      customer_phone: '6281299887766',
       customer_email: 'elena.rostova@mail.ru',
-      service_name: 'Numerology Consultation (Personal)',
-      booking_date: new Date().toISOString().split('T')[0],
+      booking_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
       booking_time: '11:00',
+      pax: 1,
+      total_amount: 350000,
       total_price: 350000,
+      tax: 0,
       status: 'pending',
-      created_at: new Date(Date.now() - 30 * 60000).toISOString()
+      notes: '[Origin: Russia] | [Category: Numerology] | [Pax: 1] | [Time: 11:00 WITA] | [DOB: 1990-12-05] | [Payment: Credit_Card] | User Notes: Online personal birth chart consultation.',
+      created_at: new Date(Date.now() - 15 * 60000).toISOString()
     }
   ],
   customers: [
     {
       id: 'cust-001',
-      name: 'Budi Santoso',
-      phone: '+62 812-3456-7890',
+      name: 'Sarah Jenkins',
+      phone: '6281234567890',
       phone_normalized: '6281234567890',
-      email: 'budi.santoso@gmail.com',
-      address: 'Denpasar, Bali',
-      notes: 'Pelanggan setia tour spiritual',
+      email: 'sarah.jenkins@example.com',
+      nationality: 'Australia',
+      dob: '1992-06-14',
+      address: 'Sydney, Australia (Wisatawan Bali)',
+      notes: 'Wisatawan Australia - Spiritual Temple Tour',
       created_at: new Date(Date.now() - 5 * 86400000).toISOString()
     },
     {
       id: 'cust-002',
-      name: 'Sarah Jenkins',
-      phone: '+62 819-8765-4321',
+      name: 'Budi Santoso',
+      phone: '6281987654321',
       phone_normalized: '6281987654321',
-      email: 'sarah.j@outlook.com',
-      address: 'Ubud, Gianyar',
-      notes: 'Wisatawan Australia - Retreat Yoga',
+      email: 'budi.santoso@gmail.com',
+      nationality: 'Indonesia',
+      dob: '1988-11-20',
+      address: 'Denpasar, Bali',
+      notes: 'Pelanggan setia retreat yoga & meditasi',
       created_at: new Date(Date.now() - 3 * 86400000).toISOString()
     },
     {
       id: 'cust-003',
       name: 'Wayan Arya Wiguna',
-      phone: '+62 877-1122-3344',
+      phone: '6287711223344',
       phone_normalized: '6287711223344',
       email: 'wayan.arya@bali.com',
+      nationality: 'Indonesia',
+      dob: '1995-03-08',
       address: 'Tampaksiring, Gianyar',
-      notes: 'Paket Melukat Tirta Empul',
+      notes: 'Sesi Melukat Tirta Sebatu Gianyar',
       created_at: new Date(Date.now() - 2 * 86400000).toISOString()
     },
     {
       id: 'cust-004',
       name: 'Elena Rostova',
-      phone: '+7 916 123-45-67',
-      phone_normalized: '79161234567',
+      phone: '6281299887766',
+      phone_normalized: '6281299887766',
       email: 'elena.rostova@mail.ru',
+      nationality: 'Russia',
+      dob: '1990-12-05',
       address: 'Canggu, Badung',
-      notes: 'Konsultasi Numerologi Online',
+      notes: 'Konsultasi Numerologi Personal Birth Chart',
       created_at: new Date(Date.now() - 1 * 86400000).toISOString()
     }
   ],
   orders: [
     {
-      id: 'ord-001',
-      order_code: 'ORD-202610-001',
+      id: 'MWJ-SACRED-DISCOVERY-20261020-7491',
+      order_code: 'MWJ-SACRED-DISCOVERY-20261020-7491',
+      invoice_number: 'INV-46289160',
+      order_id: 'TRX-102-20261020113000-A9F2',
+      service_id: 'SRV001',
+      service_or_item: 'Spiritual Temple Tour (Sacred Discovery)',
+      package_name: 'Sacred Discovery',
       customer_id: 'cust-001',
-      customer_name: 'Budi Santoso',
-      customer_phone: '+62 812-3456-7890',
-      service_or_item: 'Spiritual Temple Tour (Divine Journey)',
+      customer_name: 'Sarah Jenkins',
+      customer_phone: '6281234567890',
+      customer_email: 'sarah.jenkins@example.com',
       source: 'website',
-      external_order_id: 'WEB-7721',
+      external_order_id: 'INV-46289160',
       order_date: new Date().toISOString().split('T')[0],
       order_time: '09:00',
-      status: 'Selesai',
-      payment_status: 'Lunas',
-      subtotal_amount: 650000,
+      pax: 2,
+      status: 'Menunggu',
+      payment_status: 'Belum Dibayar',
+      subtotal_amount: 700000,
       discount_amount: 0,
-      additional_income_amount: 50000,
-      refund_amount: 0,
-      notes: 'Selesai tepat waktu. Tamu sangat puas.',
-      is_closed: false,
-      created_at: new Date(Date.now() - 4 * 3600000).toISOString()
-    },
-    {
-      id: 'ord-002',
-      order_code: 'ORD-202610-002',
-      customer_id: 'cust-002',
-      customer_name: 'Sarah Jenkins',
-      customer_phone: '+62 819-8765-4321',
-      service_or_item: 'Yoga & Meditation Retreat (Full Day)',
-      source: 'whatsapp',
-      external_order_id: null,
-      order_date: new Date().toISOString().split('T')[0],
-      order_time: '10:00',
-      status: 'Diproses',
-      payment_status: 'DP',
-      subtotal_amount: 1200000,
-      discount_amount: 50000,
       additional_income_amount: 0,
       refund_amount: 0,
-      notes: 'DP 50% diterima. Pelunasan di lokasi.',
+      notes: '[Origin: Australia] | [Category: Tour] | [Pax: 2] | [Time: 09:00 WITA] | [DOB: 1992-06-14] | [Payment: QRIS] | User Notes: Mohon disiapkan sarung sembahyang ukuran M.',
+      is_closed: false,
+      created_at: new Date(Date.now() - 30 * 60000).toISOString()
+    },
+    {
+      id: 'MWJ-YOGA-RETREAT-20261020-5821',
+      order_code: 'MWJ-YOGA-RETREAT-20261020-5821',
+      invoice_number: 'INV-46289161',
+      order_id: 'TRX-103-20261020121500-C3B1',
+      service_id: 'SRV002',
+      service_or_item: 'Yoga & Meditation Retreat (Mindfulness Full Day)',
+      package_name: 'Mindfulness Full Day',
+      customer_id: 'cust-002',
+      customer_name: 'Budi Santoso',
+      customer_phone: '6281987654321',
+      customer_email: 'budi.santoso@gmail.com',
+      source: 'whatsapp',
+      external_order_id: 'INV-46289161',
+      order_date: new Date().toISOString().split('T')[0],
+      order_time: '10:00',
+      pax: 1,
+      status: 'Dikonfirmasi',
+      payment_status: 'Lunas',
+      subtotal_amount: 1200000,
+      discount_amount: 0,
+      additional_income_amount: 0,
+      refund_amount: 0,
+      notes: '[Origin: Indonesia] | [Category: Retreat] | [Pax: 1] | [Time: 10:00 WITA] | [DOB: 1988-11-20] | [Payment: BCA_VA] | User Notes: Sesi yoga hening di Ubud.',
       is_closed: false,
       created_at: new Date(Date.now() - 2 * 3600000).toISOString()
     },
     {
-      id: 'ord-003',
-      order_code: 'ORD-202610-003',
+      id: 'MWJ-MELUKAT-HEALING-20261020-3104',
+      order_code: 'MWJ-MELUKAT-HEALING-20261020-3104',
+      invoice_number: 'INV-46289162',
+      order_id: 'TRX-104-20261020130000-E7D9',
+      service_id: 'SRV004',
+      service_or_item: 'Healing & Purification (Melukat Sebatu)',
+      package_name: 'Melukat Sebatu Sacred Water',
       customer_id: 'cust-003',
       customer_name: 'Wayan Arya Wiguna',
-      customer_phone: '+62 877-1122-3344',
-      service_or_item: 'Healing & Purification (Melukat Sebatu)',
-      source: 'whatsapp',
-      external_order_id: null,
+      customer_phone: '6287711223344',
+      customer_email: 'wayan.arya@bali.com',
+      source: 'website',
+      external_order_id: 'INV-46289162',
       order_date: new Date().toISOString().split('T')[0],
       order_time: '14:00',
-      status: 'Dikonfirmasi',
+      pax: 2,
+      status: 'Selesai',
       payment_status: 'Lunas',
-      subtotal_amount: 450000,
+      subtotal_amount: 900000,
       discount_amount: 0,
       additional_income_amount: 0,
       refund_amount: 0,
-      notes: 'Jadwal terkonfirmasi pemangku pura.',
+      notes: '[Origin: Indonesia] | [Category: Healing] | [Pax: 2] | [Time: 14:00 WITA] | [DOB: 1995-03-08] | [Payment: QRIS] | User Notes: Pembersihan tirta suci Sebatu Gianyar.',
       is_closed: false,
-      created_at: new Date(Date.now() - 1 * 3600000).toISOString()
+      created_at: new Date(Date.now() - 4 * 3600000).toISOString()
     },
     {
-      id: 'ord-004',
-      order_code: 'ORD-202610-004',
+      id: 'MWJ-NUMEROLOGY-GUIDE-20261020-8942',
+      order_code: 'MWJ-NUMEROLOGY-GUIDE-20261020-8942',
+      invoice_number: 'INV-46289163',
+      order_id: 'TRX-105-20261020143000-F1A8',
+      service_id: 'SRV003',
+      service_or_item: 'Numerology Consultation (Sacred Matrix)',
+      package_name: 'Sacred Life Matrix',
       customer_id: 'cust-004',
       customer_name: 'Elena Rostova',
-      customer_phone: '+7 916 123-45-67',
-      service_or_item: 'Numerology Consultation (Personal)',
+      customer_phone: '6281299887766',
+      customer_email: 'elena.rostova@mail.ru',
       source: 'website',
-      external_order_id: 'WEB-7729',
-      order_date: new Date().toISOString().split('T')[0],
+      external_order_id: 'INV-46289163',
+      order_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
       order_time: '11:00',
+      pax: 1,
       status: 'Baru',
       payment_status: 'Belum Dibayar',
       subtotal_amount: 350000,
       discount_amount: 0,
       additional_income_amount: 0,
       refund_amount: 0,
-      notes: 'Menunggu konfirmasi pembayaran via WA.',
+      notes: '[Origin: Russia] | [Category: Numerology] | [Pax: 1] | [Time: 11:00 WITA] | [DOB: 1990-12-05] | [Payment: Credit_Card] | User Notes: Online personal birth chart consultation.',
       is_closed: false,
-      created_at: new Date(Date.now() - 30 * 60000).toISOString()
+      created_at: new Date(Date.now() - 15 * 60000).toISOString()
+    }
+  ],
+  payments: [
+    {
+      payment_id: 'PAY-MWJ-7491',
+      booking_id: 'MWJ-SACRED-DISCOVERY-20261020-7491',
+      order_id: 'TRX-102-20261020113000-A9F2',
+      idempotency_key: 'IDEMP-TRX-102-20261020113000-A9F2',
+      payment_method: 'qris',
+      amount: 700000,
+      status: 'pending',
+      paid_at: null,
+      expired_at: new Date(Date.now() + 24 * 3600000).toISOString()
+    },
+    {
+      payment_id: 'PAY-MWJ-5821',
+      booking_id: 'MWJ-YOGA-RETREAT-20261020-5821',
+      order_id: 'TRX-103-20261020121500-C3B1',
+      idempotency_key: 'IDEMP-TRX-103-20261020121500-C3B1',
+      payment_method: 'bca_va',
+      amount: 1200000,
+      status: 'paid',
+      paid_at: new Date(Date.now() - 2 * 3600000).toISOString(),
+      expired_at: new Date(Date.now() + 22 * 3600000).toISOString()
+    },
+    {
+      payment_id: 'PAY-MWJ-3104',
+      booking_id: 'MWJ-MELUKAT-HEALING-20261020-3104',
+      order_id: 'TRX-104-20261020130000-E7D9',
+      idempotency_key: 'IDEMP-TRX-104-20261020130000-E7D9',
+      payment_method: 'qris',
+      amount: 900000,
+      status: 'paid',
+      paid_at: new Date(Date.now() - 3 * 3600000).toISOString(),
+      expired_at: new Date(Date.now() + 21 * 3600000).toISOString()
+    },
+    {
+      payment_id: 'PAY-MWJ-8942',
+      booking_id: 'MWJ-NUMEROLOGY-GUIDE-20261020-8942',
+      order_id: 'TRX-105-20261020143000-F1A8',
+      idempotency_key: 'IDEMP-TRX-105-20261020143000-F1A8',
+      payment_method: 'credit_card',
+      amount: 350000,
+      status: 'pending',
+      paid_at: null,
+      expired_at: new Date(Date.now() + 24 * 3600000).toISOString()
     }
   ],
   order_costs: [
     {
       id: 'cost-001',
-      order_id: 'ord-001',
+      order_id: 'MWJ-SACRED-DISCOVERY-20261020-7491',
       category: 'Modal/HPP',
       description: 'Tiket Masuk Pura & Sarana Pejati',
       amount: 150000,
@@ -214,7 +329,7 @@ const SEED_DATA = {
     },
     {
       id: 'cost-002',
-      order_id: 'ord-001',
+      order_id: 'MWJ-SACRED-DISCOVERY-20261020-7491',
       category: 'Transportasi',
       description: 'Bensin & Driver Antar Jemput',
       amount: 120000,
@@ -223,7 +338,7 @@ const SEED_DATA = {
     },
     {
       id: 'cost-003',
-      order_id: 'ord-002',
+      order_id: 'MWJ-YOGA-RETREAT-20261020-5821',
       category: 'Modal/HPP',
       description: 'Sewa Studio Yoga & Instruktur',
       amount: 400000,
@@ -232,7 +347,7 @@ const SEED_DATA = {
     },
     {
       id: 'cost-004',
-      order_id: 'ord-002',
+      order_id: 'MWJ-YOGA-RETREAT-20261020-5821',
       category: 'Biaya Bahan',
       description: 'Healthy Lunch & Herbal Drink',
       amount: 150000,
@@ -241,7 +356,7 @@ const SEED_DATA = {
     },
     {
       id: 'cost-005',
-      order_id: 'ord-003',
+      order_id: 'MWJ-MELUKAT-HEALING-20261020-3104',
       category: 'Fee Pemandu/Terapis',
       description: 'Banten Melukat & Sesari Pemangku',
       amount: 150000,
@@ -252,11 +367,11 @@ const SEED_DATA = {
   financial_transactions: [
     {
       id: 'trx-001',
-      transaction_code: 'TRX-202610-001',
+      transaction_code: 'TRX-102-20261020113000-A9F2',
       transaction_date: new Date().toISOString().split('T')[0],
       type: 'income',
       category: 'Pendapatan Pesanan',
-      description: 'Pembayaran ORD-202610-001 Budi Santoso',
+      description: 'Pembayaran MWJ-SACRED-DISCOVERY Sarah Jenkins',
       amount: 700000,
       source_type: 'order',
       payment_method: 'QRIS',
@@ -266,26 +381,26 @@ const SEED_DATA = {
     {
       id: 'trx-002',
       transaction_date: new Date().toISOString().split('T')[0],
-      transaction_code: 'TRX-202610-002',
-      type: 'expense',
-      category: 'HPP Pesanan',
-      description: 'Biaya Tiket & Sarana Pejati ORD-202610-001',
-      amount: 150000,
-      source_type: 'order_cost',
-      payment_method: 'Kas Kecil',
+      transaction_code: 'TRX-103-20261020121500-C3B1',
+      type: 'income',
+      category: 'Pendapatan Pesanan',
+      description: 'Pembayaran MWJ-YOGA-RETREAT Budi Santoso',
+      amount: 1200000,
+      source_type: 'order',
+      payment_method: 'Transfer Bank (BCA VA)',
       is_closed: false,
       created_at: new Date().toISOString()
     },
     {
       id: 'trx-003',
       transaction_date: new Date().toISOString().split('T')[0],
-      transaction_code: 'TRX-202610-003',
-      type: 'expense',
-      category: 'Operasional Kantor',
-      description: 'Biaya Internet & Listrik Operasional',
-      amount: 250000,
-      source_type: 'operational',
-      payment_method: 'Transfer Bank',
+      transaction_code: 'TRX-104-20261020130000-E7D9',
+      type: 'income',
+      category: 'Pendapatan Pesanan',
+      description: 'Pembayaran MWJ-MELUKAT-HEALING Wayan Arya Wiguna',
+      amount: 900000,
+      source_type: 'order',
+      payment_method: 'QRIS',
       is_closed: false,
       created_at: new Date().toISOString()
     }
@@ -299,7 +414,7 @@ const SEED_DATA = {
       total_revenue: 18500000,
       total_cost: 7200000,
       net_profit: 11300000,
-      closed_by: 'Pemilik Usaha',
+      closed_by: 'Admin Mahawellnessjourney',
       closed_at: '2026-10-01T00:00:00Z',
       notes: 'Tutup buku bulan September 2026.'
     }
@@ -307,7 +422,7 @@ const SEED_DATA = {
   sync_runs: [
     {
       id: 'sync-001',
-      source_name: 'Website Utama (Sacred Journey Bali)',
+      source_name: 'Website Booking Mahawellnessjourney',
       started_at: new Date(Date.now() - 15 * 60000).toISOString(),
       finished_at: new Date(Date.now() - 14 * 60000).toISOString(),
       status: 'Berhasil',
@@ -325,16 +440,16 @@ const SEED_DATA = {
       actor_name: 'Admin',
       action: 'UPDATE_STATUS',
       entity_type: 'orders',
-      entity_id: 'ord-001',
-      details: 'Status pesanan diubah ke Selesai',
-      created_at: new Date(Date.now() - 3 * 3600000).toISOString()
+      entity_id: 'MWJ-SACRED-DISCOVERY-20261020-7491',
+      details: 'Reservasi baru diterima dari Website Mahawellnessjourney',
+      created_at: new Date(Date.now() - 30 * 60000).toISOString()
     }
   ],
   admins: [
     {
       id: 'adm-001',
-      name: 'Pemilik Usaha / Admin',
-      email: 'admin@dasboruntung.com',
+      name: 'Admin Mahawellnessjourney',
+      email: 'admin@mahawellnessjourney.com',
       role: 'Admin',
       is_active: true
     }
@@ -350,7 +465,19 @@ function getLocalTable(table) {
     return [...initial];
   }
   try {
-    return JSON.parse(stored);
+    const parsed = JSON.parse(stored);
+    // Auto-migrate legacy demo data if it doesn't match MWJ standard
+    if (table === 'bookings' && parsed.length > 0 && !parsed.some(b => String(b.id || b.booking_id || '').startsWith('MWJ-'))) {
+      const initial = SEED_DATA.bookings || [];
+      localStorage.setItem(key, JSON.stringify(initial));
+      return [...initial];
+    }
+    if (table === 'orders' && parsed.length > 0 && !parsed.some(o => String(o.order_code || o.id || '').startsWith('MWJ-'))) {
+      const initial = SEED_DATA.orders || [];
+      localStorage.setItem(key, JSON.stringify(initial));
+      return [...initial];
+    }
+    return parsed;
   } catch {
     return [...(SEED_DATA[table] || [])];
   }
@@ -373,13 +500,13 @@ function notifyRealtime(payload) {
  * Mendapatkan Kredensial Supabase
  */
 export function getSupabaseCredentials() {
-  const envUrl = 
+  const envUrl =
     import.meta.env?.NEXT_PUBLIC_SUPABASE_URL ||
     import.meta.env?.VITE_SUPABASE_URL ||
     (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_SUPABASE_URL) ||
     '';
 
-  const envKey = 
+  const envKey =
     import.meta.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
     import.meta.env?.VITE_SUPABASE_ANON_KEY ||
     (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
@@ -393,9 +520,9 @@ export function getSupabaseCredentials() {
 
   const isValidUrl = Boolean(url && (url.startsWith('https://') || url.startsWith('http://')));
   const isConfigured = Boolean(
-    isValidUrl && 
-    anonKey && 
-    !anonKey.includes('your-project-id') && 
+    isValidUrl &&
+    anonKey &&
+    !anonKey.includes('your-project-id') &&
     !anonKey.includes('your-anon-key') &&
     !anonKey.includes('YOUR_')
   );

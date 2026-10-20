@@ -14,6 +14,22 @@ const USERS_STORAGE_KEY = 'dasbor_admin_users_list';
 const INITIAL_USERS = [
   {
     id: 'usr-001',
+    email: 'admin@mahawellnessjourney.com',
+    name: 'Guntur Adhi (Admin)',
+    role: 'admin',
+    avatar: 'GA',
+    created_at: new Date(Date.now() - 30 * 86400000).toISOString()
+  },
+  {
+    id: 'usr-002',
+    email: 'staf@mahawellnessjourney.com',
+    name: 'Ni Made Ayu (Staf)',
+    role: 'staf',
+    avatar: 'MA',
+    created_at: new Date(Date.now() - 10 * 86400000).toISOString()
+  },
+  {
+    id: 'usr-003',
     email: 'admin@dasboruntung.com',
     name: 'Guntur Adhi',
     role: 'admin',
@@ -21,7 +37,7 @@ const INITIAL_USERS = [
     created_at: new Date(Date.now() - 30 * 86400000).toISOString()
   },
   {
-    id: 'usr-002',
+    id: 'usr-004',
     email: 'staf@dasboruntung.com',
     name: 'Ni Made Ayu',
     role: 'staf',

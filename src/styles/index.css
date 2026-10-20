@@ -16,26 +16,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* Surfaces & Canvas — Soothing Executive Slate Theme */
+  /* Surfaces & Canvas — Serene Spiritual Sanctuary Theme */
   --bg-canvas: #F8FAFC;
   --bg-surface: #FFFFFF;
   --bg-surface-elevated: #F1F5F9;
   --bg-surface-hover: #F8FAFC;
-  --bg-active-pill: #EFF6FF;
+  --bg-active-pill: #F0FDFA;
 
   /* Border-First System with Warm-Cool Harmony */
   --border-subtle: #E2E8F0;
   --border-strong: #CBD5E1;
-  --border-focus: #3B82F6;
+  --border-focus: #0D9488;
 
-  /* Primary Action & Brand Accents */
+  /* Primary Action & Brand Accents — Wellness & Spiritual Sanctuary */
   --primary-action: #0F172A;
   --primary-action-hover: #1E293B;
   --primary-action-text: #FFFFFF;
-  --accent-brand: #2563EB;
-  --accent-brand-hover: #1D4ED8;
-  --accent-brand-subtle: #EFF6FF;
-  --accent-functional: #2563EB;
+  --accent-brand: #0D9488;
+  --accent-brand-hover: #0F766E;
+  --accent-brand-subtle: #F0FDFA;
+  --accent-functional: #0D9488;
 
   /* Text Hierarchy — High Legibility & Ergonomics (No eye fatigue) */
   --text-primary: #0F172A;
@@ -676,7 +676,8 @@ body {
    MOBILE BOOKING CARDS (AUTO-LAYOUT & TOUCH OPTIMIZED)
    ============================================================================== */
 .orders-cards-container {
-  display: none; /* Hidden on desktop by default */
+  display: none;
+  /* Hidden on desktop by default */
   padding: 0.75rem 1rem;
 }
 
@@ -828,7 +829,8 @@ body {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.875rem; /* text-sm 14px */
+  font-size: 0.875rem;
+  /* text-sm 14px */
 }
 
 .data-table thead th {
@@ -981,6 +983,7 @@ body {
   color: var(--badge-confirmed-text);
   border: 1px solid var(--badge-confirmed-border);
 }
+
 .badge-confirmed .badge-dot {
   background-color: var(--badge-confirmed-dot);
 }
@@ -991,6 +994,7 @@ body {
   color: var(--badge-pending-text);
   border: 1px solid var(--badge-pending-border);
 }
+
 .badge-pending .badge-dot {
   background-color: var(--badge-pending-dot);
 }
@@ -1001,6 +1005,7 @@ body {
   color: var(--badge-cancelled-text);
   border: 1px solid var(--badge-cancelled-border);
 }
+
 .badge-cancelled .badge-dot {
   background-color: var(--badge-cancelled-dot);
 }
@@ -1011,6 +1016,7 @@ body {
   color: var(--badge-completed-text);
   border: 1px solid var(--badge-completed-border);
 }
+
 .badge-completed .badge-dot {
   background-color: var(--badge-completed-dot);
 }
@@ -1396,7 +1402,8 @@ body {
   }
 
   .dasbor-header .page-desc {
-    display: none !important; /* Mencegah benturan teks deskripsi panjang */
+    display: none !important;
+    /* Mencegah benturan teks deskripsi panjang */
   }
 
   .dasbor-header .header-left {
@@ -1412,7 +1419,8 @@ body {
   }
 
   .dasbor-header .topbar-user-menu {
-    display: none; /* User avatar menu sudah disatukan di mobile-top-bar */
+    display: none;
+    /* User avatar menu sudah disatukan di mobile-top-bar */
   }
 
   .dasbor-sidebar {
@@ -1469,13 +1477,15 @@ body {
 }
 
 @media (max-width: 768px) {
+
   /* Di HP & Tablet Kecil, default gunakan Tampilan Kartu Responsif */
   .orders-cards-container:not(.force-hidden) {
     display: block;
   }
 
   .orders-table-wrapper:not(.force-hidden) {
-    display: none; /* Sembunyikan tabel 8-kolom kecuali bila ditekan tombol toggle Tabel */
+    display: none;
+    /* Sembunyikan tabel 8-kolom kecuali bila ditekan tombol toggle Tabel */
   }
 
   /* Control Bar Stacked Auto-Layout */
@@ -1609,12 +1619,14 @@ body {
 
 .login-card-container {
   width: 100%;
-  max-width: 384px; /* max-w-sm */
+  max-width: 384px;
+  /* max-w-sm */
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 2rem;
-  box-shadow: none; /* zero-shadow as required */
+  box-shadow: none;
+  /* zero-shadow as required */
 }
 
 .login-header {
@@ -1644,7 +1656,8 @@ body {
 }
 
 .login-title {
-  font-size: 1.25rem; /* text-xl */
+  font-size: 1.25rem;
+  /* text-xl */
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--text-primary);
@@ -1897,7 +1910,8 @@ body {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); /* shadow-xs */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  /* shadow-xs */
   z-index: 60;
   padding: 4px;
   display: none;
@@ -2098,8 +2112,13 @@ body {
 }
 
 @keyframes skeletonPulse {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Breadcrumb Bar */
@@ -2340,12 +2359,500 @@ body {
   .profit-cards-grid {
     grid-template-columns: 1fr;
   }
+
   .financial-flow-container {
     flex-direction: column;
     align-items: stretch;
   }
+
   .financial-flow-operator {
     margin: 0 auto;
     transform: rotate(90deg);
   }
+}
+
+/* ==============================================================================
+   7. EXECUTIVE DASHBOARD COMPONENTS (DISTINCT OPERATIONAL COCKPIT)
+   ============================================================================== */
+.dashboard-grid-2col {
+  display: grid;
+  grid-template-columns: 1.25fr 0.95fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-grid-2col {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Today's Agenda & Live Sessions */
+.timeline-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.timeline-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.timeline-item-card {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.timeline-item-card:hover {
+  border-color: var(--accent-brand);
+  background: #FFFFFF;
+}
+
+.timeline-time-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 125px;
+}
+
+.timeline-time-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #F0FDFA;
+  color: #0F766E;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid #CCFBF1;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline-lock-indicator {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.timeline-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.timeline-guest-name {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.timeline-service-desc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Service Performance & Category Breakdown */
+.service-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.service-breakdown-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.service-breakdown-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+}
+
+.service-breakdown-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.service-breakdown-stats {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+}
+
+.service-progress-track {
+  height: 7px;
+  background: var(--bg-surface-elevated);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+
+.service-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* Actionable Pending Reservations */
+.pending-alert-box {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.pending-alert-box:last-child {
+  margin-bottom: 0;
+}
+
+/* Recent Activity Compact Stream */
+.activity-feed-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.activity-feed-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  gap: 0.75rem;
+  transition: border-color var(--transition-fast);
+}
+
+.activity-feed-row:hover {
+  border-color: var(--border-focus);
+}
+
+.activity-feed-user {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.activity-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #0D9488;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* System Health Banner */
+.system-health-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  padding: 0.85rem 1.15rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  margin-top: 1.25rem;
+  box-shadow: var(--shadow-xs);
+}
+
+@media (max-width: 768px) {
+  .system-health-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .system-health-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.health-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+.health-dot-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  flex-shrink: 0;
+}
+
+/* ==============================================================================
+   8. UNIFIED ORDERS & CALENDAR SCHEDULE (PESANAN & JADWAL)
+   ============================================================================== */
+.orders-subtab-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.15rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.orders-tab-btn {
+  height: 36px;
+  padding: 0 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+}
+
+.orders-tab-btn:hover {
+  background: var(--bg-surface-elevated);
+  color: var(--text-primary);
+}
+
+.orders-tab-btn.active {
+  background: #0D9488;
+  color: #FFFFFF;
+  border-color: #0D9488;
+}
+
+/* Calendar & Schedule 2-Column Grid */
+.calendar-layout-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.95fr;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .calendar-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.calendar-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-xs);
+}
+
+.calendar-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.calendar-month-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.calendar-grid-table {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day-head {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 6px 0;
+  letter-spacing: 0.04em;
+}
+
+.calendar-day-box {
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  min-height: 64px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.calendar-day-box:hover {
+  border-color: var(--accent-brand);
+  background: #FFFFFF;
+}
+
+.calendar-day-box.day-outside {
+  opacity: 0.35;
+  background: transparent;
+  cursor: default;
+}
+
+.calendar-day-box.day-today {
+  border-color: var(--accent-brand);
+  background: #F0FDFA;
+}
+
+.calendar-day-box.day-selected {
+  border-color: var(--accent-brand);
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.25);
+  background: #FFFFFF;
+}
+
+.cal-day-number {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.cal-booking-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: #0D9488;
+  color: #FFFFFF;
+  padding: 2px 4px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+  display: inline-block;
+  text-align: center;
+}
+
+/* Day Schedule Details Panel */
+.schedule-panel-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.slot-timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.slot-status-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  transition: all var(--transition-fast);
+}
+
+.slot-status-card.slot-booked {
+  background: var(--bg-surface-elevated);
+  border-left: 4px solid #0D9488;
+}
+
+.slot-status-card.slot-available {
+  background: #F8FAFC;
+  border-left: 4px solid #94A3B8;
+  border-style: dashed;
+}
+
+.slot-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.slot-time-title {
+  font-weight: 700;
+  font-size: 0.86rem;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
 }

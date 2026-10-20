@@ -41,7 +41,14 @@ const ICONS = {
   table: `<path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/>`,
   database: `<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/>`,
   arrowUpRight: `<line x1="7" x2="17" y1="17" y2="7"/><polyline points="7 7 17 7 17 17"/>`,
-  menu: `<line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>`
+  menu: `<line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>`,
+  // Spiritual Wellness & Service Icons (Section 1.3)
+  wellness: `<path d="M12 3c-1.8 2.8-3.5 5.5-4 8.5 1.2.6 2.6.9 4 .9s2.8-.3 4-.9c-.5-3-2.2-5.7-4-8.5Z"/><path d="M4 14.5c2.5 1 5.2.8 7.5-.5-1.5-2.2-2.5-4.8-2.8-7.5-2.2 2-3.8 4.7-4.7 8Z"/><path d="M20 14.5c-2.5 1-5.2.8-7.5-.5 1.5-2.2 2.5-4.8 2.8-7.5 2.2 2 3.8 4.7 4.7 8Z"/><path d="M3 19.5c3 .8 6 1 9 1s6-.2 9-1"/>`,
+  tour: `<path d="M3 21h18"/><path d="M5 21V11l7-6 7 6v10"/><path d="M9 21v-6h6v6"/><path d="M12 2v3"/><path d="M7 11h10"/>`,
+  retreat: `<circle cx="12" cy="7" r="4"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/><path d="M4 15c2-2 4.5-2 6 0"/><path d="M14 15c1.5-2 4-2 6 0"/>`,
+  numerology: `<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/><circle cx="7.5" cy="7.5" r="1.5"/><circle cx="16.5" cy="7.5" r="1.5"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/>`,
+  healing: `<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>`,
+  lockClock: `<rect width="14" height="9" x="5" y="11" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><circle cx="12" cy="15.5" r="1"/>`
 };
 
 /**

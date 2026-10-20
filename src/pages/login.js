@@ -18,13 +18,13 @@ export function renderLoginPage() {
         <!-- Header Kartu -->
         <div class="login-header">
           <div class="login-brand-badge">
-            <span class="brand-badge-icon brand-badge-sm" style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; background: #0F172A; color: #FFFFFF;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <span class="brand-badge-icon brand-badge-sm" style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; background: #0F172A; color: #0D9488;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-1.8 2.8-3.5 5.5-4 8.5 1.2.6 2.6.9 4 .9s2.8-.3 4-.9c-.5-3-2.2-5.7-4-8.5Z"/><path d="M4 14.5c2.5 1 5.2.8 7.5-.5-1.5-2.2-2.5-4.8-2.8-7.5-2.2 2-3.8 4.7-4.7 8Z"/><path d="M20 14.5c-2.5 1-5.2.8-7.5-.5 1.5-2.2 2.5-4.8 2.8-7.5 2.2 2 3.8 4.7 4.7 8Z"/></svg>
             </span>
-            <span class="login-brand-title">Untung Usaha</span>
+            <span class="login-brand-title">Mahawellnessjourney</span>
           </div>
           <h1 class="login-title">Masuk</h1>
-          <p class="login-desc">Masuk ke sistem web admin untuk mengelola booking dan operasional.</p>
+          <p class="login-desc">Masuk ke sistem Mahawellnessjourney Admin untuk mengelola booking dan operasional.</p>
         </div>
 
         <!-- Form Login -->
@@ -39,7 +39,7 @@ export function renderLoginPage() {
               id="login-email" 
               name="email" 
               class="form-input" 
-              placeholder="nama@perusahaan.com" 
+              placeholder="admin@mahawellnessjourney.com" 
               autocomplete="username" 
               required 
             />
@@ -91,8 +91,8 @@ export function renderLoginPage() {
           <div class="login-demo-hint">
             <div>💡 <strong>Akun Terdaftar:</strong></div>
             <div style="margin-top: 4px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-secondary);">
-              Admin: <code>admin@dasboruntung.com</code> (Sandi: <code>Admin12345!</code>)<br/>
-              Staf: <code>staf@dasboruntung.com</code> (Sandi: <code>Staf12345!</code>)
+              Admin: <code>admin@mahawellnessjourney.com</code> / <code>admin@dasboruntung.com</code> (Sandi: <code>Admin12345!</code>)<br/>
+              Staf: <code>staf@mahawellnessjourney.com</code> / <code>staf@dasboruntung.com</code> (Sandi: <code>Staf12345!</code>)
             </div>
           </div>
 
@@ -102,7 +102,7 @@ export function renderLoginPage() {
 
       <!-- Footer Hak Cipta Ringkas -->
       <footer class="login-footer">
-        &copy; ${new Date().getFullYear()} Sacred Journey Bali &bull; Sistem Web Admin &amp; Pembukuan
+        &copy; ${new Date().getFullYear()} Mahawellnessjourney Bali &bull; Sistem Web Admin &amp; Reservasi
       </footer>
 
     </div>

@@ -13,13 +13,13 @@
  */
 
 import Chart from 'chart.js/auto';
-import { 
-  supabase, 
-  isUsingMock, 
-  getSupabaseCredentials, 
-  saveSupabaseCredentials, 
+import {
+  supabase,
+  isUsingMock,
+  getSupabaseCredentials,
+  saveSupabaseCredentials,
   clearSupabaseCredentials,
-  testSupabaseConnection 
+  testSupabaseConnection
 } from '../supabaseClient.js';
 import {
   calculateOrderNetIncome,
@@ -88,12 +88,12 @@ export function renderDasborApp() {
       <aside class="dasbor-sidebar" id="dasbor-sidebar">
         <div class="sidebar-header">
           <div class="sidebar-logo">
-            <div class="brand-badge-icon">
-              ${icon('profit', { size: 18, strokeWidth: 2.2 })}
+            <div class="brand-badge-icon" style="background: #0F172A; color: #0D9488;">
+              ${icon('wellness', { size: 18, strokeWidth: 2.2 })}
             </div>
             <div class="brand-text-wrap">
-              <h2 class="logo-title">Untung Usaha</h2>
-              <span class="logo-subtitle">Sistem Admin &amp; Bisnis</span>
+              <h2 class="logo-title">Mahawellnessjourney</h2>
+              <span class="logo-subtitle">Admin Reservasi &amp; Wellness</span>
             </div>
           </div>
           <button class="btn-close-sidebar" id="btn-close-sidebar" aria-label="Tutup Menu">${icon('close', { size: 18 })}</button>
@@ -103,36 +103,36 @@ export function renderDasborApp() {
           <div class="menu-group-label">OPERASIONAL</div>
           <button class="sidebar-link active" data-mod="dashboard">
             <span class="link-icon">${icon('dashboard', { size: 16 })}</span>
-            <span>Dashboard Ringkas</span>
+            <span>Dashboard</span>
           </button>
           <button class="sidebar-link" data-mod="orders">
             <span class="link-icon">${icon('orders', { size: 16 })}</span>
             <span>Kelola Pesanan</span>
             <span id="badge-order-count" class="badge-count">0</span>
           </button>
+          <button class="sidebar-link" data-mod="calendar">
+            <span class="link-icon">${icon('calendar', { size: 16 })}</span>
+            <span>Jadwal Booking</span>
+          </button>
           <button class="sidebar-link" data-mod="profit">
             <span class="link-icon">${icon('profit', { size: 16 })}</span>
             <span>Hitung Untung</span>
           </button>
 
-          <div class="menu-group-label">JADWAL</div>
-          <button class="sidebar-link" data-mod="orders" data-sub="calendar">
-            <span class="link-icon">${icon('calendar', { size: 16 })}</span>
-            <span>Jadwal Booking</span>
-          </button>
+          <div class="menu-group-label">KEUANGAN &amp; KAS</div>
           <button class="sidebar-link" data-mod="bookkeeping">
             <span class="link-icon">${icon('bookkeeping', { size: 16 })}</span>
             <span>Pembukuan Harian</span>
+          </button>
+          <button class="sidebar-link" data-mod="charts">
+            <span class="link-icon">${icon('charts', { size: 16 })}</span>
+            <span>Grafik Keuntungan</span>
           </button>
 
           <div class="menu-group-label">PELANGGAN</div>
           <button class="sidebar-link" data-mod="customers">
             <span class="link-icon">${icon('customers', { size: 16 })}</span>
             <span>Data Pelanggan</span>
-          </button>
-          <button class="sidebar-link" data-mod="charts">
-            <span class="link-icon">${icon('charts', { size: 16 })}</span>
-            <span>Grafik Keuntungan</span>
           </button>
 
           <div class="menu-group-label">PENGATURAN</div>
@@ -169,12 +169,12 @@ export function renderDasborApp() {
             <button id="btn-toggle-sidebar" class="mobile-menu-btn" aria-label="Buka Menu" title="Menu Navigasi">
               ${icon('menu', { size: 18, strokeWidth: 2 })}
             </button>
-            <div class="brand-badge-icon brand-badge-sm">
-              ${icon('profit', { size: 15, strokeWidth: 2.2 })}
+            <div class="brand-badge-icon brand-badge-sm" style="background: #0F172A; color: #0D9488;">
+              ${icon('wellness', { size: 15, strokeWidth: 2.2 })}
             </div>
             <div class="mobile-logo-text">
-              <span class="logo-title-sm">Untung Usaha</span>
-              <span class="logo-subtitle-sm">Admin Bisnis</span>
+              <span class="logo-title-sm">Mahawellnessjourney</span>
+              <span class="logo-subtitle-sm">Admin Reservasi</span>
             </div>
           </div>
 
@@ -199,11 +199,14 @@ export function renderDasborApp() {
         <!-- Mobile Horizontal Quick Navigation Tabs (Pill Bar) -->
         <nav class="mobile-nav-tabs" id="mobile-nav-tabs" aria-label="Navigasi Modul">
           <button class="mobile-tab-btn active" data-mod="dashboard">
-            ${icon('dashboard', { size: 14 })} <span>Ringkasan</span>
+            ${icon('dashboard', { size: 14 })} <span>Dashboard</span>
           </button>
           <button class="mobile-tab-btn" data-mod="orders">
             ${icon('orders', { size: 14 })} <span>Pesanan</span>
             <span class="mobile-tab-badge" id="mobile-badge-order-count">0</span>
+          </button>
+          <button class="mobile-tab-btn" data-mod="calendar">
+            ${icon('calendar', { size: 14 })} <span>Jadwal</span>
           </button>
           <button class="mobile-tab-btn" data-mod="profit">
             ${icon('profit', { size: 14 })} <span>Untung</span>
@@ -234,13 +237,13 @@ export function renderDasborApp() {
         <header class="dasbor-header">
           <div class="header-left">
             <div class="topbar-breadcrumb">
-              <span>Admin</span>
+              <span>Mahawellnessjourney</span>
               <span class="breadcrumb-separator">${icon('chevronRight', { size: 12 })}</span>
-              <span class="breadcrumb-active" id="breadcrumb-current-mod">Dasbor Booking</span>
+              <span class="breadcrumb-active" id="breadcrumb-current-mod">Dashboard</span>
             </div>
             <div class="header-title-wrap">
-              <h1 id="page-heading" class="page-title">Dashboard Ringkas</h1>
-              <span id="page-subheading" class="page-desc">Ringkasan performa keuntungan harian dan operasional usaha.</span>
+              <h1 id="page-heading" class="page-title">Dashboard</h1>
+              <span id="page-subheading" class="page-desc">Pusat kendali reservasi, jadwal sesi hari ini, okupansi slot 2 jam, dan analitik bisnis.</span>
             </div>
           </div>
 
@@ -440,8 +443,9 @@ function switchModule(modName) {
   // Perbarui breadcrumb topbar
   const breadcrumb = document.getElementById('breadcrumb-current-mod');
   const moduleNames = {
-    dashboard: 'Dasbor Ringkas',
+    dashboard: 'Dashboard',
     orders: 'Kelola Pesanan',
+    calendar: 'Jadwal Booking',
     profit: 'Hitung Untung',
     customers: 'Data Pelanggan',
     charts: 'Grafik Keuntungan',
@@ -468,51 +472,210 @@ function switchModule(modName) {
 }
 
 /**
- * Helper: Konversi record tabel bookings ke struktur orders di Dasbor
+ * Parser string notes dari alur Frontend Booking Engine
+ * Format: [Origin: ...] | [Category: ...] | [Pax: ...] | [Time: ...] | [DOB: ...] | [Payment: ...] | User Notes: ...
+ */
+export function parseBookingNotes(notesString = '') {
+  const result = {
+    origin: '',
+    category: '',
+    pax: 1,
+    time: '',
+    dob: '',
+    payment: '',
+    userNotes: ''
+  };
+  if (!notesString || typeof notesString !== 'string') return result;
+
+  const originMatch = notesString.match(/\[Origin:\s*([^\]]+)\]/i);
+  if (originMatch) result.origin = originMatch[1].trim();
+
+  const catMatch = notesString.match(/\[Category:\s*([^\]]+)\]/i);
+  if (catMatch) result.category = catMatch[1].trim();
+
+  const paxMatch = notesString.match(/\[Pax:\s*(\d+)\]/i);
+  if (paxMatch) result.pax = parseInt(paxMatch[1], 10);
+
+  const timeMatch = notesString.match(/\[Time:\s*([^\]]+)\]/i);
+  if (timeMatch) result.time = timeMatch[1].trim();
+
+  const dobMatch = notesString.match(/\[DOB:\s*([^\]]+)\]/i);
+  if (dobMatch) result.dob = dobMatch[1].trim();
+
+  const payMatch = notesString.match(/\[Payment:\s*([^\]]+)\]/i);
+  if (payMatch) result.payment = payMatch[1].trim();
+
+  const userNotesMatch = notesString.match(/User Notes:\s*(.*)$/i);
+  if (userNotesMatch) {
+    result.userNotes = userNotesMatch[1].trim();
+  } else {
+    const stripped = notesString.replace(/\[[^\]]+\]\s*\|?\s*/g, '').trim();
+    if (stripped) result.userNotes = stripped;
+  }
+  return result;
+}
+
+/**
+ * Mesin Validasi Ketersediaan Slot & Kunci Jadwal 2 Jam (2-Hour Booking Lock)
+ * Sesuai Spesifikasi Section 4.B, 5.2, 5.6 & 6.4 di Penyelarasan.md
+ * - Setiap pesanan aktif pada jam T mengunci ketersediaan slot dari T hingga T + 2 jam (120 menit).
+ * - Kuota maksimal 8-10 pax per sesi 2 jam.
+ * - Jika status dibatalkan / expired, kunci dilepas otomatis (auto-release).
+ */
+export function checkSlotAvailability(bookingDate, bookingTime, requestedPax = 1, excludeBookingId = null) {
+  if (!bookingDate || !bookingTime) return { available: true, currentPax: 0, remainingPax: 10, maxPax: 10 };
+
+  const parseMinutes = (timeStr) => {
+    if (!timeStr) return 0;
+    const clean = String(timeStr).replace(/[^0-9:]/g, '');
+    const parts = clean.split(':').map(Number);
+    return (parts[0] || 0) * 60 + (parts[1] || 0);
+  };
+
+  const targetMinutes = parseMinutes(bookingTime);
+
+  // Ambil semua booking aktif pada tanggal yang sama yang bukan dibatalkan/expired
+  const activeBookings = ordersData.filter(o => {
+    if (excludeBookingId && (o.id === excludeBookingId || o.order_code === excludeBookingId)) return false;
+    if (o.order_date !== bookingDate) return false;
+    const st = String(o.status || '').toLowerCase();
+    // Jika cancelled/dibatalkan/expired, kunci terlepas otomatis (auto-release)
+    if (st === 'dibatalkan' || st === 'cancelled' || st === 'expired') return false;
+    return true;
+  });
+
+  let totalCollidingPax = 0;
+  const collidingBookings = [];
+
+  activeBookings.forEach(b => {
+    const bMinutes = parseMinutes(b.order_time);
+    // Tabrakan dalam jendela 2 jam (< 120 menit)
+    if (Math.abs(targetMinutes - bMinutes) < 120) {
+      const bPax = Number(b.pax || 1);
+      totalCollidingPax += bPax;
+      collidingBookings.push(b);
+    }
+  });
+
+  const maxCapacity = 10; // Maksimal 8–10 pax per sesi (Section 5.2)
+  const remainingCapacity = Math.max(0, maxCapacity - totalCollidingPax);
+  const isAvailable = (totalCollidingPax + requestedPax) <= maxCapacity;
+
+  return {
+    available: isAvailable,
+    currentPax: totalCollidingPax,
+    remainingPax: remainingCapacity,
+    maxPax: maxCapacity,
+    collidingCount: collidingBookings.length,
+    reason: isAvailable
+      ? null
+      : `Slot jam ${bookingTime} WITA terkunci/penuh. Kuota terisi ${totalCollidingPax}/${maxCapacity} pax dalam jendela kunci 2 jam.`
+  };
+}
+
+/**
+ * Direct WhatsApp Link Generator dengan Template Pesan Otomatis (Section 5.7)
+ */
+export function getDirectWhatsAppUrl(order) {
+  if (!order) return null;
+  const rawPhone = order.customer_phone || '';
+  const cleanPhone = String(rawPhone).replace(/[^0-9]/g, '');
+  if (!cleanPhone) return null;
+
+  const bkgId = order.order_code || order.booking_id || order.id || '-';
+  const pkg = order.service_or_item || order.package_name || 'Wisata Spiritual';
+  const tgl = formatTanggal(order.order_date);
+  const jam = formatJam(order.order_time);
+  const pax = order.pax || 1;
+
+  const message = `Halo ${order.customer_name},\n\nKami dari Mahawellnessjourney ingin mengonfirmasi reservasi Anda:\n• Kode Booking: ${bkgId}\n• Paket: ${pkg}\n• Tanggal: ${tgl}\n• Jam Sesi: ${jam} WITA\n• Jumlah Peserta: ${pax} Orang\n\nApakah ada hal khusus yang perlu kami siapkan untuk kenyamanan perjalanan spiritual Anda? Terima kasih.`;
+
+  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+}
+
+/**
+ * Helper: Konversi record tabel bookings / REST JSON ke struktur orders di Dasbor
+ * Memenuhi spesifikasi Database Schema Mapping Section 4.A & 4.B
  */
 function bookingToOrder(b) {
   const statusRaw = String(b.status || 'pending').toLowerCase();
-  let mappedStatus = 'Baru';
+  let mappedStatus = 'Menunggu';
   let mappedPayment = 'Belum Dibayar';
 
-  if (['completed', 'selesai', 'paid', 'lunas'].includes(statusRaw)) {
+  if (['completed', 'selesai'].includes(statusRaw)) {
     mappedStatus = 'Selesai';
+    mappedPayment = 'Lunas';
+  } else if (['paid', 'lunas'].includes(statusRaw)) {
+    mappedStatus = 'Dikonfirmasi';
     mappedPayment = 'Lunas';
   } else if (['confirmed', 'dikonfirmasi'].includes(statusRaw)) {
     mappedStatus = 'Dikonfirmasi';
     mappedPayment = 'Lunas';
-  } else if (['cancelled', 'batal', 'dibatalkan'].includes(statusRaw)) {
+  } else if (['cancelled', 'batal', 'dibatalkan', 'expired'].includes(statusRaw)) {
     mappedStatus = 'Dibatalkan';
     mappedPayment = 'Refund';
   } else {
-    mappedStatus = 'Baru';
+    mappedStatus = 'Menunggu';
     mappedPayment = 'Belum Dibayar';
   }
 
-  const rawPrice = Number(b.total_price || b.subtotal_amount || b.grand_total || 0);
-  const invCode = b.invoice_number || b.invoice || (b.id ? 'BKG-' + String(b.id).slice(0, 8).toUpperCase() : 'ORD-001');
-  const serviceTitle = b.service_name || b.package_name || b.service_or_item || 'Paket Wisata Spiritual';
-  const orderDt = b.booking_date || b.tour_date || (b.created_at ? b.created_at.split('T')[0] : new Date().toISOString().split('T')[0]);
+  // Parse notes string untuk data terstruktur
+  const parsed = parseBookingNotes(b.notes || '');
+
+  // Pemetaan ID & Format Standar (MWJ-..., INV-..., TRX-...)
+  const bookingId = b.booking_id || b.id || ('MWJ-SACRED-' + Date.now().toString().slice(-4));
+  const invCode = b.invoice_number || b.invoice || ('INV-' + Date.now().toString().slice(-8));
+  const orderId = b.order_id || ('TRX-' + (b.customer_id || '101') + '-' + Date.now());
+
+  // Pemetaan Customer
+  const custName = b.customer?.name || b.customer_name || 'Tamu Mahawellnessjourney';
+  const rawPhone = b.customer?.phone || b.customer_phone || b.whatsapp || '';
+  const cleanPhone = String(rawPhone).replace(/[^0-9]/g, '');
+  const custEmail = b.customer?.email || b.customer_email || b.email || '';
+  const custNationality = b.customer?.nationality || parsed.origin || 'Indonesia';
+  const custDob = b.customer?.dob || parsed.dob || '';
+
+  // Pemetaan Service & Package
+  const serviceId = b.service_id || 'SRV001';
+  const pkgName = b.package_name || b.service_name || b.service_or_item || 'Spiritual Temple Tour';
+
+  // Tanggal & Jam (WITA)
+  const orderDt = b.tour_date || b.booking_date || (b.created_at ? b.created_at.split('T')[0] : new Date().toISOString().split('T')[0]);
+  const orderTm = b.booking_time || parsed.time || '09:00';
+
+  // Pax & Pricing (100% Tax-Free Nett, Tax: 0)
+  const paxCount = Number(b.pax || parsed.pax || 1);
+  const rawPrice = Number(b.total_amount ?? b.total_price ?? b.pricing?.total_amount ?? b.subtotal_amount ?? 0);
 
   return {
-    id: b.id,
-    order_code: invCode,
-    customer_id: b.customer_id || ('cust-' + b.id),
-    customer_name: b.customer_name || 'Pelanggan',
-    customer_phone: b.customer_phone || b.whatsapp || '-',
-    customer_email: b.customer_email || b.email || '',
-    service_or_item: serviceTitle,
+    id: bookingId,
+    booking_id: bookingId,
+    order_code: bookingId,
+    invoice_number: invCode,
+    order_id: orderId,
+    customer_id: b.customer_id || ('cust-' + bookingId),
+    customer_name: custName,
+    customer_phone: cleanPhone,
+    customer_email: custEmail,
+    customer_nationality: custNationality,
+    customer_dob: custDob,
+    service_id: serviceId,
+    service_or_item: pkgName,
+    package_name: pkgName,
     source: b.source || 'website',
     external_order_id: invCode,
     order_date: orderDt,
-    order_time: b.booking_time || '09:00',
+    order_time: orderTm,
+    pax: paxCount,
     status: mappedStatus,
     payment_status: mappedPayment,
     subtotal_amount: rawPrice,
+    tax: 0,
     discount_amount: 0,
     additional_income_amount: 0,
     refund_amount: 0,
-    notes: b.notes || 'Pemesanan Web Booking',
+    notes: b.notes || '',
+    parsed_notes: parsed,
     is_closed: false,
     created_at: b.created_at || new Date().toISOString()
   };
@@ -541,25 +704,28 @@ async function loadAllData() {
     if (bookingsList.length > 0) {
       const mappedBookingOrders = bookingsList.map(bookingToOrder);
       const existingIds = new Set(mappedBookingOrders.map(b => b.id));
-      const additional = directOrders.filter(o => !existingIds.has(o.id));
+      const additional = directOrders.filter(o => !existingIds.has(o.id)).map(bookingToOrder);
       ordersData = [...mappedBookingOrders, ...additional];
     } else {
-      ordersData = directOrders;
+      ordersData = directOrders.map(bookingToOrder);
     }
 
-    // Auto-populate customersData dari ordersData jika data pelanggan kosong
+    // Auto-populate customersData dari ordersData jika data pelanggan kosong (dengan nationality & DOB)
     if ((!resCustomers.data || resCustomers.data.length === 0) && ordersData.length > 0) {
       const custMap = new Map();
       ordersData.forEach(o => {
         if (o.customer_name && !custMap.has(o.customer_name)) {
+          const parsed = parseBookingNotes(o.notes);
           custMap.set(o.customer_name, {
             id: o.customer_id || 'cust-' + o.id,
             name: o.customer_name,
             phone: o.customer_phone,
             phone_normalized: (o.customer_phone || '').replace(/[^0-9]/g, ''),
             email: o.customer_email || '',
-            address: 'Bali',
-            notes: 'Pelanggan Terintegrasi Web Booking',
+            nationality: o.customer_nationality || parsed.origin || 'Indonesia',
+            dob: o.customer_dob || parsed.dob || '',
+            address: parsed.origin ? `Asal: ${parsed.origin}` : 'Bali',
+            notes: o.notes || 'Pelanggan Terintegrasi Mahawellnessjourney',
             created_at: o.created_at
           });
         }
@@ -618,17 +784,24 @@ function renderActiveModule() {
 
   switch (activeModule) {
     case 'dashboard':
-      heading.textContent = 'Pusat Operasional & Laba Harian';
-      subheading.textContent = 'Memantau transaksi pesanan masuk, alokasi modal langsung (HPP), dan realisasi laba bersih harian.';
+      heading.textContent = 'Dashboard';
+      subheading.textContent = 'Pusat kendali reservasi, jadwal sesi hari ini, okupansi slot 2 jam, dan analitik bisnis.';
       viewport.innerHTML = renderDashboardView();
       initDashboardEvents();
       break;
 
     case 'orders':
-      heading.textContent = 'Buku Pesanan & Reservasi';
-      subheading.textContent = 'Mencatat seluruh pesanan dari Website dan WhatsApp, memperbarui status pengerjaan, dan mencatat riwayat transaksi.';
+      heading.textContent = 'Kelola Pesanan & Reservasi';
+      subheading.textContent = 'Buku reservasi tamu terintegrasi, verifikasi status, validasi pembayaran, dan administrasi pesanan.';
       viewport.innerHTML = renderOrdersView();
       initOrdersEvents();
+      break;
+
+    case 'calendar':
+      heading.textContent = 'Jadwal Booking & Kalender Sesi';
+      subheading.textContent = 'Kalender reservasi bulanan, ketersediaan slot 2 jam WITA, proteksi tabrakan kuota, dan penjadwalan ulang.';
+      viewport.innerHTML = renderCalendarView();
+      initCalendarEvents();
       break;
 
     case 'profit':
@@ -719,248 +892,433 @@ export function getSemanticBadge(status) {
 /* ==============================================================================
    1. MODUL: PUSAT OPERASIONAL & LABA HARIAN (EDITORIAL & FUNCTIONAL)
    ============================================================================== */
+function getSessionEndTime(timeStr) {
+  if (!timeStr) return '11:00';
+  const clean = timeStr.replace(/[^0-9:]/g, '');
+  const parts = clean.split(':');
+  let h = parseInt(parts[0], 10) || 9;
+  let m = parts[1] || '00';
+  h = (h + 2) % 24;
+  return `${String(h).padStart(2, '0')}:${m}`;
+}
+
+/* ==============================================================================
+   1. MODUL: DASHBOARD (EXECUTIVE OPERATIONAL COCKPIT & LIVE RADAR)
+   Berbeda total dengan modul Kelola Pesanan (bukan tabel transaksi mentah,
+   melainkan pusat kendali ringkasan eksekutif, agenda sesi hari ini,
+   analitik okupansi 2 jam, dan tindakan cepat reservasi).
+   ============================================================================== */
 function renderDashboardView() {
   const todayStr = new Date().toISOString().split('T')[0];
-  const todayOrders = ordersData.filter(o => o.order_date === todayStr);
-  const todayCosts = costsData.filter(c => c.cost_date === todayStr);
-  const todayOpExpenses = transactionsData.filter(t => t.transaction_date === todayStr && t.type === 'expense' && t.source_type === 'operational');
+  const tomorrowDate = new Date(Date.now() + 86400000);
+  const tomorrowStr = tomorrowDate.toISOString().split('T')[0];
+  const currentMonthStr = todayStr.slice(0, 7); // 'YYYY-MM'
 
-  const summaryToday = calculatePeriodSummary(todayOrders, todayCosts, todayOpExpenses);
-  const overallSummary = calculatePeriodSummary(ordersData, costsData, transactionsData.filter(t => t.type === 'expense' && t.source_type === 'operational'));
+  // 1. Total Pendapatan Bulan Ini (Rp Nett, 100% Tax-Free per Section 6.1)
+  const monthlyPaidOrders = ordersData.filter(o => {
+    if (!o.order_date || !o.order_date.startsWith(currentMonthStr)) return false;
+    const st = String(o.status || '').toLowerCase();
+    const paySt = String(o.payment_status || '').toLowerCase();
+    if (st === 'dibatalkan' || st === 'cancelled' || st === 'refund') return false;
+    return paySt === 'lunas' || paySt === 'paid' || st === 'selesai' || st === 'completed' || st === 'dikonfirmasi' || st === 'confirmed';
+  });
+  const monthlyRevenue = monthlyPaidOrders.reduce((sum, o) => sum + calculateOrderNetIncome(o), 0);
 
-  const statusCount = {
-    Baru: ordersData.filter(o => o.status === 'Baru').length,
-    Dikonfirmasi: ordersData.filter(o => o.status === 'Dikonfirmasi').length,
-    Diproses: ordersData.filter(o => o.status === 'Diproses').length,
-    Selesai: ordersData.filter(o => o.status === 'Selesai').length,
-    Dibatalkan: ordersData.filter(o => o.status === 'Dibatalkan').length
-  };
+  // 2. Booking Hari Ini & Besok
+  const todayOrders = ordersData.filter(o => o.order_date === todayStr && o.status !== 'Dibatalkan' && o.status !== 'cancelled');
+  const tomorrowOrders = ordersData.filter(o => o.order_date === tomorrowStr && o.status !== 'Dibatalkan' && o.status !== 'cancelled');
+  const countTodayAndTomorrow = todayOrders.length + tomorrowOrders.length;
 
-  const totalAllOrders = ordersData.length || 1;
-  const recentOrders = ordersData.slice(0, 6);
-  const { isConfigured, url } = getSupabaseCredentials();
+  // 3. Pesanan Menunggu Konfirmasi (pending)
+  const pendingOrders = ordersData.filter(o => {
+    const st = String(o.status || '').toLowerCase();
+    return st === 'baru' || st === 'menunggu' || st === 'pending';
+  });
+  const countPending = pendingOrders.length;
+
+  // 4. Tamu Aktif Hari Ini (Sum Pax Terjadwal)
+  const totalPaxToday = todayOrders.reduce((sum, o) => sum + Number(o.pax || 1), 0);
+  const maxDailyPax = 24; // Estimasi kapasitas 3 slot sesi x 8 pax
+  const todayOccupancyPct = Math.min(100, Math.round((totalPaxToday / maxDailyPax) * 100));
+
+  // Reservasi Terdekat Berikutnya (jika hari ini kosong)
+  const upcomingBookings = ordersData
+    .filter(o => (o.order_date >= todayStr) && o.status !== 'Dibatalkan' && o.status !== 'cancelled')
+    .sort((a, b) => (a.order_date || '').localeCompare(b.order_date || ''));
+  const nextBooking = upcomingBookings.find(o => o.order_date > todayStr) || upcomingBookings[0];
+
+  // 5. Analisis Kontribusi Kategori Layanan (Service Analytics)
+  const serviceStats = [
+    {
+      id: 'SRV001',
+      name: 'Sacred Tour Spiritual & Pura',
+      iconKey: 'tour',
+      color: '#0D9488',
+      count: 0,
+      revenue: 0
+    },
+    {
+      id: 'SRV002',
+      name: 'Yoga, Meditation & Retreat',
+      iconKey: 'retreat',
+      color: '#0284C7',
+      count: 0,
+      revenue: 0
+    },
+    {
+      id: 'SRV003',
+      name: 'Konsultasi Numerologi & Jiwa',
+      iconKey: 'numerology',
+      color: '#8B5CF6',
+      count: 0,
+      revenue: 0
+    },
+    {
+      id: 'SRV004',
+      name: 'Melukat & Bio-Energy Healing',
+      iconKey: 'healing',
+      color: '#10B981',
+      count: 0,
+      revenue: 0
+    }
+  ];
+
+  ordersData.forEach(o => {
+    if (o.status === 'Dibatalkan' || o.status === 'cancelled') return;
+    const sId = String(o.service_id || '').toUpperCase();
+    const sName = String(o.service_or_item || '').toLowerCase();
+    const net = calculateOrderNetIncome(o);
+
+    if (sId === 'SRV001' || sName.includes('tour') || sName.includes('pura') || sName.includes('discovery')) {
+      serviceStats[0].count++;
+      serviceStats[0].revenue += net;
+    } else if (sId === 'SRV002' || sName.includes('retreat') || sName.includes('yoga') || sName.includes('meditas')) {
+      serviceStats[1].count++;
+      serviceStats[1].revenue += net;
+    } else if (sId === 'SRV003' || sName.includes('numerolog') || sName.includes('jiwa')) {
+      serviceStats[2].count++;
+      serviceStats[2].revenue += net;
+    } else {
+      serviceStats[3].count++;
+      serviceStats[3].revenue += net;
+    }
+  });
+
+  const maxServiceRevenue = Math.max(...serviceStats.map(s => s.revenue), 1);
+  const recentOrders = ordersData.slice(0, 5);
 
   return `
     <div class="view-container">
       
-      <!-- 1. Compressed KPI Strip (Max Height 88px, 4 Columns, Tabular-Nums) -->
+      <!-- 1. Executive Metric Strip Sesuai Spesifikasi Section 6.1 di Penyelarasan.md -->
       <section class="kpi-horizontal-strip" aria-label="Ringkasan Performa Booking &amp; Keuangan">
         <div class="ledger-cell">
           <div class="ledger-header">
-            <span class="ledger-label">Total Omzet</span>
-            <span class="ledger-badge ledger-badge-success">${todayOrders.length} Pesanan</span>
+            <span class="ledger-label">Total Pendapatan Bulan Ini</span>
+            <span class="ledger-badge ledger-badge-success">${monthlyPaidOrders.length} Terbayar</span>
           </div>
           <div class="ledger-row">
-            <div class="ledger-value">${formatRupiah(summaryToday.totalRevenue)}</div>
+            <div class="ledger-value">${formatRupiah(monthlyRevenue)}</div>
           </div>
-          <div class="ledger-caption">Realisasi pesanan terjadwal hari ini</div>
+          <div class="ledger-caption">100% Tax-Free Nett (Bulan Ini)</div>
         </div>
 
         <div class="ledger-cell">
           <div class="ledger-header">
-            <span class="ledger-label">Laba Bersih</span>
-            <span class="ledger-badge ledger-badge-success">${summaryToday.netMargin}% Margin</span>
+            <span class="ledger-label">Booking Hari Ini &amp; Besok</span>
+            <span class="ledger-badge ledger-badge-neutral">${todayOrders.length} Hari Ini &bull; ${tomorrowOrders.length} Besok</span>
           </div>
           <div class="ledger-row">
-            <div class="ledger-value">${formatRupiah(summaryToday.netProfit)}</div>
+            <div class="ledger-value">${countTodayAndTomorrow}</div>
           </div>
-          <div class="ledger-caption">Omzet bersih dikurangi HPP &amp; beban operasional</div>
+          <div class="ledger-caption">Jadwal reservasi aktif &amp; terkunci</div>
         </div>
 
         <div class="ledger-cell">
           <div class="ledger-header">
-            <span class="ledger-label">Alokasi Modal (HPP)</span>
-            <span class="ledger-badge ledger-badge-neutral">Beban Riil</span>
+            <span class="ledger-label">Menunggu Konfirmasi</span>
+            <span class="ledger-badge ${countPending > 0 ? 'ledger-badge-warning' : 'ledger-badge-success'}">${countPending > 0 ? `${countPending} Perlu Tindakan` : 'Terkonfirmasi Semua'}</span>
           </div>
           <div class="ledger-row">
-            <div class="ledger-value">${formatRupiah(summaryToday.totalOrderCosts + summaryToday.totalOperational)}</div>
+            <div class="ledger-value">${countPending}</div>
           </div>
-          <div class="ledger-caption">Biaya langsung layanan + beban harian</div>
+          <div class="ledger-caption">Reservasi status pending / baru</div>
         </div>
 
         <div class="ledger-cell">
           <div class="ledger-header">
-            <span class="ledger-label">Booking Aktif</span>
-            <span class="ledger-badge ledger-badge-warning">${ordersData.filter(o => o.status !== 'Dibatalkan' && o.status !== 'Selesai').length} Antrean</span>
+            <span class="ledger-label">Tamu Aktif Hari Ini</span>
+            <span class="ledger-badge ledger-badge-success">${todayOrders.length} Sesi Terjadwal</span>
           </div>
           <div class="ledger-row">
-            <div class="ledger-value">${ordersData.filter(o => o.status !== 'Dibatalkan' && o.status !== 'Selesai').length}</div>
+            <div class="ledger-value">${totalPaxToday} Pax</div>
           </div>
-          <div class="ledger-caption">Pesanan menunggu &amp; dikonfirmasi</div>
+          <div class="ledger-caption">${todayOccupancyPct}% okupansi harian Bali</div>
         </div>
       </section>
 
-      <!-- 2. Asymmetric 2-Column Operational Grid (68% Primary Ledger / 32% Telemetry Rail) -->
-      <div class="dashboard-asymmetric-layout">
+      <!-- 2. Dual-Column Executive Grid (Operational Cockpit vs Analytics & Activity) -->
+      <div class="dashboard-grid-2col">
         
-        <!-- KOLOM UTAMA (68%): Tabel Kerja Fungsional & Diagram Alur Kerja Konkret -->
-        <div class="dashboard-primary-col">
+        <!-- KOLOM KIRI (60%): Agenda Sesi Hari Ini & Pusat Tindakan Pending -->
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
           
-          <!-- Tabel Kerja Fungsional: Pesanan Terbaru (Border-First & Compact Row) -->
-          <div class="table-card-wrapper" style="margin-bottom: 1.5rem;">
-            <div class="card-header" style="padding: 0.95rem 1.15rem; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between;">
+          <!-- Kartu 1: Agenda & Okupansi Sesi Hari Ini (WITA) -->
+          <div class="timeline-card">
+            <div class="timeline-header">
+              <div style="display: flex; align-items: center; gap: 0.65rem;">
+                <div class="brand-badge-icon brand-badge-sm" style="background: #F0FDFA; color: #0D9488; box-shadow: none;">
+                  ${icon('calendar', { size: 16 })}
+                </div>
+                <div>
+                  <h3 class="card-title" style="margin: 0; font-size: 0.98rem; font-weight: 700;">Agenda Sesi Kunjungan Hari Ini</h3>
+                  <p class="card-desc" style="margin: 2px 0 0;">Jadwal sesi pelaksanaan eksklusif dengan proteksi 2-Hour Booking Lock (WITA).</p>
+                </div>
+              </div>
+              
+              <!-- Occupancy Tag -->
+              <div style="font-size: 0.78rem; font-weight: 600; color: var(--accent-brand); background: #F0FDFA; border: 1px solid #CCFBF1; padding: 3px 10px; border-radius: 999px;">
+                ${totalPaxToday} / ${maxDailyPax} Pax (${todayOccupancyPct}% Terisi)
+              </div>
+            </div>
+
+            <!-- Daily Capacity Meter Bar -->
+            <div style="margin-bottom: 1rem; padding: 0.75rem 0.85rem; background: var(--bg-surface-elevated); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px;">
+                <span>Kapasitas Sesi Hari Ini (${formatTanggal(todayStr)})</span>
+                <strong style="color: var(--text-primary);">${todayOrders.length} Sesi Aktif</strong>
+              </div>
+              <div class="service-progress-track" style="height: 6px;">
+                <div class="service-progress-fill" style="width: ${todayOccupancyPct}%; background: #0D9488;"></div>
+              </div>
+            </div>
+
+            <!-- List of Sessions Today -->
+            <div class="timeline-items-list">
+              ${todayOrders.length === 0 ? `
+                <div style="text-align: center; padding: 2rem 1rem; background: var(--bg-surface-elevated); border: 1px dashed var(--border-subtle); border-radius: var(--radius-md);">
+                  <div style="color: var(--accent-brand); margin-bottom: 0.5rem;">${icon('wellness', { size: 28 })}</div>
+                  <div style="font-weight: 600; font-size: 0.92rem; color: var(--text-primary);">Tidak Ada Sesi Terjadwal Hari Ini</div>
+                  <p style="font-size: 0.78rem; color: var(--text-muted); margin: 3px 0 0.85rem;">Seluruh slot waktu 2 jam tersedia untuk reservasi tamu.</p>
+                  ${nextBooking ? `
+                    <div style="font-size: 0.78rem; color: var(--text-secondary); background: #FFFFFF; display: inline-block; padding: 6px 12px; border-radius: 4px; border: 1px solid var(--border-subtle);">
+                      Sesi Terdekat: <strong>${formatTanggal(nextBooking.order_date)} pk ${formatJam(nextBooking.order_time)} WITA</strong> &mdash; ${escapeHtml(nextBooking.customer_name)}
+                    </div>
+                  ` : ''}
+                </div>
+              ` : todayOrders.map(o => {
+    const rawTime = o.order_time ? o.order_time.slice(0, 5) : '09:00';
+    const endTime = getSessionEndTime(rawTime);
+    const waLink = getDirectWhatsAppUrl(o);
+    const parsed = parseBookingNotes(o.notes);
+
+    return `
+                  <div class="timeline-item-card">
+                    <div class="timeline-time-box">
+                      <span class="timeline-time-badge">
+                        ${icon('lockClock', { size: 12 })} pk ${rawTime} - ${endTime} WITA
+                      </span>
+                      <span class="timeline-lock-indicator">
+                        ${icon('lockClock', { size: 10 })} Sesi 2 Jam Terkunci
+                      </span>
+                    </div>
+
+                    <div class="timeline-content">
+                      <div class="timeline-guest-name">
+                        <span>${escapeHtml(o.customer_name)}</span>
+                        <span class="badge-subtle badge-confirmed" style="font-size: 0.68rem; padding: 1px 6px;">${Number(o.pax || 1)} Pax</span>
+                        ${parsed.dob ? `<span class="badge-subtle badge-pending" style="font-size: 0.68rem; padding: 1px 6px;">DOB: ${escapeHtml(parsed.dob)}</span>` : ''}
+                      </div>
+                      <div class="timeline-service-desc">${escapeHtml(o.service_or_item)}</div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                      ${waLink ? `
+                        <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="font-size: 0.75rem; padding: 4px 8px; height: 30px; color: #047857;" title="Hubungi Tamu WhatsApp">
+                          ${icon('whatsapp', { size: 13, strokeWidth: 2 })} <span>WA</span>
+                        </a>
+                      ` : ''}
+                      <button type="button" class="btn btn-secondary" style="font-size: 0.75rem; padding: 4px 8px; height: 30px;" onclick="window.adminViewBookingDetail('${o.id}')" title="Lihat Rincian Reservasi">
+                        ${icon('orders', { size: 13 })} <span>Detail</span>
+                      </button>
+                    </div>
+                  </div>
+                `;
+  }).join('')}
+            </div>
+          </div>
+
+          <!-- Kartu 2: Pusat Tindakan Reservasi Pending -->
+          <div class="card">
+            <div class="card-header" style="margin-bottom: 0.75rem;">
               <div style="display: flex; align-items: center; gap: 0.55rem;">
-                <div class="brand-badge-icon brand-badge-sm" style="background: #EFF6FF; color: #2563EB; box-shadow: none;">
+                <div class="brand-badge-icon brand-badge-sm" style="background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; box-shadow: none;">
                   ${icon('orders', { size: 16 })}
                 </div>
                 <div>
-                  <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0; letter-spacing: -0.01em;">Reservasi &amp; Booking Terbaru</h3>
-                  <p style="font-size: 0.76rem; color: var(--text-muted); margin: 2px 0 0;">Transaksi masuk terkini yang terhubung secara realtime.</p>
+                  <h3 class="card-title" style="margin: 0; font-size: 0.95rem; font-weight: 700;">Pesanan Menunggu Konfirmasi (${pendingOrders.length})</h3>
+                  <p class="card-desc" style="margin: 2px 0 0;">Reservasi masuk yang memerlukan verifikasi jadwal atau pembayaran dari staf.</p>
                 </div>
               </div>
-              <button class="btn btn-secondary" style="font-size: 0.78rem; height: 32px; padding: 0 0.85rem;" id="btn-goto-all-orders">
-                <span>Buka Semua Pesanan</span>
-                ${icon('arrowUpRight', { size: 14 })}
-              </button>
             </div>
 
-            <div class="table-responsive">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th class="col-id">ID BOOKING</th>
-                    <th>NAMA PELANGGAN &amp; KONTAK</th>
-                    <th>LAYANAN / RUANGAN</th>
-                    <th style="width: 145px;">JADWAL</th>
-                    <th style="width: 130px;">STATUS</th>
-                    <th style="width: 145px; text-align: right;">TOTAL / BAYAR</th>
-                    <th style="width: 48px; text-align: center;">AKSI</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${recentOrders.length === 0 ? `
-                    <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Belum ada data pesanan tersimpan di database.</td></tr>
-                  ` : recentOrders.map(o => {
-                    const cleanPhone = (o.customer_phone || '').replace(/[^0-9]/g, '');
-                    const waHref = cleanPhone ? `https://wa.me/${cleanPhone}?text=Halo%20${encodeURIComponent(o.customer_name)},%20kami%20konfirmasi%20jadwal%20${o.order_code}:` : null;
-                    return `
-                    <tr>
-                      <td class="col-id">
-                        <span class="booking-id-tag">${escapeHtml(o.order_code)}</span>
-                      </td>
-                      <td>
-                        <div class="cust-cell-primary">${escapeHtml(o.customer_name)}</div>
-                        <div class="cust-cell-secondary">
-                          ${waHref ? `
-                            <a href="${waHref}" target="_blank" rel="noopener noreferrer" class="table-wa-link" title="Chat WhatsApp Pelanggan">
-                              ${icon('whatsapp', { size: 12, strokeWidth: 2 })} <span>${escapeHtml(o.customer_phone)}</span>
-                            </a>
-                          ` : `<span>${escapeHtml(o.customer_phone || '-')}</span>`}
+            ${pendingOrders.length === 0 ? `
+              <div style="padding: 1rem 1.15rem; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: var(--radius-md); color: #065F46; font-size: 0.82rem; display: flex; align-items: center; gap: 8px;">
+                ${icon('check', { size: 16 })}
+                <span>Semua pesanan telah dikonfirmasi dan terjadwal dengan rapi. Tidak ada reservasi tertunda saat ini.</span>
+              </div>
+            ` : `
+              <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+                ${pendingOrders.slice(0, 3).map(po => {
+    const poWa = getDirectWhatsAppUrl(po);
+    return `
+                    <div class="pending-alert-box">
+                      <div style="flex: 1; min-width: 200px;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                          <strong style="color: var(--text-primary); font-size: 0.88rem;">${escapeHtml(po.customer_name)}</strong>
+                          <span class="booking-id-mono" style="font-size: 0.72rem;">${po.order_code}</span>
                         </div>
-                      </td>
-                      <td>
-                        <span style="font-size: 0.82rem; color: var(--text-primary); font-weight: 500;">${escapeHtml(o.service_or_item)}</span>
-                      </td>
-                      <td>
-                        <div class="tabular-nums" style="font-weight: 500; font-size: 0.82rem; color: var(--text-primary); display: flex; align-items: center; gap: 4px;">
-                          ${icon('calendar', { size: 13, strokeWidth: 1.5 })}
-                          <span>${o.order_date}</span>
+                        <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+                          ${escapeHtml(po.service_or_item)} &bull; <strong>${formatTanggal(po.order_date)} pk ${formatJam(po.order_time)} WITA</strong>
                         </div>
-                        <div class="tabular-nums" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; padding-left: 17px;">pk ${o.order_time || '09:00'} WIB</div>
-                      </td>
-                      <td>
-                        ${getSemanticBadge(o.status)}
-                      </td>
-                      <td style="text-align: right;">
-                        <div class="tabular-nums" style="font-weight: 700; font-size: 0.88rem; color: var(--text-primary);">${formatRupiah(calculateOrderNetIncome(o))}</div>
-                        <div style="font-size: 0.72rem; color: ${o.payment_status === 'Lunas' ? '#047857' : '#B45309'}; font-weight: 600; margin-top: 1px;">${o.payment_status || 'Belum Dibayar'}</div>
-                      </td>
-                      <td style="text-align: center;">
-                        <button type="button" class="btn-action-dots" title="Tindakan Cepat" onclick="window.adminOpenActionMenu('${o.id}', event)">
-                          ${icon('dots', { size: 15 })}
+                        <div style="font-size: 0.78rem; font-weight: 700; color: #B45309; margin-top: 2px;">
+                          ${formatRupiah(calculateOrderNetIncome(po))}
+                        </div>
+                      </div>
+
+                      <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                        <button type="button" class="btn btn-primary" style="font-size: 0.76rem; padding: 4px 10px; height: 30px; background: #0D9488; border-color: #0D9488;" onclick="window.adminChangeOrderStatus('${po.id}', 'Dikonfirmasi')">
+                          ${icon('check', { size: 12 })} <span>Konfirmasi</span>
                         </button>
-                      </td>
-                    </tr>
-                  `;}).join('')}
-                </tbody>
-              </table>
-            </div>
+                        ${poWa ? `
+                          <a href="${poWa}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="font-size: 0.76rem; padding: 4px 8px; height: 30px; color: #047857;" title="Hubungi Tamu WhatsApp">
+                            ${icon('whatsapp', { size: 13, strokeWidth: 2 })} <span>WA</span>
+                          </a>
+                        ` : ''}
+                        <button type="button" class="btn btn-secondary" style="font-size: 0.76rem; padding: 4px 8px; height: 30px;" onclick="window.adminViewBookingDetail('${po.id}')" title="Lihat Detail">
+                          ${icon('orders', { size: 13 })}
+                        </button>
+                      </div>
+                    </div>
+                  `;
+  }).join('')}
+              </div>
+            `}
           </div>
 
         </div>
 
-        <!-- KOLOM SAMPING (32%): Distribusi Status Berbobot & Pintasan Cepat -->
-        <div class="dashboard-rail-col">
+        <!-- KOLOM KANAN (40%): Distribusi Layanan & Feed Aktivitas Masuk -->
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
           
-          <!-- Kartu 1: Distribusi Status Alur Pesanan (Weighted Horizontal Bars) -->
+          <!-- Kartu 3: Distribusi Kontribusi Layanan Wellness -->
           <div class="card">
-            <div class="card-header">
-              <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <div class="brand-badge-icon brand-badge-sm" style="background: #F8FAFC; color: #475569; border: 1px solid var(--border-subtle); box-shadow: none;">
-                  ${icon('charts', { size: 16 })}
+            <div class="card-header" style="margin-bottom: 0.85rem;">
+              <div style="display: flex; align-items: center; gap: 0.55rem;">
+                <div class="brand-badge-icon brand-badge-sm" style="background: #F0FDFA; color: #0D9488; box-shadow: none;">
+                  ${icon('profit', { size: 16 })}
                 </div>
                 <div>
-                  <h3 class="card-title" style="margin: 0; font-size: 0.95rem; font-weight: 700;">Distribusi Status Booking</h3>
-                  <p class="card-desc" style="margin: 2px 0 0;">Proporsi pesanan dalam siklus pengerjaan operasional.</p>
+                  <h3 class="card-title" style="margin: 0; font-size: 0.95rem; font-weight: 700;">Distribusi Paket Wellness</h3>
+                  <p class="card-desc" style="margin: 2px 0 0;">Volume reservasi &amp; kontribusi pendapatan per layanan.</p>
                 </div>
               </div>
             </div>
 
-            <div class="weighted-status-container">
-              <div class="weighted-status-item">
-                <div class="status-item-header">
-                  <span class="status-item-label">
-                    <span class="status-pill status-baru">Baru</span> Pesanan Baru Masuk
-                  </span>
-                  <span class="status-item-count" style="color: #3B82F6;">${statusCount.Baru}</span>
-                </div>
-                <div class="status-progress-track">
-                  <div class="status-progress-fill" style="width: ${(statusCount.Baru / totalAllOrders) * 100}%; background: #3B82F6;"></div>
-                </div>
-              </div>
+            <div class="service-breakdown-list">
+              ${serviceStats.map(s => {
+    const pct = Math.round((s.revenue / maxServiceRevenue) * 100) || 0;
+    return `
+                  <div class="service-breakdown-row">
+                    <div class="service-breakdown-meta">
+                      <span class="service-breakdown-name">
+                        ${icon(s.iconKey, { size: 14 })}
+                        <span>${s.name}</span>
+                      </span>
+                      <span class="service-breakdown-stats">
+                        ${s.count} Booking &bull; ${formatRupiah(s.revenue)}
+                      </span>
+                    </div>
+                    <div class="service-progress-track">
+                      <div class="service-progress-fill" style="width: ${pct}%; background: ${s.color};"></div>
+                    </div>
+                  </div>
+                `;
+  }).join('')}
+            </div>
+          </div>
 
-              <div class="weighted-status-item">
-                <div class="status-item-header">
-                  <span class="status-item-label">
-                    <span class="status-pill status-dikonfirmasi">Dikonfirmasi</span> Jadwal Terjadwal
-                  </span>
-                  <span class="status-item-count" style="color: #F59E0B;">${statusCount.Dikonfirmasi}</span>
+          <!-- Kartu 4: Feed Aktivitas Reservasi Masuk Terkini (Compact Stream) -->
+          <div class="card">
+            <div class="card-header" style="margin-bottom: 0.75rem;">
+              <div style="display: flex; align-items: center; gap: 0.55rem;">
+                <div class="brand-badge-icon brand-badge-sm" style="background: #F8FAFC; color: #475569; border: 1px solid var(--border-subtle); box-shadow: none;">
+                  ${icon('orders', { size: 16 })}
                 </div>
-                <div class="status-progress-track">
-                  <div class="status-progress-fill" style="width: ${(statusCount.Dikonfirmasi / totalAllOrders) * 100}%; background: #F59E0B;"></div>
-                </div>
-              </div>
-
-              <div class="weighted-status-item">
-                <div class="status-item-header">
-                  <span class="status-item-label">
-                    <span class="status-pill status-diproses">Diproses</span> Berjalan di Lokasi
-                  </span>
-                  <span class="status-item-count" style="color: #8B5CF6;">${statusCount.Diproses}</span>
-                </div>
-                <div class="status-progress-track">
-                  <div class="status-progress-fill" style="width: ${(statusCount.Diproses / totalAllOrders) * 100}%; background: #8B5CF6;"></div>
-                </div>
-              </div>
-
-              <div class="weighted-status-item">
-                <div class="status-item-header">
-                  <span class="status-item-label">
-                    <span class="status-pill status-selesai">Selesai</span> Selesai &amp; Lunas
-                  </span>
-                  <span class="status-item-count" style="color: #10B981;">${statusCount.Selesai}</span>
-                </div>
-                <div class="status-progress-track">
-                  <div class="status-progress-fill" style="width: ${(statusCount.Selesai / totalAllOrders) * 100}%; background: #10B981;"></div>
-                </div>
-              </div>
-
-              <div class="weighted-status-item">
-                <div class="status-item-header">
-                  <span class="status-item-label">
-                    <span class="status-pill status-dibatalkan">Dibatalkan</span> Batal / Refund
-                  </span>
-                  <span class="status-item-count" style="color: #EF4444;">${statusCount.Dibatalkan}</span>
-                </div>
-                <div class="status-progress-track">
-                  <div class="status-progress-fill" style="width: ${(statusCount.Dibatalkan / totalAllOrders) * 100}%; background: #EF4444;"></div>
+                <div>
+                  <h3 class="card-title" style="margin: 0; font-size: 0.95rem; font-weight: 700;">Aktivitas Reservasi Terkini</h3>
+                  <p class="card-desc" style="margin: 2px 0 0;">Aliran pemesanan terbaru yang masuk ke sistem.</p>
                 </div>
               </div>
             </div>
+
+            <div class="activity-feed-compact">
+              ${recentOrders.length === 0 ? `
+                <div style="text-align: center; color: var(--text-muted); padding: 1.5rem; font-size: 0.8rem;">Belum ada riwayat pesanan.</div>
+              ` : recentOrders.map(ro => {
+    const initials = (ro.customer_name || 'G').split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+    return `
+                  <div class="activity-feed-row">
+                    <div class="activity-feed-user">
+                      <div class="activity-user-avatar">${initials}</div>
+                      <div style="min-width: 0; flex: 1;">
+                        <div style="font-weight: 600; font-size: 0.84rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                          ${escapeHtml(ro.customer_name)}
+                        </div>
+                        <div style="font-size: 0.74rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                          ${escapeHtml(ro.service_or_item)} &bull; ${formatTanggal(ro.order_date)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style="text-align: right; flex-shrink: 0;">
+                      <div class="tabular-nums" style="font-weight: 700; font-size: 0.84rem; color: var(--text-primary);">${formatRupiah(calculateOrderNetIncome(ro))}</div>
+                      <div style="margin-top: 2px;">${StatusBadge(ro.status)}</div>
+                    </div>
+                  </div>
+                `;
+  }).join('')}
+            </div>
+
+            <!-- Call to Action: Buka Kelola Pesanan -->
+            <button type="button" class="btn btn-secondary" style="width: 100%; justify-content: center; gap: 8px; margin-top: 0.85rem; font-weight: 600; font-size: 0.82rem;" id="btn-goto-all-orders">
+              <span>Buka Seluruh Daftar di Kelola Pesanan</span>
+              ${icon('arrowUpRight', { size: 14 })}
+            </button>
           </div>
 
         </div>
 
+      </div>
+
+      <!-- 3. Telemetri Status Kesehatan Sistem & Integrasi Realtime -->
+      <div class="system-health-grid">
+        <div class="health-item">
+          <span class="health-dot-pulse"></span>
+          <span><strong>Kunci Sesi 2 Jam:</strong> Aktif (Radius 120 Menit)</span>
+        </div>
+        <div class="health-item">
+          <span class="health-dot-pulse"></span>
+          <span><strong>Database:</strong> Supabase PostgreSQL Realtime</span>
+        </div>
+        <div class="health-item">
+          <span class="health-dot-pulse"></span>
+          <span><strong>Struktur Pajak:</strong> 0% (100% Tax-Free Nett)</span>
+        </div>
+        <div class="health-item">
+          <span class="health-dot-pulse"></span>
+          <span><strong>WhatsApp:</strong> Gateway Terhubung</span>
+        </div>
       </div>
 
     </div>
@@ -984,6 +1342,24 @@ let orderPageSize = 25; // 25 | 50 | 100
 let orderViewMode = 'auto'; // 'auto' (kartu di HP, tabel di desktop) | 'cards' | 'table'
 let selectedBookingIds = new Set();
 let orderSearchDebounceTimer = null;
+
+// State Kalender Jadwal (Modul: Jadwal Booking)
+let calendarCurrentYear = new Date().getFullYear();
+let calendarCurrentMonth = new Date().getMonth();
+let selectedCalendarDate = new Date().toISOString().split('T')[0];
+
+window.selectCalendarDate = function (dateKey) {
+  selectedCalendarDate = dateKey;
+  if (activeModule === 'calendar') {
+    refreshCalendarView();
+  } else {
+    renderActiveModule();
+  }
+};
+
+window.adminOpenQuickBookingForDate = function (date, time) {
+  showAddOrderModal('manual', date, time);
+};
 
 /**
  * Hitung Jumlah Booking per Status
@@ -1068,6 +1444,9 @@ function syncOrdersUrlParams() {
   window.history.replaceState({}, '', url);
 }
 
+/**
+ * Modul: Kelola Pesanan (Daftar Reservasi, Validasi & Tabel Data)
+ */
 function renderOrdersView() {
   const statusCounts = getStatusCounts();
   const hasActiveFilters = Boolean(currentSearchQuery || currentStatusFilter !== 'ALL' || currentDateFilter !== 'ALL');
@@ -1076,18 +1455,40 @@ function renderOrdersView() {
   return `
     <div class="view-container">
       
+      <!-- Top Action Bar untuk Kelola Pesanan -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.15rem; gap: 1rem; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="brand-badge-icon brand-badge-sm" style="background: #F0FDFA; color: #0D9488; width: 36px; height: 36px;">
+            ${icon('orders', { size: 18 })}
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Daftar Reservasi &amp; Administrasi Pesanan</h3>
+            <p style="margin: 2px 0 0; font-size: 0.78rem; color: var(--text-secondary);">Verifikasi status operasional, validasi mutasi pembayaran, dan ekspor data buku tamu.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary" id="btn-export-orders-csv" style="height: 36px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px;">
+            ${icon('download', { size: 14 })} <span>Ekspor CSV</span>
+          </button>
+          <button type="button" class="btn btn-primary" id="btn-add-booking-primary" style="height: 36px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px;">
+            ${icon('plus', { size: 14 })} <span>+ Tambah Booking</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Unified Control Bar & Compact Data Table Container -->
       <div class="table-card-wrapper">
         
         <!-- Unified Responsive Control Bar (Section 6) -->
         ${ControlBar({
-          searchQuery: currentSearchQuery,
-          currentStatus: currentStatusFilter,
-          currentDate: currentDateFilter,
-          statusCounts,
-          hasActiveFilters,
-          viewMode: orderViewMode
-        })}
+    searchQuery: currentSearchQuery,
+    currentStatus: currentStatusFilter,
+    currentDate: currentDateFilter,
+    statusCounts,
+    hasActiveFilters,
+    viewMode: orderViewMode
+  })}
 
         <!-- Mass Action Bar (Muncul jika ada baris terpilih) -->
         <div id="mass-action-bar-container">
@@ -1159,6 +1560,318 @@ function renderOrdersView() {
   `;
 }
 
+/**
+ * Modul: Jadwal Booking (Kalender Bulanan & Slot 2 Jam Harian WITA)
+ */
+function renderCalendarView() {
+  const MONTH_NAMES_ID = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ];
+  const DAY_NAMES_ID = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const firstDayOfMonth = new Date(calendarCurrentYear, calendarCurrentMonth, 1);
+  const totalDaysInMonth = new Date(calendarCurrentYear, calendarCurrentMonth + 1, 0).getDate();
+  const totalDaysInPrevMonth = new Date(calendarCurrentYear, calendarCurrentMonth, 0).getDate();
+
+  let startDayOfWeek = firstDayOfMonth.getDay();
+  startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+
+  let calendarCellsHtml = '';
+
+  for (let i = startDayOfWeek - 1; i >= 0; i--) {
+    const prevDayNum = totalDaysInPrevMonth - i;
+    calendarCellsHtml += `
+      <div class="calendar-day-box day-outside">
+        <span class="cal-day-number">${prevDayNum}</span>
+      </div>
+    `;
+  }
+
+  for (let day = 1; day <= totalDaysInMonth; day++) {
+    const dateStr = `${calendarCurrentYear}-${String(calendarCurrentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isToday = dateStr === todayStr;
+    const isSelected = dateStr === selectedCalendarDate;
+
+    const dayBookings = ordersData.filter(o => {
+      const bDate = o.order_date || o.booking_date;
+      if (bDate !== dateStr) return false;
+      const s = String(o.status || '').toLowerCase();
+      return !['dibatalkan', 'cancelled', 'batal'].includes(s);
+    });
+
+    const totalPax = dayBookings.reduce((sum, b) => sum + Number(b.pax || 1), 0);
+
+    calendarCellsHtml += `
+      <div class="calendar-day-box ${isToday ? 'day-today' : ''} ${isSelected ? 'day-selected' : ''}" 
+           onclick="window.selectCalendarDate('${dateStr}')" 
+           title="${dayBookings.length > 0 ? `${dayBookings.length} booking (${totalPax} pax)` : 'Tidak ada booking'}">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span class="cal-day-number" style="${isToday ? 'color: var(--accent-brand); font-weight: 700;' : ''}">${day}</span>
+          ${isToday ? `<span style="font-size: 0.6rem; background: #0D9488; color: white; border-radius: 3px; padding: 1px 3px;">HARI INI</span>` : ''}
+        </div>
+        ${dayBookings.length > 0 ? `
+          <span class="cal-booking-badge">
+            ${dayBookings.length} Sesi (${totalPax} Pax)
+          </span>
+        ` : `
+          <span style="font-size: 0.62rem; color: var(--text-muted); margin-top: auto;">Tersedia</span>
+        `}
+      </div>
+    `;
+  }
+
+  const totalRendered = startDayOfWeek + totalDaysInMonth;
+  const remainingCells = (7 - (totalRendered % 7)) % 7;
+  for (let i = 1; i <= remainingCells; i++) {
+    calendarCellsHtml += `
+      <div class="calendar-day-box day-outside">
+        <span class="cal-day-number">${i}</span>
+      </div>
+    `;
+  }
+
+  const STANDARD_SLOTS = [
+    { id: 'slot-1', label: 'Sesi Pagi — Spiritual Awakening', startTime: '09:00', endTime: '11:00', targetMin: 9 * 60 },
+    { id: 'slot-2', label: 'Sesi Siang — Mind & Healing Tour', startTime: '11:30', endTime: '13:30', targetMin: 11 * 60 + 30 },
+    { id: 'slot-3', label: 'Sesi Sore — Balinese Energy Flow', startTime: '14:00', endTime: '16:00', targetMin: 14 * 60 },
+    { id: 'slot-4', label: 'Sesi Senja — Sunset Meditation', startTime: '16:30', endTime: '18:30', targetMin: 16 * 60 + 30 }
+  ];
+
+  const parseMinutes = (timeStr) => {
+    if (!timeStr) return 0;
+    const clean = String(timeStr).replace(/[^0-9:]/g, '');
+    const parts = clean.split(':').map(Number);
+    return (parts[0] || 0) * 60 + (parts[1] || 0);
+  };
+
+  const selectedDayBookings = ordersData.filter(o => {
+    const bDate = o.order_date || o.booking_date;
+    if (bDate !== selectedCalendarDate) return false;
+    const s = String(o.status || '').toLowerCase();
+    return !['dibatalkan', 'cancelled', 'batal'].includes(s);
+  });
+
+  const mappedBookingIds = new Set();
+
+  const slotsHtml = STANDARD_SLOTS.map(slot => {
+    const slotCheck = checkSlotAvailability(selectedCalendarDate, slot.startTime);
+
+    const slotBookings = selectedDayBookings.filter(b => {
+      const bMin = parseMinutes(b.order_time);
+      if (Math.abs(bMin - slot.targetMin) < 75) {
+        mappedBookingIds.add(b.id);
+        return true;
+      }
+      return false;
+    });
+
+    const isBooked = slotBookings.length > 0;
+
+    return `
+      <div class="slot-status-card ${isBooked ? 'slot-booked' : 'slot-available'}">
+        <div class="slot-card-header">
+          <div class="slot-time-title">
+            ${icon('clock', { size: 15 })}
+            <span>${slot.startTime} - ${slot.endTime} WITA</span>
+            <span style="font-size: 0.72rem; font-weight: normal; color: var(--text-secondary); margin-left: 4px;">• ${slot.label}</span>
+          </div>
+          <div>
+            ${isBooked ? `
+              <span class="status-badge badge-confirmed" style="font-size: 0.72rem; padding: 2px 7px;">
+                Terjadwal (${slotCheck.currentPax}/10 Pax)
+              </span>
+            ` : `
+              <span class="status-badge badge-neutral" style="font-size: 0.72rem; padding: 2px 7px; background: #ECFDF5; color: #047857; border: 1px solid #A7F3D0;">
+                Slot Siap (${slotCheck.remainingPax} Pax Kosong)
+              </span>
+            `}
+          </div>
+        </div>
+
+        ${isBooked ? `
+          <div style="display: flex; flex-direction: column; gap: 0.65rem; margin-top: 0.65rem;">
+            ${slotBookings.map(b => {
+              const waUrl = getDirectWhatsAppUrl(b);
+              const pax = Number(b.pax || 1);
+              return `
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; flex-wrap: wrap;">
+                    <div>
+                      <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                        <span>${escapeHtml(b.customer_name)}</span>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: normal;">(${pax} Pax)</span>
+                      </div>
+                      <div style="font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px;">
+                        ${escapeHtml(b.service_or_item || b.service_name || '-')}
+                      </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                      ${StatusBadge(b.status)}
+                      <span class="booking-id-tag" style="font-size: 0.7rem;">${b.order_code || b.invoice || '-'}</span>
+                    </div>
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 0.4rem; border-top: 1px dashed var(--border-subtle); gap: 0.5rem; flex-wrap: wrap;">
+                    <div style="font-size: 0.72rem; color: #0D9488; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                      ${icon('lockClock', { size: 13 })} Kunci 2 Jam Terpasang (${slot.startTime} - ${slot.endTime})
+                    </div>
+                    <div style="display: flex; gap: 4px;">
+                      <button type="button" class="btn btn-secondary" style="height: 28px; font-size: 0.74rem; padding: 0 8px;" onclick="window.adminViewBookingDetail('${b.id}')">
+                        ${icon('eye', { size: 12 })} Detail
+                      </button>
+                      ${waUrl ? `
+                        <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="height: 28px; font-size: 0.74rem; padding: 0 8px; color: #047857;">
+                          ${icon('whatsapp', { size: 12 })} WA
+                        </a>
+                      ` : ''}
+                      <button type="button" class="btn btn-secondary" style="height: 28px; font-size: 0.74rem; padding: 0 8px;" onclick="window.adminOpenRescheduleModal('${b.id}')">
+                        ${icon('calendar', { size: 12 })} Pindah
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        ` : `
+          <div style="margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <span style="font-size: 0.78rem; color: var(--text-secondary);">
+              Slot kosong. Kuota reservasi 8-10 pax tersedia untuk tamu baru.
+            </span>
+            <button type="button" class="btn btn-secondary" style="height: 30px; font-size: 0.78rem; padding: 0 10px; display: inline-flex; align-items: center; gap: 4px;" onclick="window.adminOpenQuickBookingForDate('${selectedCalendarDate}', '${slot.startTime}')">
+              ${icon('plus', { size: 13 })} + Pesan Sesi Ini
+            </button>
+          </div>
+        `}
+      </div>
+    `;
+  }).join('');
+
+  const unmappedBookings = selectedDayBookings.filter(b => !mappedBookingIds.has(b.id));
+  let unmappedHtml = '';
+  if (unmappedBookings.length > 0) {
+    unmappedHtml = `
+      <div style="margin-top: 1rem; border-top: 1px dashed var(--border-subtle); padding-top: 0.75rem;">
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px;">
+          ${icon('clock', { size: 14 })} Sesi Jadwal Khusus / Fleksibel (${unmappedBookings.length})
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+          ${unmappedBookings.map(b => `
+            <div style="background: var(--bg-surface-elevated); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 0.75rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+              <div>
+                <div style="font-weight: 600; font-size: 0.85rem; color: var(--text-primary);">
+                  ${escapeHtml(b.customer_name)} &bull; ${formatJam(b.order_time || '09:00')} WITA
+                </div>
+                <div style="font-size: 0.76rem; color: var(--text-secondary);">${escapeHtml(b.service_or_item || '-')}</div>
+              </div>
+              <div style="display: flex; gap: 4px;">
+                <button type="button" class="btn btn-secondary" style="height: 28px; font-size: 0.74rem; padding: 0 8px;" onclick="window.adminViewBookingDetail('${b.id}')">Detail</button>
+                <button type="button" class="btn btn-secondary" style="height: 28px; font-size: 0.74rem; padding: 0 8px;" onclick="window.adminOpenRescheduleModal('${b.id}')">Pindah</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="view-container">
+      
+      <!-- Top Action Bar untuk Jadwal Booking -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.15rem; gap: 1rem; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="brand-badge-icon brand-badge-sm" style="background: #F0FDFA; color: #0D9488; width: 36px; height: 36px;">
+            ${icon('calendar', { size: 18 })}
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">Kalender Reservasi &amp; Kunci Jadwal 2 Jam</h3>
+            <p style="margin: 2px 0 0; font-size: 0.78rem; color: var(--text-secondary);">Proteksi tabrakan kuota 120 menit (WITA) dan manajemen alokasi slot harian.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-primary" id="btn-cal-add-booking" style="height: 36px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px;">
+            ${icon('plus', { size: 14 })} <span>+ Pesan Sesi Baru</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="calendar-layout-grid">
+        <!-- Kolom Kiri: Kalender Bulanan Interaktif -->
+        <div class="calendar-card">
+          <div class="calendar-nav-bar">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button type="button" id="cal-btn-prev-month" class="btn btn-secondary" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Bulan Sebelumnya">
+                &larr;
+              </button>
+              <div class="calendar-month-title">
+                ${MONTH_NAMES_ID[calendarCurrentMonth]} ${calendarCurrentYear}
+              </div>
+              <button type="button" id="cal-btn-next-month" class="btn btn-secondary" style="width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Bulan Berikutnya">
+                &rarr;
+              </button>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button type="button" id="cal-btn-today" class="btn btn-secondary" style="height: 32px; font-size: 0.78rem; padding: 0 10px;">
+                Bulan &amp; Hari Ini
+              </button>
+            </div>
+          </div>
+
+          <div class="calendar-grid-table" style="margin-bottom: 4px;">
+            ${DAY_NAMES_ID.map(d => `<div class="calendar-day-head">${d}</div>`).join('')}
+          </div>
+
+          <div class="calendar-grid-table">
+            ${calendarCellsHtml}
+          </div>
+
+          <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border-subtle); display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.75rem; color: var(--text-secondary);">
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <span style="width: 12px; height: 12px; border: 1px solid #0D9488; background: #F0FDFA; border-radius: 3px; display: inline-block;"></span>
+              <span>Hari Ini</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <span style="width: 12px; height: 12px; border: 2px solid #0D9488; background: #FFFFFF; border-radius: 3px; display: inline-block;"></span>
+              <span>Tanggal Terpilih</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <span style="width: 12px; height: 12px; background: #0D9488; border-radius: 3px; display: inline-block;"></span>
+              <span>Ada Sesi Booking</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kolom Kanan: Panel Detail Jadwal Harian (Slot 2 Jam) -->
+        <div class="schedule-panel-card">
+          <div class="schedule-panel-header">
+            <div>
+              <div style="font-size: 0.72rem; color: var(--accent-brand); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Agenda &amp; Ketersediaan Sesi</div>
+              <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 2px 0 0 0;">
+                ${formatTanggal(selectedCalendarDate)}
+              </h3>
+            </div>
+            <div style="font-size: 0.74rem; background: #F0FDFA; color: #0F766E; padding: 3px 8px; border-radius: 4px; border: 1px solid #CCFBF1; font-weight: 600;">
+              WITA (Bali) • Kunci Sesi 2 Jam
+            </div>
+          </div>
+
+          <div class="slot-timeline-list">
+            ${slotsHtml}
+          </div>
+
+          ${unmappedHtml}
+        </div>
+      </div>
+
+    </div>
+  `;
+}
+
 function getFilteredAndSortedOrders() {
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -1190,14 +1903,16 @@ function getFilteredAndSortedOrders() {
       if (!(o.order_date || '').startsWith(currentMonth)) return false;
     }
 
-    // Search Keyword
+    // Search Keyword (Section 2 & 6.2 di Penyelarasan.md)
     if (currentSearchQuery) {
       const q = currentSearchQuery.toLowerCase();
-      const matchCode = (o.order_code || '').toLowerCase().includes(q);
+      const matchCode = (o.order_code || '').toLowerCase().includes(q) || (o.booking_id || '').toLowerCase().includes(q) || (o.id || '').toLowerCase().includes(q);
+      const matchInvoice = (o.invoice_number || '').toLowerCase().includes(q);
+      const matchTrx = (o.order_id || '').toLowerCase().includes(q);
       const matchName = (o.customer_name || '').toLowerCase().includes(q);
       const matchPhone = (o.customer_phone || '').toLowerCase().includes(q);
       const matchItem = (o.service_or_item || '').toLowerCase().includes(q);
-      return matchCode || matchName || matchPhone || matchItem;
+      return matchCode || matchInvoice || matchTrx || matchName || matchPhone || matchItem;
     }
 
     return true;
@@ -1248,13 +1963,12 @@ function renderOrderCards(orders) {
   return `
     <div class="orders-mobile-card-list">
       ${orders.map(o => {
-        const netIncome = calculateOrderNetIncome(o);
-        const cleanPhone = (o.customer_phone || '').replace(/[^0-9]/g, '');
-        const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=Halo%20${encodeURIComponent(o.customer_name)},%20kami%20konfirmasi%20jadwal%20${o.order_code}:` : null;
-        const isChecked = selectedBookingIds.has(o.id);
-        const isPaid = o.payment_status === 'Lunas';
+    const netIncome = calculateOrderNetIncome(o);
+    const waLink = getDirectWhatsAppUrl(o);
+    const isChecked = selectedBookingIds.has(o.id);
+    const isPaid = o.payment_status === 'Lunas';
 
-        return `
+    return `
           <div class="booking-mobile-card ${isChecked ? 'card-selected' : ''}" data-id="${o.id}">
             <!-- Card Header: Checkbox + ID + Status Badge -->
             <div class="bmc-header">
@@ -1286,7 +2000,7 @@ function renderOrderCards(orders) {
               <div class="bmc-schedule-amount">
                 <div class="bmc-schedule tabular-nums" style="display: flex; align-items: center; gap: 4px;">
                   ${icon('calendar', { size: 12, strokeWidth: 1.5 })}
-                  <span>${formatTanggal(o.order_date)} • pk ${formatJam(o.order_time)} WIB</span>
+                  <span>${formatTanggal(o.order_date)} • pk ${formatJam(o.order_time)} WITA</span>
                 </div>
                 <div class="bmc-amount tabular-nums">
                   <strong>${formatRupiah(netIncome)}</strong>
@@ -1303,7 +2017,7 @@ function renderOrderCards(orders) {
             </div>
           </div>
         `;
-      }).join('')}
+  }).join('')}
     </div>
   `;
 }
@@ -1318,8 +2032,7 @@ function renderOrderRows(orders) {
 
   return orders.map(o => {
     const netIncome = calculateOrderNetIncome(o);
-    const cleanPhone = (o.customer_phone || '').replace(/[^0-9]/g, '');
-    const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=Halo%20${encodeURIComponent(o.customer_name)},%20kami%20konfirmasi%20jadwal%20${o.order_code}:` : null;
+    const waLink = getDirectWhatsAppUrl(o);
     const isChecked = selectedBookingIds.has(o.id);
 
     return `
@@ -1357,7 +2070,7 @@ function renderOrderRows(orders) {
             ${icon('calendar', { size: 13, strokeWidth: 1.5 })}
             <span>${formatTanggal(o.order_date)}</span>
           </div>
-          <div class="tabular-nums" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; padding-left: 17px;">pk ${formatJam(o.order_time)} WIB</div>
+          <div class="tabular-nums" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; padding-left: 17px;">pk ${formatJam(o.order_time)} WITA</div>
         </td>
 
         <!-- 6. Status Badge (Subtle Semantic Pill dengan dot 6px) -->
@@ -1383,6 +2096,15 @@ function renderOrderRows(orders) {
 }
 
 function initOrdersEvents() {
+  // Top Bar Action Buttons
+  document.getElementById('btn-export-orders-csv')?.addEventListener('click', () => {
+    exportBookingsToCSV(ordersData);
+  });
+
+  document.getElementById('btn-add-booking-primary')?.addEventListener('click', () => {
+    showAddOrderModal('manual');
+  });
+
   // 1. Baca URL Query Parameters
   const initialParams = new URLSearchParams(window.location.search);
   if (initialParams.has('q')) currentSearchQuery = initialParams.get('q');
@@ -1570,10 +2292,52 @@ function refreshOrdersView() {
   }
 }
 
+function initCalendarEvents() {
+  document.getElementById('cal-btn-prev-month')?.addEventListener('click', () => {
+    if (calendarCurrentMonth === 0) {
+      calendarCurrentMonth = 11;
+      calendarCurrentYear--;
+    } else {
+      calendarCurrentMonth--;
+    }
+    refreshCalendarView();
+  });
+
+  document.getElementById('cal-btn-next-month')?.addEventListener('click', () => {
+    if (calendarCurrentMonth === 11) {
+      calendarCurrentMonth = 0;
+      calendarCurrentYear++;
+    } else {
+      calendarCurrentMonth++;
+    }
+    refreshCalendarView();
+  });
+
+  document.getElementById('cal-btn-today')?.addEventListener('click', () => {
+    const now = new Date();
+    calendarCurrentYear = now.getFullYear();
+    calendarCurrentMonth = now.getMonth();
+    selectedCalendarDate = now.toISOString().split('T')[0];
+    refreshCalendarView();
+  });
+
+  document.getElementById('btn-cal-add-booking')?.addEventListener('click', () => {
+    showAddOrderModal('manual', selectedCalendarDate);
+  });
+}
+
+function refreshCalendarView() {
+  const container = document.getElementById('dasbor-viewport');
+  if (container && activeModule === 'calendar') {
+    container.innerHTML = renderCalendarView();
+    initCalendarEvents();
+  }
+}
+
 /**
  * Menu Tindakan Cepat (...) — Sesuai Butir 7 & 10.D di Markdown.MD
  */
-window.adminOpenActionMenu = function(orderId, event) {
+window.adminOpenActionMenu = function (orderId, event) {
   event?.stopPropagation?.();
   const order = ordersData.find(o => o.id === orderId);
   if (!order) return;
@@ -1582,10 +2346,11 @@ window.adminOpenActionMenu = function(orderId, event) {
   if (!slot) return;
 
   const userCanDelete = canDeleteBooking(); // Admin Only (Section 10.D)
+  const waUrl = getDirectWhatsAppUrl(order);
 
   slot.innerHTML = `
     <div class="modal-overlay" id="action-menu-overlay">
-      <div class="modal-dialog" style="max-width: 420px;">
+      <div class="modal-dialog" style="max-width: 440px;">
         <div class="modal-header">
           <div>
             <span class="booking-id-mono" style="font-size: 0.85rem;">${order.order_code}</span>
@@ -1607,7 +2372,7 @@ window.adminOpenActionMenu = function(orderId, event) {
                 <span class="badge-dot" style="background: #10B981;"></span> Dikonfirmasi
               </button>
               <button type="button" class="btn btn-secondary" style="font-size: 0.78rem; justify-content: flex-start; gap: 6px;" onclick="window.adminChangeOrderStatus('${order.id}', 'Selesai'); document.getElementById('action-menu-overlay')?.remove();">
-                <span class="badge-dot" style="background: #71717A;"></span> Selesai
+                <span class="badge-dot" style="background: #0D9488;"></span> Selesai / Lunas
               </button>
               <button type="button" class="btn btn-secondary" style="font-size: 0.78rem; justify-content: flex-start; gap: 6px;" onclick="window.adminChangeOrderStatus('${order.id}', 'Dibatalkan'); document.getElementById('action-menu-overlay')?.remove();">
                 <span class="badge-dot" style="background: #EF4444;"></span> Dibatalkan
@@ -1615,10 +2380,20 @@ window.adminOpenActionMenu = function(orderId, event) {
             </div>
           </div>
 
-          <!-- Tindakan Cepat Sesuai Spesifikasi: Lihat detail, Ubah, Konfirmasi, Batalkan, Salin ID, Hapus -->
+          <!-- Tindakan Cepat Sesuai Spesifikasi: Lihat detail, WhatsApp, Reschedule, Ubah, Salin ID, Hapus -->
           <div style="display: flex; flex-direction: column; gap: 0.45rem; border-top: 1px solid var(--border-subtle); padding-top: 0.85rem;">
             <button type="button" class="btn btn-secondary" style="width: 100%; justify-content: flex-start; gap: 8px;" onclick="document.getElementById('action-menu-overlay')?.remove(); window.adminViewBookingDetail('${order.id}');">
-              ${icon('orders', { size: 15 })} <span>Lihat Detail Booking</span>
+              ${icon('orders', { size: 15 })} <span>Lihat Detail Booking &amp; Notes</span>
+            </button>
+
+            ${waUrl ? `
+              <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="width: 100%; justify-content: flex-start; gap: 8px; color: #047857;" onclick="document.getElementById('action-menu-overlay')?.remove();">
+                ${icon('whatsapp', { size: 15, strokeWidth: 2 })} <span>Kirim Notifikasi WhatsApp Tamu</span>
+              </a>
+            ` : ''}
+
+            <button type="button" class="btn btn-secondary" style="width: 100%; justify-content: flex-start; gap: 8px;" onclick="document.getElementById('action-menu-overlay')?.remove(); window.adminOpenRescheduleModal('${order.id}');">
+              ${icon('calendar', { size: 15 })} <span>Reschedule Jadwal Kunjungan</span>
             </button>
 
             <button type="button" class="btn btn-secondary" style="width: 100%; justify-content: flex-start; gap: 8px;" onclick="document.getElementById('action-menu-overlay')?.remove(); window.adminOpenEditOrder('${order.id}');">
@@ -1655,7 +2430,7 @@ window.adminOpenActionMenu = function(orderId, event) {
 /**
  * Salin ID Booking ke Clipboard
  */
-window.adminCopyBookingId = async function(orderCode) {
+window.adminCopyBookingId = async function (orderCode) {
   try {
     await navigator.clipboard.writeText(orderCode);
     window.showToast?.(`ID Booking disalin: ${orderCode}`, 'success');
@@ -1665,24 +2440,188 @@ window.adminCopyBookingId = async function(orderCode) {
 };
 
 /**
- * Dialog Modal: Lihat Detail Booking
+ * Modal Reschedule Jadwal Kunjungan (2-Hour Booking Lock Validation)
+ * Sesuai Section 5.6 & 6.4 di Penyelarasan.md
  */
-window.adminViewBookingDetail = function(orderId) {
+window.adminOpenRescheduleModal = function (orderId) {
+  const slot = document.getElementById('dasbor-modals-slot');
+  if (!slot) return;
+  const order = ordersData.find(o => o.id === orderId);
+  if (!order) {
+    window.showToast?.('Pesanan tidak ditemukan!', 'error');
+    return;
+  }
+
+  const currentDate = order.order_date || new Date().toISOString().split('T')[0];
+  const currentTime = order.order_time ? order.order_time.slice(0, 5) : '09:00';
+  const pax = order.pax || 1;
+
+  slot.innerHTML = `
+    <div class="modal-overlay" id="reschedule-modal-overlay">
+      <div class="modal-dialog" style="max-width: 500px;">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            ${icon('calendar', { size: 18 })}
+            <h3 class="card-title" style="margin: 0; font-size: 1.05rem;">Reschedule Jadwal &mdash; <span class="booking-id-tag">${escapeHtml(order.order_code)}</span></h3>
+          </div>
+          <button class="btn-close-modal" id="btn-close-reschedule">&times;</button>
+        </div>
+
+        <div class="modal-body" style="padding: 1.25rem;">
+          <div style="margin-bottom: 1rem; background: var(--bg-surface-elevated); padding: 0.85rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 0.82rem;">
+            <div style="color: var(--text-primary); font-weight: 600;">${escapeHtml(order.customer_name)} (${pax} Pax)</div>
+            <div style="color: var(--text-secondary); margin-top: 2px;">${escapeHtml(order.service_or_item)}</div>
+            <div style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border-subtle); color: var(--text-muted);">
+              Jadwal Saat Ini: <strong style="color: var(--text-primary);">${formatTanggal(currentDate)} pk ${formatJam(currentTime)} WITA</strong>
+            </div>
+          </div>
+
+          <form id="form-reschedule-booking">
+            <div class="form-grid-2" style="margin-bottom: 1rem;">
+              <div class="form-group">
+                <label class="form-label">Tanggal Pelaksanaan Baru:</label>
+                <input type="date" id="reschedule-new-date" class="form-input" value="${currentDate}" required min="${new Date().toISOString().split('T')[0]}" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Jam Sesi (WITA):</label>
+                <input type="time" id="reschedule-new-time" class="form-input" value="${currentTime}" required />
+              </div>
+            </div>
+
+            <!-- Live Availability & 2-Hour Lock Status Badge -->
+            <div id="reschedule-slot-feedback" style="margin-bottom: 1.25rem; padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 0.8rem; display: flex; align-items: flex-start; gap: 8px;">
+              <div style="margin-top: 2px;">${icon('lockClock', { size: 16 })}</div>
+              <div id="reschedule-feedback-text">Memeriksa ketersediaan slot 2 jam (2-Hour Booking Lock)...</div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+              <button type="button" class="btn btn-secondary" onclick="document.getElementById('reschedule-modal-overlay')?.remove();">
+                Batal
+              </button>
+              <button type="submit" id="btn-submit-reschedule" class="btn btn-primary" style="display: flex; align-items: center; gap: 6px;">
+                ${icon('check', { size: 14 })} <span>Simpan Jadwal Baru</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('btn-close-reschedule')?.addEventListener('click', () => { slot.innerHTML = ''; });
+  document.getElementById('reschedule-modal-overlay')?.addEventListener('click', (e) => {
+    if (e.target.id === 'reschedule-modal-overlay') slot.innerHTML = '';
+  });
+
+  const dateInput = document.getElementById('reschedule-new-date');
+  const timeInput = document.getElementById('reschedule-new-time');
+  const feedbackBox = document.getElementById('reschedule-slot-feedback');
+  const feedbackText = document.getElementById('reschedule-feedback-text');
+  const submitBtn = document.getElementById('btn-submit-reschedule');
+
+  function updateSlotStatus() {
+    const d = dateInput?.value;
+    const t = timeInput?.value;
+    if (!d || !t) return;
+
+    const check = checkSlotAvailability(d, t, pax, order.id);
+    if (check.available) {
+      feedbackBox.style.background = '#ECFDF5';
+      feedbackBox.style.borderColor = '#A7F3D0';
+      feedbackBox.style.color = '#065F46';
+      feedbackText.innerHTML = `<strong>Slot Tersedia!</strong> Kuota aman (${check.remainingCapacity} dari ${check.maxCapacity} pax tersisa dalam radius 2 jam).`;
+      submitBtn.disabled = false;
+    } else {
+      feedbackBox.style.background = '#FEF2F2';
+      feedbackBox.style.borderColor = '#FECACA';
+      feedbackBox.style.color = '#991B1B';
+      feedbackText.innerHTML = `<strong>Kunci Slot 2 Jam Aktif:</strong> ${escapeHtml(check.reason)}`;
+      submitBtn.disabled = true;
+    }
+  }
+
+  dateInput?.addEventListener('change', updateSlotStatus);
+  timeInput?.addEventListener('input', updateSlotStatus);
+  updateSlotStatus();
+
+  document.getElementById('form-reschedule-booking')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const newDate = dateInput.value;
+    const newTime = timeInput.value;
+
+    const validation = checkSlotAvailability(newDate, newTime, pax, order.id);
+    if (!validation.available) {
+      window.showToast?.(validation.reason, 'error');
+      return;
+    }
+
+    try {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Menyimpan...';
+
+      // Update in Supabase (PostgreSQL)
+      await Promise.allSettled([
+        supabase.from('bookings').update({
+          booking_date: newDate,
+          tour_date: newDate,
+          booking_time: `${newTime} WITA`
+        }).eq('id', order.id),
+        supabase.from('orders').update({
+          order_date: newDate,
+          order_time: `${newTime} WITA`
+        }).eq('id', order.id)
+      ]);
+
+      // Update local memory
+      order.order_date = newDate;
+      order.booking_date = newDate;
+      order.tour_date = newDate;
+      order.order_time = `${newTime} WITA`;
+      order.booking_time = `${newTime} WITA`;
+
+      await logAuditEvent({
+        action: 'RESCHEDULE_BOOKING',
+        entity_type: 'orders',
+        entity_id: order.id,
+        details: `Jadwal ${order.order_code} dijadwalkan ulang ke ${newDate} pk ${newTime} WITA`
+      });
+
+      slot.innerHTML = '';
+      window.showToast?.(`Jadwal ${order.order_code} berhasil diubah ke ${formatTanggal(newDate)} pk ${newTime} WITA!`, 'success');
+      renderActiveModule();
+    } catch (err) {
+      window.showToast?.(`Gagal reschedule: ${err.message}`, 'error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Simpan Jadwal Baru';
+    }
+  });
+};
+
+/**
+ * Dialog Modal: Lihat Detail Booking & Catatan Khusus
+ * Sesuai Spesifikasi Section 4.A & 6.3 di Penyelarasan.md (0% Pajak Tax-Free Nett, DOB Numerologi/Healing, WhatsApp)
+ */
+window.adminViewBookingDetail = function (orderId) {
   const slot = document.getElementById('dasbor-modals-slot');
   if (!slot) return;
   const order = ordersData.find(o => o.id === orderId);
   if (!order) return;
 
   const netIncome = calculateOrderNetIncome(order);
-  const cleanPhone = (order.customer_phone || '').replace(/[^0-9]/g, '');
-  const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=Halo%20${encodeURIComponent(order.customer_name)},%20konfirmasi%20booking%20${order.order_code}:` : null;
+  const waLink = getDirectWhatsAppUrl(order);
+  const parsed = parseBookingNotes(order.notes);
+  const origin = order.customer_nationality || parsed.origin || 'Indonesia';
+  const pax = order.pax || parsed.pax || 1;
+  const rawTime = order.order_time || parsed.time || '09:00';
+  const timeWita = rawTime.includes('WITA') ? rawTime : `${rawTime} WITA`;
+  const isSpecialWellness = (order.service_id === 'SRV003' || order.service_id === 'SRV004' || (order.service_or_item || '').toLowerCase().includes('numerolog') || (order.service_or_item || '').toLowerCase().includes('healing'));
 
   slot.innerHTML = `
     <div class="modal-overlay" id="booking-detail-overlay">
-      <div class="modal-dialog" style="max-width: 540px;">
+      <div class="modal-dialog" style="max-width: 580px;">
         <div class="modal-header">
           <div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Rincian Reservasi</div>
+            <div style="font-size: 0.72rem; color: var(--accent-brand); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Mahawellnessjourney Reservasi</div>
             <h3 class="modal-title" style="font-size: 1.15rem; font-weight: 600; margin-top: 2px;">
               ${escapeHtml(order.customer_name)}
             </h3>
@@ -1691,34 +2630,59 @@ window.adminViewBookingDetail = function(orderId) {
         </div>
 
         <div class="modal-body" style="padding: 1.25rem;">
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.25rem;">
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.15rem;">
             <div style="background: var(--bg-surface-elevated); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">ID Booking</span>
-              <div style="margin-top: 3px;"><span class="booking-id-tag">${order.order_code}</span></div>
+              <span style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">ID Booking &amp; Invoice</span>
+              <div style="margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">
+                <span class="booking-id-mono" style="font-size: 0.78rem;">${order.order_code}</span>
+                ${order.invoice_number ? `<span style="font-size: 0.72rem; color: var(--text-muted); font-family: monospace;">Inv: ${order.invoice_number}</span>` : ''}
+              </div>
             </div>
 
             <div style="background: var(--bg-surface-elevated); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-              <span style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">Status Saat Ini</span>
-              <div style="margin-top: 4px;">${StatusBadge(order.status)}</div>
+              <span style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase;">Status Reservasi</span>
+              <div style="margin-top: 5px;">${StatusBadge(order.status)}</div>
             </div>
           </div>
 
           <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem; border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 1rem; background: var(--bg-surface);">
-            <div style="display: flex; justify-content: space-between;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
               <span style="color: var(--text-secondary);">Paket / Layanan:</span>
               <strong style="color: var(--text-primary); text-align: right;">${escapeHtml(order.service_or_item)}</strong>
             </div>
 
-            <div style="display: flex; justify-content: space-between;">
-              <span style="color: var(--text-secondary);">Jadwal Pelaksanaan:</span>
-              <span class="tabular-nums" style="font-weight: 600;">${formatTanggal(order.order_date)} pk ${formatJam(order.order_time)} WIB</span>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--text-secondary);">Jumlah Peserta (Pax):</span>
+              <span style="font-weight: 600; color: var(--text-primary);">${pax} Orang</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <span style="color: var(--text-secondary);">Sesi Pelaksanaan:</span>
+              <div style="text-align: right;">
+                <div class="tabular-nums" style="font-weight: 600; color: var(--text-primary);">${formatTanggal(order.order_date)} pk ${timeWita}</div>
+                <div style="font-size: 0.72rem; color: #0D9488; display: inline-flex; align-items: center; gap: 4px; margin-top: 2px;">
+                  ${icon('lockClock', { size: 12 })} <span>Kunci Sesi 2 Jam Eksklusif</span>
+                </div>
+              </div>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="color: var(--text-secondary);">Nomor Kontak:</span>
+              <span style="color: var(--text-secondary);">Asal / Kebangsaan:</span>
+              <span class="badge-subtle badge-confirmed" style="font-size: 0.75rem;">${escapeHtml(origin)}</span>
+            </div>
+
+            ${(parsed.dob || isSpecialWellness) ? `
+              <div style="display: flex; justify-content: space-between; align-items: center; background: #F0FDFA; padding: 6px 10px; border-radius: 4px; border: 1px solid #CCFBF1;">
+                <span style="color: #0F766E; font-size: 0.78rem; font-weight: 600;">Tanggal Lahir (DOB - Spiritual/Healing):</span>
+                <span class="tabular-nums" style="font-weight: 700; color: #0D9488; font-size: 0.85rem;">${escapeHtml(parsed.dob || 'Belum Dilampirkan')}</span>
+              </div>
+            ` : ''}
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--text-secondary);">Kontak Tamu:</span>
               <span>
                 ${waLink ? `
-                  <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="table-wa-link" title="Chat WhatsApp">
+                  <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="table-wa-link" title="Chat WhatsApp Tamu">
                     ${icon('whatsapp', { size: 13, strokeWidth: 2 })} <span>${escapeHtml(order.customer_phone)}</span>
                   </a>
                 ` : escapeHtml(order.customer_phone || '-')}
@@ -1726,34 +2690,53 @@ window.adminViewBookingDetail = function(orderId) {
             </div>
 
             <div style="display: flex; justify-content: space-between;">
-              <span style="color: var(--text-secondary);">Email:</span>
+              <span style="color: var(--text-secondary);">Email Tamu:</span>
               <span>${escapeHtml(order.customer_email || '-')}</span>
             </div>
 
-            <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 0.5rem;">
-              <span style="color: var(--text-secondary);">Total Nominal:</span>
-              <strong class="tabular-nums" style="font-size: 1rem; color: var(--text-primary);">${formatRupiah(netIncome)}</strong>
+            <!-- Rincian Biaya 100% Tax-Free Nett Sesuai Section 4.A & 6.3 -->
+            <div style="border-top: 1px solid var(--border-subtle); padding-top: 0.65rem; margin-top: 0.25rem;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 3px;">
+                <span style="color: var(--text-secondary);">Subtotal Biaya:</span>
+                <span class="tabular-nums">${formatRupiah(order.subtotal_amount)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 3px;">
+                <span style="color: var(--text-secondary);">Pajak (Tax):</span>
+                <span style="color: #059669; font-weight: 500;">Rp 0 (100% Tax-Free Nett)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 700; border-top: 1px dashed var(--border-subtle); padding-top: 4px; margin-top: 4px;">
+                <span style="color: var(--text-primary);">Total Tagihan Nett:</span>
+                <span class="tabular-nums" style="color: var(--text-primary);">${formatRupiah(netIncome)}</span>
+              </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between;">
-              <span style="color: var(--text-secondary);">Status Bayar:</span>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--text-secondary);">Status Pembayaran:</span>
               <span style="font-weight: 600; color: ${order.payment_status === 'Lunas' ? '#047857' : '#B45309'};">${order.payment_status || 'Belum Dibayar'}</span>
             </div>
 
-            ${order.notes ? `
+            ${(parsed.userNotes || order.notes) ? `
               <div style="border-top: 1px solid var(--border-subtle); padding-top: 0.5rem;">
-                <span style="color: var(--text-secondary); display: block; font-size: 0.75rem; text-transform: uppercase;">Catatan Tambahan:</span>
-                <p style="margin: 3px 0 0; color: var(--text-primary); font-size: 0.8rem;">${escapeHtml(order.notes)}</p>
+                <span style="color: var(--text-secondary); display: block; font-size: 0.72rem; text-transform: uppercase;">Catatan Tambahan Tamu:</span>
+                <p style="margin: 3px 0 0; color: var(--text-primary); font-size: 0.82rem; background: var(--bg-surface-elevated); padding: 6px 8px; border-radius: 4px; border: 1px solid var(--border-subtle);">${escapeHtml(parsed.userNotes || order.notes)}</p>
               </div>
             ` : ''}
           </div>
 
-          <div style="margin-top: 1.25rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
-            <button type="button" class="btn btn-secondary" onclick="document.getElementById('booking-detail-overlay')?.remove();">
-              Tutup
+          <div style="margin-top: 1.25rem; display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap;">
+            ${waLink ? `
+              <a href="${waLink}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="color: #047857; gap: 5px;">
+                ${icon('whatsapp', { size: 14, strokeWidth: 2 })} <span>Kirim WA</span>
+              </a>
+            ` : ''}
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('booking-detail-overlay')?.remove(); window.adminOpenRescheduleModal('${order.id}');">
+              ${icon('calendar', { size: 14 })} <span>Reschedule</span>
             </button>
-            <button type="button" class="btn btn-primary-action" onclick="document.getElementById('booking-detail-overlay')?.remove(); window.adminOpenEditOrder('${order.id}');">
-              Ubah Data
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('booking-detail-overlay')?.remove(); window.adminOpenEditOrder('${order.id}');">
+              ${icon('edit', { size: 14 })} <span>Ubah Data</span>
+            </button>
+            <button type="button" class="btn btn-primary-action" onclick="document.getElementById('booking-detail-overlay')?.remove();">
+              Tutup
             </button>
           </div>
         </div>
@@ -1767,23 +2750,58 @@ window.adminViewBookingDetail = function(orderId) {
   });
 };
 
-window.adminChangeOrderStatus = async function(orderId, newStatus, showToastMessage = true) {
+/**
+ * Update Status Pesanan dengan Idempotency Guard
+ * Sesuai Section 6.4 di Penyelarasan.md:
+ * - Mencegah duplikasi transaksi finansial dan perhitungan omzet ganda pada order_id yang sama
+ * - Pelepasan kunci slot 2 jam otomatis (auto-release) jika status diubah ke 'Dibatalkan' / 'cancelled'
+ */
+window.adminChangeOrderStatus = async function (orderId, newStatus, showToastMessage = true) {
   try {
     const target = ordersData.find(o => o.id === orderId);
-    if (target) {
-      target.status = newStatus;
-      if (newStatus === 'Selesai') target.payment_status = 'Lunas';
-      if (newStatus === 'Dibatalkan') target.payment_status = 'Refund';
+    if (!target) return;
+
+    // Idempotency check: jika status sudah sama, hindari pemrosesan ganda
+    if (target.status === newStatus && (newStatus !== 'Selesai' || target.payment_status === 'Lunas')) {
+      if (showToastMessage) window.showToast?.(`Pesanan ${target.order_code} sudah berstatus "${newStatus}".`, 'info');
+      return;
     }
+
+    target.status = newStatus;
+    if (newStatus === 'Selesai') target.payment_status = 'Lunas';
+    if (newStatus === 'Dibatalkan') target.payment_status = 'Refund';
 
     let bkgStatus = 'pending';
     if (newStatus === 'Selesai') bkgStatus = 'completed';
     else if (newStatus === 'Dikonfirmasi') bkgStatus = 'confirmed';
     else if (newStatus === 'Dibatalkan') bkgStatus = 'cancelled';
 
+    // Idempotency Guard untuk Transaksi Finansial: Pastikan TRX unik per order_id
+    if (newStatus === 'Selesai' || target.payment_status === 'Lunas') {
+      const existingTrx = transactionsData.find(t => t.source_id === orderId || t.transaction_code === 'TRX-' + (target.order_code || target.id));
+      if (!existingTrx) {
+        const newTrx = {
+          id: 'trx-' + target.id,
+          transaction_code: 'TRX-' + (target.order_code || target.id),
+          transaction_date: target.order_date || new Date().toISOString().split('T')[0],
+          type: 'income',
+          category: 'Pendapatan Pesanan',
+          description: `Pembayaran ${target.order_code} - ${target.customer_name}`,
+          amount: target.subtotal_amount,
+          source_type: 'order',
+          source_id: target.id,
+          payment_method: 'Transfer Bank / Online',
+          is_closed: false,
+          created_at: new Date().toISOString()
+        };
+        transactionsData.unshift(newTrx);
+        await supabase.from('financial_transactions').insert(newTrx);
+      }
+    }
+
     await Promise.allSettled([
       supabase.from('bookings').update({ status: bkgStatus }).eq('id', orderId),
-      supabase.from('orders').update({ 
+      supabase.from('orders').update({
         status: newStatus,
         payment_status: newStatus === 'Selesai' ? 'Lunas' : (newStatus === 'Dibatalkan' ? 'Refund' : 'Belum Dibayar')
       }).eq('id', orderId)
@@ -1805,7 +2823,7 @@ window.adminChangeOrderStatus = async function(orderId, newStatus, showToastMess
   }
 };
 
-window.adminDeleteOrder = async function(orderId) {
+window.adminDeleteOrder = async function (orderId) {
   // Pengecekan RBAC Server / Client (Section 10.D)
   if (!canDeleteBooking()) {
     window.showToast?.('Akses ditolak: Hanya peran Admin yang diizinkan menghapus data booking.', 'error');
@@ -1814,7 +2832,7 @@ window.adminDeleteOrder = async function(orderId) {
 
   const target = ordersData.find(o => o.id === orderId);
   const code = target?.order_code || orderId;
-  
+
   // Wajib Dialog Konfirmasi
   if (!confirm(`Apakah Anda yakin ingin menghapus booking ${code} secara permanen dari database? Tindakan ini tidak dapat dibatalkan.`)) return;
 
@@ -1841,7 +2859,7 @@ window.adminDeleteOrder = async function(orderId) {
   }
 };
 
-window.adminOpenEditOrder = function(orderId) {
+window.adminOpenEditOrder = function (orderId) {
   const slot = document.getElementById('dasbor-modals-slot');
   if (!slot) return;
 
@@ -1989,7 +3007,7 @@ window.adminOpenEditOrder = function(orderId) {
         entity_type: 'orders',
         entity_id: orderId,
         details: `Pesanan ${order.order_code} berhasil diperbarui`
-      }]).catch(() => {});
+      }]).catch(() => { });
 
       window.showToast?.(`Pesanan ${order.order_code} berhasil diperbarui!`, 'success');
       slot.innerHTML = '';
@@ -2007,7 +3025,7 @@ window.adminOpenEditOrder = function(orderId) {
    ============================================================================== */
 function renderProfitView() {
   const overallSummary = calculatePeriodSummary(ordersData, costsData, transactionsData.filter(t => t.type === 'expense' && t.source_type === 'operational'));
-  
+
   const rev = overallSummary.totalRevenue || 0;
   const cost = overallSummary.totalOrderCosts || 0;
   const op = overallSummary.totalOperational || 0;
@@ -2208,13 +3226,13 @@ function renderProfitView() {
             </thead>
             <tbody>
               ${ordersData.map(o => {
-                const orderCosts = costsData.filter(c => c.order_id === o.id);
-                const netIncome = calculateOrderNetIncome(o);
-                const totalCost = calculateOrderTotalCost(orderCosts);
-                const grossProfit = calculateOrderGrossProfit(o, orderCosts);
-                const margin = calculateOrderProfitMargin(o, orderCosts);
+    const orderCosts = costsData.filter(c => c.order_id === o.id);
+    const netIncome = calculateOrderNetIncome(o);
+    const totalCost = calculateOrderTotalCost(orderCosts);
+    const grossProfit = calculateOrderGrossProfit(o, orderCosts);
+    const margin = calculateOrderProfitMargin(o, orderCosts);
 
-                return `
+    return `
                   <tr>
                     <td>
                       <span class="booking-id-tag">${escapeHtml(o.order_code)}</span>
@@ -2250,7 +3268,7 @@ function renderProfitView() {
                     </td>
                   </tr>
                 `;
-              }).join('')}
+  }).join('')}
             </tbody>
           </table>
         </div>
@@ -2260,7 +3278,7 @@ function renderProfitView() {
   `;
 }
 
-function initProfitEvents() {}
+function initProfitEvents() { }
 
 /* ==============================================================================
    4. MODUL: DATA PELANGGAN & RIWAYAT (FASE 3)
@@ -2319,13 +3337,18 @@ function renderCustomerRows(customers) {
     const custOrders = ordersData.filter(o => o.customer_id === c.id || o.customer_name === c.name);
     const totalSpent = custOrders.reduce((sum, o) => sum + calculateOrderNetIncome(o), 0);
     const cleanPhone = (c.phone || '').replace(/[^0-9]/g, '');
-    const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=Halo%20${encodeURIComponent(c.name)},%20kami%20dari%20Sacred%20Journey%20Bali:` : null;
+    const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=Halo%20${encodeURIComponent(c.name)},%20kami%20dari%20Mahawellnessjourney%20Bali:` : null;
 
     return `
       <tr>
         <td>
-          <div class="cust-cell-primary">${escapeHtml(c.name)}</div>
-          <div class="cust-cell-secondary">${escapeHtml(c.notes || '-')}</div>
+          <div class="cust-cell-primary" style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+            <span>${escapeHtml(c.name)}</span>
+            ${c.nationality ? `<span class="badge-subtle badge-confirmed" style="font-size: 0.68rem; padding: 1px 6px;">${escapeHtml(c.nationality)}</span>` : ''}
+          </div>
+          <div class="cust-cell-secondary">
+            ${c.dob ? `<span style="color: #0D9488; font-weight: 600;">DOB: ${escapeHtml(c.dob)}</span> &bull; ` : ''}${escapeHtml(c.notes || '-')}
+          </div>
         </td>
 
         <td>
@@ -2396,7 +3419,7 @@ function initCustomersEvents() {
   });
 }
 
-window.adminViewCustomerOrders = function(customerId) {
+window.adminViewCustomerOrders = function (customerId) {
   const slot = document.getElementById('dasbor-modals-slot');
   if (!slot) return;
 
@@ -2409,7 +3432,7 @@ window.adminViewCustomerOrders = function(customerId) {
   const custOrders = ordersData.filter(o => o.customer_id === customer.id || o.customer_name === customer.name);
   const totalSpent = custOrders.reduce((sum, o) => sum + calculateOrderNetIncome(o), 0);
   const cleanPhone = (customer.phone || '').replace(/[^0-9]/g, '');
-  const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=Halo%20${encodeURIComponent(customer.name)},%20kami%20dari%20admin%20Sacred%20Journey%20Bali:` : null;
+  const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=Halo%20${encodeURIComponent(customer.name)},%20kami%20dari%20admin%20Mahawellnessjourney%20Bali:` : null;
 
   slot.innerHTML = `
     <div class="modal-overlay" id="customer-orders-overlay">
@@ -2586,8 +3609,8 @@ function initChartsEvents() {
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
   const revenueData = [12000000, 14500000, 16200000, 13800000, 19500000, 22000000, 24500000, 21000000, 18500000, 2650000, 0, 0];
-  const costData =    [5200000,  6100000,  6900000,  5800000,  7900000,  8800000,  9900000,  8500000,  7200000,  1220000, 0, 0];
-  const profitData =  revenueData.map((rev, idx) => rev - costData[idx]);
+  const costData = [5200000, 6100000, 6900000, 5800000, 7900000, 8800000, 9900000, 8500000, 7200000, 1220000, 0, 0];
+  const profitData = revenueData.map((rev, idx) => rev - costData[idx]);
 
   const ctx = canvas.getContext('2d');
   chartProfitInstance = new Chart(ctx, {
@@ -2949,7 +3972,7 @@ function initSyncEvents() {
     // Simulasi penarikan idempotent dari website utama
     setTimeout(async () => {
       const newSyncRun = {
-        source_name: 'Website Utama (Sacred Journey Bali)',
+        source_name: 'Website Utama (Mahawellnessjourney)',
         started_at: new Date().toISOString(),
         finished_at: new Date().toISOString(),
         status: 'Berhasil',
@@ -3142,12 +4165,13 @@ function initSettingsEvents() {
 /* ==============================================================================
    MODALS: CATAT PESANAN WA, BIAYA, TRANSAKSI, TUTUP BUKU
    ============================================================================== */
-function showAddOrderModal(sourceType = 'whatsapp') {
+function showAddOrderModal(sourceType = 'whatsapp', defaultDate = null, defaultTime = null) {
   const slot = document.getElementById('dasbor-modals-slot');
   if (!slot) return;
 
-  const nextCode = `ORD-${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2, '0')}-${String(ordersData.length + 1).padStart(3, '0')}`;
-  const today = new Date().toISOString().split('T')[0];
+  const nextCode = `ORD-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(ordersData.length + 1).padStart(3, '0')}`;
+  const today = defaultDate || new Date().toISOString().split('T')[0];
+  const initialTime = defaultTime ? (defaultTime.replace(/[^0-9:]/g, '').slice(0, 5)) : '09:00';
 
   slot.innerHTML = `
     <div class="modal-overlay" id="add-order-overlay">
@@ -3170,6 +4194,17 @@ function showAddOrderModal(sourceType = 'whatsapp') {
               <div class="form-group">
                 <label class="form-label">Tanggal Pelaksanaan:</label>
                 <input type="date" id="inp-order-date" class="form-input" value="${today}" required />
+              </div>
+            </div>
+
+            <div class="form-grid-2" style="margin-bottom: 1rem;">
+              <div class="form-group">
+                <label class="form-label">Jam Sesi (WITA — Kunci 2 Jam):</label>
+                <input type="time" id="inp-order-time" class="form-input" value="${initialTime}" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Jumlah Tamu (Pax):</label>
+                <input type="number" id="inp-order-pax" class="form-input" value="1" min="1" max="10" required />
               </div>
             </div>
 
@@ -3222,7 +4257,7 @@ function showAddOrderModal(sourceType = 'whatsapp') {
 
             <div class="form-group" style="margin-bottom: 1.25rem;">
               <label class="form-label">Catatan Tambahan:</label>
-              <textarea id="inp-order-notes" class="form-textarea" rows="2" placeholder="Catatan khusus dari chat WhatsApp..."></textarea>
+              <textarea id="inp-order-notes" class="form-textarea" rows="2" placeholder="Catatan khusus dari chat WhatsApp atau preferensi tamu..."></textarea>
             </div>
 
             <button type="submit" class="btn btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
@@ -3242,6 +4277,8 @@ function showAddOrderModal(sourceType = 'whatsapp') {
 
     const code = document.getElementById('inp-order-code')?.value;
     const date = document.getElementById('inp-order-date')?.value;
+    const rawTime = document.getElementById('inp-order-time')?.value || '09:00';
+    const pax = Number(document.getElementById('inp-order-pax')?.value || 1);
     const name = document.getElementById('inp-order-cust-name')?.value.trim();
     const phone = document.getElementById('inp-order-cust-phone')?.value.trim();
     const item = document.getElementById('inp-order-item')?.value.trim();
@@ -3251,6 +4288,13 @@ function showAddOrderModal(sourceType = 'whatsapp') {
     const payStatus = document.getElementById('inp-order-pay-status')?.value;
     const notes = document.getElementById('inp-order-notes')?.value.trim();
 
+    // Validasi tabrakan slot 2 jam (2-Hour Booking Lock)
+    const slotCheck = checkSlotAvailability(date, rawTime, pax);
+    if (!slotCheck.available) {
+      const proceed = confirm(`Peringatan Kunci Sesi 2 Jam:\n${slotCheck.reason}\n\nTetap lanjutkan menyimpan pesanan ini?`);
+      if (!proceed) return;
+    }
+
     try {
       // 1. Simpan/Cek Pelanggan
       let cust = customersData.find(c => c.phone === phone || c.name.toLowerCase() === name.toLowerCase());
@@ -3259,13 +4303,14 @@ function showAddOrderModal(sourceType = 'whatsapp') {
           name,
           phone,
           phone_normalized: phone.replace(/[^0-9]/g, ''),
-          notes: 'Dibuat dari pesanan WhatsApp'
+          notes: 'Dibuat dari form pesanan admin'
         }]).select();
         if (newCust && newCust[0]) cust = newCust[0];
       }
 
       // 2. Simpan Pesanan (Sync ke tabel bookings & orders)
       const bkgStatus = (payStatus === 'Lunas' || status === 'Selesai') ? 'paid' : (status === 'Dibatalkan' ? 'cancelled' : 'pending');
+      const timeFormatted = `${rawTime} WITA`;
       const bookingPayload = {
         invoice: code,
         customer_name: name,
@@ -3273,7 +4318,8 @@ function showAddOrderModal(sourceType = 'whatsapp') {
         service_name: item,
         total_price: Math.max(0, amount - discount),
         booking_date: date,
-        booking_time: '09:00',
+        booking_time: timeFormatted,
+        pax,
         status: bkgStatus
       };
 
@@ -3285,8 +4331,10 @@ function showAddOrderModal(sourceType = 'whatsapp') {
           customer_name: name,
           customer_phone: phone,
           service_or_item: item,
-          source: 'whatsapp',
+          source: sourceType,
           order_date: date,
+          order_time: timeFormatted,
+          pax,
           status,
           payment_status: payStatus,
           subtotal_amount: amount,
@@ -3300,7 +4348,7 @@ function showAddOrderModal(sourceType = 'whatsapp') {
         actor_name: 'Admin',
         action: 'CREATE_ORDER',
         entity_type: 'orders',
-        details: `Pesanan ${code} berhasil dibuat dari WhatsApp`
+        details: `Pesanan ${code} (${pax} pax, ${date} pk ${timeFormatted}) berhasil dibuat`
       }]);
 
       window.showToast?.(`Pesanan ${code} berhasil disimpan!`, 'success');
@@ -3313,7 +4361,7 @@ function showAddOrderModal(sourceType = 'whatsapp') {
   });
 }
 
-window.adminOpenOrderCosts = function(orderId) {
+window.adminOpenOrderCosts = function (orderId) {
   const slot = document.getElementById('dasbor-modals-slot');
   if (!slot) return;
 
@@ -3438,7 +4486,7 @@ window.adminOpenOrderCosts = function(orderId) {
   });
 };
 
-window.adminDeleteCost = async function(costId, orderId) {
+window.adminDeleteCost = async function (costId, orderId) {
   try {
     await supabase.from('order_costs').delete().eq('id', costId);
     window.showToast?.('Biaya dihapus.', 'info');
@@ -3466,17 +4514,29 @@ function showAddCustomerModal() {
         </div>
         <div class="modal-body">
           <form id="form-create-customer">
-            <div class="form-group" style="margin-bottom: 1rem;">
+            <div class="form-group" style="margin-bottom: 0.85rem;">
               <label class="form-label">Nama Lengkap:</label>
               <input type="text" id="cust-new-name" class="form-input" placeholder="Contoh: I Wayan Sudarta" required />
             </div>
-            <div class="form-group" style="margin-bottom: 1rem;">
-              <label class="form-label">Nomor WhatsApp / Telepon:</label>
-              <input type="tel" id="cust-new-phone" class="form-input" placeholder="+62 812-xxxx-xxxx" required />
+            <div class="form-grid-2" style="margin-bottom: 0.85rem;">
+              <div class="form-group">
+                <label class="form-label">Nomor WhatsApp / Telepon:</label>
+                <input type="tel" id="cust-new-phone" class="form-input" placeholder="6281234567890" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Alamat Email:</label>
+                <input type="email" id="cust-new-email" class="form-input" placeholder="email@gmail.com" />
+              </div>
             </div>
-            <div class="form-group" style="margin-bottom: 1rem;">
-              <label class="form-label">Alamat Email:</label>
-              <input type="email" id="cust-new-email" class="form-input" placeholder="email@gmail.com" />
+            <div class="form-grid-2" style="margin-bottom: 0.85rem;">
+              <div class="form-group">
+                <label class="form-label">Asal / Kebangsaan:</label>
+                <input type="text" id="cust-new-nat" class="form-input" placeholder="Indonesia / Australia" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tanggal Lahir (DOB):</label>
+                <input type="date" id="cust-new-dob" class="form-input" />
+              </div>
             </div>
             <div class="form-group" style="margin-bottom: 1.25rem;">
               <label class="form-label">Alamat / Lokasi:</label>
@@ -3499,6 +4559,8 @@ function showAddCustomerModal() {
     const name = document.getElementById('cust-new-name')?.value.trim();
     const phone = document.getElementById('cust-new-phone')?.value.trim();
     const email = document.getElementById('cust-new-email')?.value.trim();
+    const nat = document.getElementById('cust-new-nat')?.value.trim();
+    const dob = document.getElementById('cust-new-dob')?.value;
     const addr = document.getElementById('cust-new-addr')?.value.trim();
 
     try {
@@ -3507,6 +4569,8 @@ function showAddCustomerModal() {
         phone,
         phone_normalized: phone.replace(/[^0-9]/g, ''),
         email,
+        nationality: nat || 'Indonesia',
+        dob: dob || '',
         address: addr
       }]);
 
@@ -3524,7 +4588,7 @@ function showAddTransactionModal() {
   const slot = document.getElementById('dasbor-modals-slot');
   if (!slot) return;
 
-  const nextCode = `TRX-${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2, '0')}-${String(transactionsData.length + 1).padStart(3, '0')}`;
+  const nextCode = `TRX-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(transactionsData.length + 1).padStart(3, '0')}`;
   const today = new Date().toISOString().split('T')[0];
 
   slot.innerHTML = `
@@ -3704,7 +4768,7 @@ function showClosingPeriodModal() {
 
 function setupRealtime() {
   if (realtimeChannel) {
-    try { realtimeChannel.unsubscribe(); } catch {}
+    try { realtimeChannel.unsubscribe(); } catch { }
   }
   try {
     realtimeChannel = supabase
@@ -3747,20 +4811,20 @@ function renderUsersView() {
       <!-- Top Compressed KPI Strip (<= 88px) -->
       <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 1.25rem;">
         ${KpiCard({
-          label: 'Total Pengguna',
-          value: users.length,
-          subtext: 'Terdaftar di sistem'
-        })}
+    label: 'Total Pengguna',
+    value: users.length,
+    subtext: 'Terdaftar di sistem'
+  })}
         ${KpiCard({
-          label: 'Pengguna Admin',
-          value: adminCount,
-          subtext: 'Akses penuh & kelola akun'
-        })}
+    label: 'Pengguna Admin',
+    value: adminCount,
+    subtext: 'Akses penuh & kelola akun'
+  })}
         ${KpiCard({
-          label: 'Pengguna Staf',
-          value: staffCount,
-          subtext: 'Akses operasional booking'
-        })}
+    label: 'Pengguna Staf',
+    value: staffCount,
+    subtext: 'Akses operasional booking'
+  })}
       </div>
 
       <!-- Users Table Card -->
@@ -3790,9 +4854,9 @@ function renderUsersView() {
             </thead>
             <tbody>
               ${users.map(u => {
-                const isCurrent = current?.id === u.id || current?.email?.toLowerCase() === u.email?.toLowerCase();
-                const isAdminRole = u.role === 'admin';
-                return `
+    const isCurrent = current?.id === u.id || current?.email?.toLowerCase() === u.email?.toLowerCase();
+    const isAdminRole = u.role === 'admin';
+    return `
                   <tr>
                     <td>
                       <div style="display: flex; align-items: center; gap: 0.65rem;">
@@ -3840,7 +4904,7 @@ function renderUsersView() {
                     </td>
                   </tr>
                 `;
-              }).join('')}
+  }).join('')}
             </tbody>
           </table>
         </div>
@@ -3858,7 +4922,7 @@ function initUsersEvents() {
       const id = btn.getAttribute('data-id');
       const currentRole = btn.getAttribute('data-role');
       const newRole = currentRole === 'admin' ? 'staf' : 'admin';
-      
+
       const users = getAllUsers();
       const target = users.find(u => u.id === id);
       if (target) {
@@ -4011,7 +5075,7 @@ function getAuditLogsSync() {
   try {
     const raw = localStorage.getItem('dasbor_untung_audit_logs');
     if (raw) return JSON.parse(raw);
-  } catch (e) {}
+  } catch (e) { }
   return [
     {
       id: 'log-1',
@@ -4088,25 +5152,25 @@ function renderAuditView() {
                   </td>
                 </tr>
               ` : filtered.map(l => {
-                let badgeClass = 'badge-completed';
-                let dotColor = '#71717A';
-                const act = l.action || '';
+    let badgeClass = 'badge-completed';
+    let dotColor = '#71717A';
+    const act = l.action || '';
 
-                if (act.includes('SUCCESS') || act.includes('CREATE')) {
-                  badgeClass = 'badge-confirmed';
-                  dotColor = '#10B981';
-                } else if (act.includes('FAILED') || act.includes('DELETE')) {
-                  badgeClass = 'badge-cancelled';
-                  dotColor = '#EF4444';
-                } else if (act.includes('UPDATE')) {
-                  badgeClass = 'badge-pending';
-                  dotColor = '#F59E0B';
-                }
+    if (act.includes('SUCCESS') || act.includes('CREATE')) {
+      badgeClass = 'badge-confirmed';
+      dotColor = '#10B981';
+    } else if (act.includes('FAILED') || act.includes('DELETE')) {
+      badgeClass = 'badge-cancelled';
+      dotColor = '#EF4444';
+    } else if (act.includes('UPDATE')) {
+      badgeClass = 'badge-pending';
+      dotColor = '#F59E0B';
+    }
 
-                const dateStr = l.created_at ? l.created_at.split('T')[0] : '2026-10-14';
-                const timeStr = l.created_at && l.created_at.includes('T') ? l.created_at.split('T')[1].slice(0, 8) : '09:00:00';
+    const dateStr = l.created_at ? l.created_at.split('T')[0] : '2026-10-14';
+    const timeStr = l.created_at && l.created_at.includes('T') ? l.created_at.split('T')[1].slice(0, 8) : '09:00:00';
 
-                return `
+    return `
                   <tr>
                     <td>
                       <div class="tabular-nums" style="font-weight: 500; font-size: 0.82rem; color: var(--text-primary);">${formatTanggal(dateStr)}</div>
@@ -4129,7 +5193,7 @@ function renderAuditView() {
                     </td>
                   </tr>
                 `;
-              }).join('')}
+  }).join('')}
             </tbody>
           </table>
         </div>
