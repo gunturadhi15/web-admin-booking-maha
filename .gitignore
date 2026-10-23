@@ -1,7 +1,35 @@
+# Dependencies
 node_modules
 dist
 dist-ssr
-*.local
+
+# Local Environment Variables & Secrets (Poin 2 & Poin 16)
 .env
-.env.*.local
+.env.*
+!.env.example
+*.local
+
+# Certificates & Private Keys
+*.pem
+*.key
+*.cert
+*.pfx
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+credentials.json
+*secret*
+!scripts/scan-secrets.js
+*token*
+
+# Logs & Debugging
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# OS Metadata
 .DS_Store
+Thumbs.db

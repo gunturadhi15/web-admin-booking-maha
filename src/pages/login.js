@@ -1,9 +1,22 @@
 /**
  * Login Page Component — Dasbor Untung Usaha
- * Memenuhi Spesifikasi Bagian 10.A & 10.E di Markdown.MD
+ * Memenuhi Spesifikasi Bagian 10.A & 10.E di Markdown.MD & OWASP Security Standards
+ * 
+ * Fitur Keamanan:
+ * - Poin 3: Zero Hardcoded Secret (Tidak ada password plaintext tertera di layar)
+ * - Poin 5: Error Jangan Bocor (Pesan error generik anti-enumerasi akun)
+ * - Poin 10: Server-Side Rate Limiting & Lockout UI
+ * - Poin 20: Alur Reset Password Aman
+ * - Poin 9: Anti-XSS (HTML Escaped)
  */
 
-import { login, checkLoginRateLimit, evaluatePasswordStrength } from '../services/auth.js';
+import {
+  login,
+  checkLoginRateLimit,
+  evaluatePasswordStrength,
+  requestPasswordReset
+} from '../services/auth.js';
+import { escapeHtml, sanitizeText } from '../utils/security.js';
 
 export function renderLoginPage() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -39,7 +52,7 @@ export function renderLoginPage() {
               id="login-email" 
               name="email" 
               class="form-input" 
-              placeholder="admin@mahawellnessjourney.com" 
+              placeholder="nama@mahawellnessjourney.com" 
               autocomplete="username" 
               required 
             />
@@ -75,10 +88,16 @@ export function renderLoginPage() {
             </div>
           </div>
 
-          <!-- Pesan Error Generik di Bawah Form -->
+          <!-- Banner Kunci Sementara (Rate Limiting Lockout) -->
+          <div id="login-lockout-banner" class="login-error-message" style="display: none; background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; padding: 0.75rem; border-radius: 6px; font-size: 0.8rem;" role="alert">
+            <span style="margin-right: 6px;">🔒</span>
+            <span id="login-lockout-text">Akun dikunci sementara karena terlalu banyak percobaan gagal.</span>
+          </div>
+
+          <!-- Pesan Error Generik di Bawah Form (Poin 5) -->
           <div id="login-error-container" class="login-error-message" style="display: none;" role="alert">
             <span class="error-dot">●</span>
-            <span id="login-error-text">Email atau kata sandi salah.</span>
+            <span id="login-error-text">Email atau kata sandi tidak cocok.</span>
           </div>
 
           <!-- Tombol Masuk Lebar Penuh (#18181B) -->
@@ -87,13 +106,15 @@ export function renderLoginPage() {
             <span id="btn-login-text">Masuk</span>
           </button>
 
-          <!-- Info Default Akun untuk Demo -->
-          <div class="login-demo-hint">
-            <div>💡 <strong>Akun Terdaftar:</strong></div>
-            <div style="margin-top: 4px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-secondary);">
-              Admin: <code>admin@mahawellnessjourney.com</code> / <code>admin@dasboruntung.com</code> (Sandi: <code>Admin12345!</code>)<br/>
-              Staf: <code>staf@mahawellnessjourney.com</code> / <code>staf@dasboruntung.com</code> (Sandi: <code>Staf12345!</code>)
+          <!-- Catatan Keamanan Lingkungan Terproteksi (Poin 3: No Hardcoded Secret) -->
+          <div class="login-demo-hint" style="background: #F8FAFC; border: 1px solid #E2E8F0; padding: 0.75rem; border-radius: 6px;">
+            <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; font-weight: 600; color: #334155;">
+              <span>🛡️</span>
+              <span>Sistem Terenkripsi &amp; Terproteksi</span>
             </div>
+            <p style="margin: 4px 0 0; font-size: 0.72rem; color: #64748B; line-height: 1.4;">
+              Akses terbatas hanya untuk staf operasional dan administrator berwenang. Semua aktivitas masuk dan kegagalan dicatat dalam jejak audit.
+            </p>
           </div>
 
         </form>
@@ -122,6 +143,8 @@ export function initLoginPage() {
   const btnText = document.getElementById('btn-login-text');
   const errorContainer = document.getElementById('login-error-container');
   const errorText = document.getElementById('login-error-text');
+  const lockoutBanner = document.getElementById('login-lockout-banner');
+  const lockoutText = document.getElementById('login-lockout-text');
 
   // Toggle Visibility Password
   toggleBtn?.addEventListener('click', () => {
@@ -131,19 +154,43 @@ export function initLoginPage() {
     toggleBtn.setAttribute('title', isPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
   });
 
+  // Periksa Rate Limiting saat input email kehilangan fokus
+  emailInput?.addEventListener('blur', () => {
+    const email = emailInput.value.trim();
+    if (!email) return;
+    const limit = checkLoginRateLimit(email);
+    if (limit.isLocked) {
+      lockoutBanner.style.display = 'flex';
+      lockoutText.textContent = limit.message;
+      submitBtn.disabled = true;
+    } else {
+      lockoutBanner.style.display = 'none';
+      submitBtn.disabled = false;
+    }
+  });
+
   // Submit Handler
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = emailInput.value.trim();
+    const email = sanitizeText(emailInput.value, 100).toLowerCase().trim();
     const password = passwordInput.value;
     const nextUrl = document.getElementById('login-next-input')?.value || '/';
 
-    // Sembunyikan error sebelumnya
+    // Sembunyikan pesan error sebelumnya
     errorContainer.style.display = 'none';
+    lockoutBanner.style.display = 'none';
 
     if (!email || !password) {
       errorContainer.style.display = 'flex';
-      errorText.textContent = 'Email atau kata sandi tidak boleh kosong.';
+      errorText.textContent = 'Email dan kata sandi wajib diisi.';
+      return;
+    }
+
+    // Periksa status penguncian rate limit
+    const limitCheck = checkLoginRateLimit(email);
+    if (limitCheck.isLocked) {
+      lockoutBanner.style.display = 'flex';
+      lockoutText.textContent = limitCheck.message;
       return;
     }
 
@@ -156,7 +203,7 @@ export function initLoginPage() {
       const user = await login({ email, password });
       
       btnText.textContent = 'Berhasil masuk!';
-      window.showToast?.(`Selamat datang kembali, ${user.name}!`, 'success');
+      window.showToast?.(`Selamat datang kembali, ${escapeHtml(user.name)}!`, 'success');
 
       // Arahkan ke halaman tujuan (default: /)
       setTimeout(() => {
@@ -169,8 +216,15 @@ export function initLoginPage() {
       spinnerText.style.display = 'none';
       btnText.textContent = 'Masuk';
 
-      errorContainer.style.display = 'flex';
-      errorText.textContent = err.message || 'Email atau kata sandi salah.';
+      // Cek apakah baru saja memicu lockout
+      const postLimit = checkLoginRateLimit(email);
+      if (postLimit.isLocked) {
+        lockoutBanner.style.display = 'flex';
+        lockoutText.textContent = postLimit.message;
+      } else {
+        errorContainer.style.display = 'flex';
+        errorText.textContent = err.message || 'Email atau kata sandi tidak cocok.';
+      }
     }
   });
 
@@ -186,40 +240,27 @@ function showForgotPasswordModal() {
 
   slot.innerHTML = `
     <div class="modal-overlay" id="forgot-modal-overlay">
-      <div class="modal-dialog" style="max-width: 420px;">
+      <div class="modal-dialog" style="max-width: 440px;">
         <div class="modal-header">
           <h3 class="modal-title" style="font-size: 1.1rem; font-weight: 600;">Atur Ulang Kata Sandi</h3>
           <button class="btn-close-modal" id="btn-close-forgot-modal">&times;</button>
         </div>
         <div class="modal-body">
-          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
-            Masukkan email terdaftar dan kata sandi baru Anda (minimal 10 karakter).
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.45;">
+            Masukkan alamat email resmi Anda yang terdaftar di sistem. Kami akan mengirimkan tautan pemulihan kata sandi yang aman dan berbatas waktu.
           </p>
 
           <form id="form-reset-password">
-            <div class="form-group" style="margin-bottom: 0.75rem;">
+            <div class="form-group" style="margin-bottom: 1rem;">
               <label class="form-label">Email Terdaftar:</label>
-              <input type="email" id="reset-email" class="form-input" placeholder="admin@dasboruntung.com" required />
+              <input type="email" id="reset-email" class="form-input" placeholder="nama@mahawellnessjourney.com" required />
             </div>
 
-            <div class="form-group" style="margin-bottom: 0.5rem;">
-              <label class="form-label">Kata Sandi Baru (Minimal 10 karakter):</label>
-              <input type="password" id="reset-password-input" class="form-input" placeholder="••••••••••" required />
-            </div>
+            <div id="reset-status-box" style="display: none; padding: 0.75rem; border-radius: 6px; font-size: 0.8rem; margin-bottom: 1rem; line-height: 1.4;"></div>
 
-            <!-- Indikator Kekuatan Kata Sandi -->
-            <div class="password-meter-wrap" style="margin-bottom: 1rem;">
-              <div class="meter-track">
-                <div id="pwd-meter-fill" class="meter-fill" style="width: 0%; background: #EF4444;"></div>
-              </div>
-              <div class="meter-label-row">
-                <span id="pwd-meter-text" style="font-size: 0.72rem; color: var(--text-secondary);">Kekuatan: -</span>
-                <span id="pwd-length-hint" style="font-size: 0.72rem; color: var(--text-muted);">Min. 10 karakter</span>
-              </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary-action" style="width: 100%; height: 36px;">
-              Perbarui Kata Sandi
+            <button type="submit" id="btn-submit-reset" class="btn btn-primary-action" style="width: 100%; height: 38px; font-weight: 600;">
+              <span id="btn-reset-text">Kirim Tautan Pemulihan</span>
+              <span id="btn-reset-spinner" class="login-spinner" style="display: none; width: 14px; height: 14px;"></span>
             </button>
           </form>
         </div>
@@ -232,38 +273,46 @@ function showForgotPasswordModal() {
     if (e.target.id === 'forgot-modal-overlay') slot.innerHTML = '';
   });
 
-  const pwdInput = document.getElementById('reset-password-input');
-  const meterFill = document.getElementById('pwd-meter-fill');
-  const meterText = document.getElementById('pwd-meter-text');
+  const emailInput = document.getElementById('reset-email');
+  const submitBtn = document.getElementById('btn-submit-reset');
+  const btnText = document.getElementById('btn-reset-text');
+  const spinner = document.getElementById('btn-reset-spinner');
+  const statusBox = document.getElementById('reset-status-box');
 
-  pwdInput?.addEventListener('input', (e) => {
-    const val = e.target.value;
-    const strength = evaluatePasswordStrength(val);
-    meterFill.style.width = `${strength.widthPercent}%`;
-    meterFill.style.backgroundColor = strength.color;
-    meterText.textContent = `Kekuatan: ${strength.label}`;
-    meterText.style.color = strength.color;
-  });
-
-  document.getElementById('form-reset-password')?.addEventListener('submit', (e) => {
+  document.getElementById('form-reset-password')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const val = pwdInput?.value || '';
-    if (val.length < 10) {
-      window.showToast?.('Kata sandi harus minimal 10 karakter sesuai kebijakan keamanan.', 'error');
-      return;
+    const email = emailInput?.value?.trim() || '';
+
+    if (!email) return;
+
+    submitBtn.disabled = true;
+    spinner.style.display = 'inline-block';
+    btnText.textContent = 'Memproses Permintaan...';
+    statusBox.style.display = 'none';
+
+    try {
+      const result = await requestPasswordReset(email);
+      
+      statusBox.style.display = 'block';
+      statusBox.style.background = '#ECFDF5';
+      statusBox.style.border = '1px solid #A7F3D0';
+      statusBox.style.color = '#065F46';
+      statusBox.innerHTML = `✅ ${escapeHtml(result.message)}`;
+      
+      btnText.textContent = 'Tautan Terkirim';
+      setTimeout(() => {
+        slot.innerHTML = '';
+      }, 4000);
+    } catch (err) {
+      submitBtn.disabled = false;
+      spinner.style.display = 'none';
+      btnText.textContent = 'Kirim Tautan Pemulihan';
+
+      statusBox.style.display = 'block';
+      statusBox.style.background = '#FEF2F2';
+      statusBox.style.border = '1px solid #FECACA';
+      statusBox.style.color = '#991B1B';
+      statusBox.innerHTML = `⚠️ ${escapeHtml(err.message || 'Gagal memproses permintaan.')}`;
     }
-
-    slot.innerHTML = '';
-    window.showToast?.('Kata sandi berhasil diperbarui! Silakan masuk.', 'success');
   });
-}
-
-function escapeHtml(text) {
-  if (!text) return '';
-  return String(text)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
 }

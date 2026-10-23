@@ -4,6 +4,8 @@
  */
 
 import { supabase, isUsingMock } from '../supabaseClient.js';
+import { escapeHtml, sanitizeText, sanitizePhone, sanitizeNumeric, sanitizeErrorMessage } from '../utils/security.js';
+import { validateBookingSubmission } from '../utils/validation.js';
 
 export const SERVICES = [
   {
@@ -243,16 +245,36 @@ export function initBookingForm(onSuccessNavigate) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const customerName = document.getElementById('customer_name')?.value?.trim();
-    const customerPhone = document.getElementById('customer_phone')?.value?.trim();
-    const customerEmail = document.getElementById('customer_email')?.value?.trim();
-    const serviceName = serviceInput?.value?.trim() || SERVICES[0].name;
-    const totalPrice = Number(priceInput?.value || SERVICES[0].price);
-    const bookingDate = document.getElementById('booking_date')?.value;
-    const bookingTime = document.getElementById('booking_time')?.value || '09:00';
+    const rawCustomerName = document.getElementById('customer_name')?.value || '';
+    const rawCustomerPhone = document.getElementById('customer_phone')?.value || '';
+    const rawCustomerEmail = document.getElementById('customer_email')?.value || '';
+    const rawServiceName = serviceInput?.value || SERVICES[0].name;
+    const rawTotalPrice = priceInput?.value || SERVICES[0].price;
+    const rawBookingDate = document.getElementById('booking_date')?.value || '';
+    const rawBookingTime = document.getElementById('booking_time')?.value || '09:00';
 
-    if (!customerName || !customerPhone || !customerEmail || !bookingDate) {
-      showAlert('error', 'Silakan lengkapi seluruh field formulir pemesanan.');
+    // 1. Sanitasi Input (Poin 7)
+    const customerName = sanitizeText(rawCustomerName, 100);
+    const customerPhone = sanitizePhone(rawCustomerPhone);
+    const customerEmail = sanitizeText(rawCustomerEmail, 100).toLowerCase();
+    const serviceName = sanitizeText(rawServiceName, 120);
+    const totalPrice = sanitizeNumeric(rawTotalPrice, 0, 1000000000, SERVICES[0].price);
+    const bookingDate = sanitizeText(rawBookingDate, 10);
+    const bookingTime = sanitizeText(rawBookingTime, 8);
+
+    // 2. Validasi Input Terpusat (Poin 6)
+    const validation = validateBookingSubmission({
+      customer_name: customerName,
+      customer_email: customerEmail,
+      customer_phone: customerPhone,
+      service_name: serviceName,
+      total_price: totalPrice,
+      booking_date: bookingDate
+    });
+
+    if (!validation.isValid) {
+      const firstError = Object.values(validation.errors)[0];
+      showAlert('error', escapeHtml(firstError));
       return;
     }
 
@@ -268,7 +290,7 @@ export function initBookingForm(onSuccessNavigate) {
         total_price: totalPrice,
         booking_date: bookingDate,
         booking_time: bookingTime,
-        status: 'Pending'
+        status: 'Baru'
       };
 
       const { data, error } = await supabase
@@ -278,12 +300,13 @@ export function initBookingForm(onSuccessNavigate) {
 
       if (error) throw error;
 
+      // 3. Render Aman dengan Anti-XSS (Poin 9)
       showAlert(
         'success',
         `🎉 <strong>Reservasi Berhasil Dikirim!</strong><br/>
-         Pemesan: <strong>${customerName}</strong> (${customerPhone})<br/>
-         Layanan: <strong>${serviceName}</strong> (${formatRupiah(totalPrice)})<br/>
-         Jadwal: <strong>${bookingDate} pk ${bookingTime} WITA</strong>.<br/>
+         Pemesan: <strong>${escapeHtml(customerName)}</strong> (${escapeHtml(customerPhone)})<br/>
+         Layanan: <strong>${escapeHtml(serviceName)}</strong> (${formatRupiah(totalPrice)})<br/>
+         Jadwal: <strong>${escapeHtml(bookingDate)} pk ${escapeHtml(bookingTime)} WITA</strong>.<br/>
          Data telah masuk ke database Supabase dan otomatis tampil di Web Admin.`
       );
 
@@ -299,8 +322,9 @@ export function initBookingForm(onSuccessNavigate) {
 
       window.dispatchEvent(new CustomEvent('booking-submitted', { detail: payload }));
     } catch (err) {
-      console.error('Error saat submit booking:', err);
-      showAlert('error', `Gagal menyimpan pesanan: ${err.message}`);
+      // 4. Error Jangan Bocor (Poin 5)
+      const safeErrorMsg = sanitizeErrorMessage(err, 'Gagal menyimpan pesanan. Silakan periksa kembali formulir Anda.');
+      showAlert('error', safeErrorMsg);
     } finally {
       setLoading(false);
     }

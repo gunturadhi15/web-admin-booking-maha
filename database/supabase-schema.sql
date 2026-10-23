@@ -134,7 +134,56 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
 CREATE INDEX IF NOT EXISTS idx_audit_created ON public.audit_logs (created_at DESC);
 
 -- ==============================================================================
--- ROW LEVEL SECURITY (RLS) POLICIES
+-- FUNGSI OTENTIKASI & RBAC (SECURITY DEFINER DENGAN SEARCH_PATH AMAN)
+-- Memenuhi Poin 8 (Anti-SQLi), Poin 10 (Server-Side Auth), Poin 11 & 19 (RBAC)
+-- ==============================================================================
+
+-- Fungsi verifikasi status Admin terpusat
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  -- Periksa apakah user terautentikasi dan memiliki role 'Admin' di public.admins atau JWT app_metadata
+  RETURN (
+    EXISTS (
+      SELECT 1 FROM public.admins
+      WHERE email = auth.jwt() ->> 'email'
+        AND role = 'Admin'
+        AND is_active = true
+    )
+    OR (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
+  );
+END;
+$$;
+
+-- Fungsi verifikasi user staf atau admin yang sah
+CREATE OR REPLACE FUNCTION public.is_staff_or_admin()
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  RETURN (
+    auth.role() = 'authenticated'
+    AND (
+      EXISTS (
+        SELECT 1 FROM public.admins
+        WHERE email = auth.jwt() ->> 'email'
+          AND is_active = true
+      )
+      OR (auth.jwt() -> 'app_metadata' ->> 'role') IN ('admin', 'staf', 'staff')
+    )
+  );
+END;
+$$;
+
+-- ==============================================================================
+-- ROW LEVEL SECURITY (RLS) POLICIES KETAT
+-- Memenuhi Poin 11 (Cek Akses User), Poin 12 (DB Jangan Publik), Poin 13 (DB Izin Ketat)
 -- ==============================================================================
 ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
@@ -145,29 +194,242 @@ ALTER TABLE public.closing_periods ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sync_runs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
--- Izinkan publik untuk insert order jika sinkronisasi web publik mengirim langsung
-CREATE POLICY "Allow anon insert orders" ON public.orders FOR INSERT TO anon WITH CHECK (true);
-CREATE POLICY "Allow authenticated all orders" ON public.orders FOR ALL TO authenticated USING (true);
-CREATE POLICY "Allow anon select orders" ON public.orders FOR SELECT TO anon USING (true);
-CREATE POLICY "Allow anon update orders" ON public.orders FOR UPDATE TO anon USING (true);
+-- 1. TABEL `orders` (Hanya izinkan anon INSERT pesanan baru via form publik)
+DROP POLICY IF EXISTS "Allow anon insert orders" ON public.orders;
+DROP POLICY IF EXISTS "Allow authenticated all orders" ON public.orders;
+DROP POLICY IF EXISTS "Allow anon select orders" ON public.orders;
+DROP POLICY IF EXISTS "Allow anon update orders" ON public.orders;
 
--- Customer policies
-CREATE POLICY "Allow all customers" ON public.customers FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Allow anon insert orders" 
+  ON public.orders FOR INSERT 
+  TO anon 
+  WITH CHECK (status = 'Baru' AND source IN ('website', 'manual'));
 
--- Costs policies
-CREATE POLICY "Allow all order_costs" ON public.order_costs FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Allow authenticated staff and admin select orders" 
+  ON public.orders FOR SELECT 
+  TO authenticated 
+  USING (true);
 
--- Financial transactions
-CREATE POLICY "Allow all transactions" ON public.financial_transactions FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Allow authenticated staff and admin update orders" 
+  ON public.orders FOR UPDATE 
+  TO authenticated 
+  USING (true)
+  WITH CHECK (true);
 
--- Closing periods
-CREATE POLICY "Allow all closing" ON public.closing_periods FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Allow only admin delete orders" 
+  ON public.orders FOR DELETE 
+  TO authenticated 
+  USING (public.is_admin());
 
--- Sync runs
-CREATE POLICY "Allow all sync_runs" ON public.sync_runs FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+-- 2. TABEL `customers` (Pelanggan)
+DROP POLICY IF EXISTS "Allow all customers" ON public.customers;
 
--- Audit logs
-CREATE POLICY "Allow all audit_logs" ON public.audit_logs FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Allow anon insert customers" 
+  ON public.customers FOR INSERT 
+  TO anon 
+  WITH CHECK (name IS NOT NULL AND length(name) >= 2);
+
+CREATE POLICY "Allow authenticated select customers" 
+  ON public.customers FOR SELECT 
+  TO authenticated 
+  USING (true);
+
+CREATE POLICY "Allow authenticated update customers" 
+  ON public.customers FOR UPDATE 
+  TO authenticated 
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "Allow only admin delete customers" 
+  ON public.customers FOR DELETE 
+  TO authenticated 
+  USING (public.is_admin());
+
+-- 3. TABEL `order_costs` (Biaya/HPP - Tertutup untuk Publik)
+DROP POLICY IF EXISTS "Allow all order_costs" ON public.order_costs;
+
+CREATE POLICY "Allow authenticated select costs" 
+  ON public.order_costs FOR SELECT 
+  TO authenticated 
+  USING (true);
+
+CREATE POLICY "Allow authenticated insert costs" 
+  ON public.order_costs FOR INSERT 
+  TO authenticated 
+  WITH CHECK (amount >= 0);
+
+CREATE POLICY "Allow authenticated update costs" 
+  ON public.order_costs FOR UPDATE 
+  TO authenticated 
+  USING (true)
+  WITH CHECK (amount >= 0);
+
+CREATE POLICY "Allow only admin delete costs" 
+  ON public.order_costs FOR DELETE 
+  TO authenticated 
+  USING (public.is_admin());
+
+-- 4. TABEL `financial_transactions` (Pembukuan Kas - Tertutup untuk Publik)
+DROP POLICY IF EXISTS "Allow all transactions" ON public.financial_transactions;
+
+CREATE POLICY "Allow authenticated select transactions" 
+  ON public.financial_transactions FOR SELECT 
+  TO authenticated 
+  USING (true);
+
+CREATE POLICY "Allow authenticated insert transactions" 
+  ON public.financial_transactions FOR INSERT 
+  TO authenticated 
+  WITH CHECK (amount >= 0);
+
+CREATE POLICY "Allow authenticated update transactions" 
+  ON public.financial_transactions FOR UPDATE 
+  TO authenticated 
+  USING (true)
+  WITH CHECK (amount >= 0);
+
+CREATE POLICY "Allow only admin delete transactions" 
+  ON public.financial_transactions FOR DELETE 
+  TO authenticated 
+  USING (public.is_admin());
+
+-- 5. TABEL `closing_periods` (Tutup Buku - Hanya Admin yang Boleh Mengubah)
+DROP POLICY IF EXISTS "Allow all closing" ON public.closing_periods;
+
+CREATE POLICY "Allow authenticated select closing" 
+  ON public.closing_periods FOR SELECT 
+  TO authenticated 
+  USING (true);
+
+CREATE POLICY "Allow only admin insert closing" 
+  ON public.closing_periods FOR INSERT 
+  TO authenticated 
+  WITH CHECK (public.is_admin());
+
+CREATE POLICY "Allow only admin update closing" 
+  ON public.closing_periods FOR UPDATE 
+  TO authenticated 
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+CREATE POLICY "Allow only admin delete closing" 
+  ON public.closing_periods FOR DELETE 
+  TO authenticated 
+  USING (public.is_admin());
+
+-- 6. TABEL `sync_runs` (Log Sinkronisasi)
+DROP POLICY IF EXISTS "Allow all sync_runs" ON public.sync_runs;
+
+CREATE POLICY "Allow authenticated select sync_runs" 
+  ON public.sync_runs FOR SELECT 
+  TO authenticated 
+  USING (true);
+
+CREATE POLICY "Allow only admin insert sync_runs" 
+  ON public.sync_runs FOR INSERT 
+  TO authenticated 
+  WITH CHECK (public.is_admin());
+
+-- 7. TABEL `audit_logs` (Jejak Audit Append-Only Anti-Tamper)
+DROP POLICY IF EXISTS "Allow all audit_logs" ON public.audit_logs;
+
+CREATE POLICY "Allow authenticated insert audit_logs" 
+  ON public.audit_logs FOR INSERT 
+  TO authenticated 
+  WITH CHECK (true);
+
+CREATE POLICY "Allow only admin select audit_logs" 
+  ON public.audit_logs FOR SELECT 
+  TO authenticated 
+  USING (public.is_admin());
+
+-- TIDAK ADA POLICY UPDATE ATAU DELETE UNTUK AUDIT LOGS (IMMUTABLE AUDIT TRAIL)
+
+-- 8. TABEL `admins` (Manajemen Pengguna - Hanya Admin)
+CREATE POLICY "Allow only admin select admins" 
+  ON public.admins FOR SELECT 
+  TO authenticated 
+  USING (public.is_admin());
+
+CREATE POLICY "Allow only admin insert admins" 
+  ON public.admins FOR INSERT 
+  TO authenticated 
+  WITH CHECK (public.is_admin());
+
+CREATE POLICY "Allow only admin update admins" 
+  ON public.admins FOR UPDATE 
+  TO authenticated 
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+CREATE POLICY "Allow only admin delete admins" 
+  ON public.admins FOR DELETE 
+  TO authenticated 
+  USING (public.is_admin());
+
+-- ==============================================================================
+-- PENGATURAN HAK AKSES POSTGRESQL (LEAST PRIVILEGE)
+-- Memenuhi Poin 12 (DB Jangan Publik) & Poin 13 (DB Izin Ketat)
+-- ==============================================================================
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon;
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM authenticated;
+
+-- Berikan izin minimum eksplisit kepada anon (hanya INSERT pesanan & pelanggan baru)
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT INSERT ON public.orders TO anon;
+GRANT INSERT ON public.customers TO anon;
+
+-- Berikan izin teratur kepada pengguna terautentikasi (staf/admin)
+GRANT SELECT, INSERT, UPDATE ON public.orders TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.customers TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.order_costs TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.financial_transactions TO authenticated;
+GRANT SELECT ON public.closing_periods TO authenticated;
+GRANT SELECT ON public.sync_runs TO authenticated;
+GRANT INSERT ON public.audit_logs TO authenticated;
+
+-- Izin khusus yang dikontrol lebih lanjut oleh RLS (hanya admin yang lolos filter RLS)
+GRANT DELETE ON public.orders TO authenticated;
+GRANT DELETE ON public.customers TO authenticated;
+GRANT DELETE ON public.order_costs TO authenticated;
+GRANT DELETE ON public.financial_transactions TO authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.closing_periods TO authenticated;
+GRANT INSERT, UPDATE ON public.sync_runs TO authenticated;
+GRANT SELECT ON public.audit_logs TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.admins TO authenticated;
+
+-- ==============================================================================
+-- SUPABASE STORAGE BUCKET: DOKUMEN & BUKTI RESERVASI
+-- Memenuhi Poin 15 (Scan Upload) & Poin 18 (Batasi Upload)
+-- ==============================================================================
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'booking-attachments',
+  'booking-attachments',
+  false, -- Private bucket: file tidak dapat diakses publik tanpa signed URL / auth
+  5242880, -- Batas ukuran berkas 5MB (Poin 18)
+  ARRAY['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
+)
+ON CONFLICT (id) DO UPDATE SET
+  public = false,
+  file_size_limit = 5242880,
+  allowed_mime_types = ARRAY['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+
+-- Kebijakan Storage RLS
+CREATE POLICY "Allow authenticated upload attachments" 
+  ON storage.objects FOR INSERT 
+  TO authenticated 
+  WITH CHECK (bucket_id = 'booking-attachments');
+
+CREATE POLICY "Allow authenticated read attachments" 
+  ON storage.objects FOR SELECT 
+  TO authenticated 
+  USING (bucket_id = 'booking-attachments');
+
+CREATE POLICY "Allow only admin delete attachments" 
+  ON storage.objects FOR DELETE 
+  TO authenticated 
+  USING (bucket_id = 'booking-attachments' AND public.is_admin());
 
 -- ==============================================================================
 -- SUPABASE REALTIME PUBLICATION

@@ -126,7 +126,7 @@ export function renderDasborApp() {
           </button>
           <button class="sidebar-link" data-mod="profit">
             <span class="link-icon">${icon('profit', { size: 16 })}</span>
-            <span>Hitung Untung</span>
+            <span>Hitung Hasil Jasa</span>
           </button>
 
           <div class="menu-group-label">KEUANGAN &amp; KAS</div>
@@ -222,7 +222,7 @@ export function renderDasborApp() {
             ${icon('calendar', { size: 14 })} <span>Jadwal</span>
           </button>
           <button class="mobile-tab-btn" data-mod="profit">
-            ${icon('profit', { size: 14 })} <span>Untung</span>
+            ${icon('profit', { size: 14 })} <span>Hasil Jasa</span>
           </button>
           <button class="mobile-tab-btn" data-mod="customers">
             ${icon('customers', { size: 14 })} <span>Pelanggan</span>
@@ -506,7 +506,7 @@ function switchModule(modName) {
     dashboard: 'Dashboard',
     orders: 'Kelola Pesanan',
     calendar: 'Jadwal Booking',
-    profit: 'Hitung Untung',
+    profit: 'Hitung Hasil Jasa',
     customers: 'Data Pelanggan',
     charts: 'Grafik Keuntungan',
     bookkeeping: 'Pembukuan Harian',
@@ -1012,8 +1012,8 @@ function renderActiveModule() {
       break;
 
     case 'profit':
-      heading.textContent = 'Kalkulasi Untung & Modal Langsung';
-      subheading.textContent = 'Menghitung laba kotor, mencatat HPP operasional per pesanan, dan menampilkan margin keuntungan riil.';
+      heading.textContent = 'Perhitungan Hasil Jasa Booking';
+      subheading.textContent = 'Rekapitulasi tarif jasa reservasi, potongan promo, rincian tamu, dan penerimaan bersih hasil pemesanan.';
       viewport.innerHTML = renderProfitView();
       initProfitEvents();
       break;
@@ -2611,10 +2611,6 @@ window.adminOpenActionMenu = function (orderId, event) {
               ${icon('copy', { size: 15 })} <span>Salin ID Booking</span>
             </button>
 
-            <button type="button" class="btn btn-secondary" style="width: 100%; justify-content: flex-start; gap: 8px;" onclick="document.getElementById('action-menu-overlay')?.remove(); window.adminOpenOrderCosts('${order.id}');">
-              ${icon('profit', { size: 15 })} <span>Alokasi Modal Langsung &amp; HPP</span>
-            </button>
-
             <!-- Hapus Berwarna Merah dan Wajib Dialog Konfirmasi (Hanya Tampil untuk Admin Sesuai Section 10.D) -->
             ${userCanDelete ? `
               <button type="button" class="btn btn-secondary" style="width: 100%; justify-content: flex-start; gap: 8px; color: #DC2626; border-color: #FECACA;" onclick="document.getElementById('action-menu-overlay')?.remove(); window.adminDeleteOrder('${order.id}');">
@@ -3360,182 +3356,195 @@ window.adminOpenEditOrder = function (orderId) {
 
 
 /* ==============================================================================
-   3. MODUL: HITUNG UNTUNG OTOMATIS & MODAL/BIAYA (FASE 2)
+   3. MODUL: PERHITUNGAN HASIL JASA BOOKING (REKAP JASA RESERVASI)
    ============================================================================== */
 function renderProfitView() {
-  const overallSummary = calculatePeriodSummary(ordersData, costsData, transactionsData.filter(t => t.type === 'expense' && t.source_type === 'operational'));
+  const activeOrders = ordersData.filter(o => o.status !== 'Dibatalkan');
+  
+  // Perhitungan Murni Jasa Reservasi
+  const grossBookingTotal = activeOrders.reduce((sum, o) => sum + Number(o.subtotal_amount || 0), 0);
+  const totalDiscounts = activeOrders.reduce((sum, o) => sum + Number(o.discount_amount || 0), 0);
+  const totalAdditional = activeOrders.reduce((sum, o) => sum + Number(o.additional_income_amount || 0), 0);
+  const netRevenueTotal = activeOrders.reduce((sum, o) => sum + calculateOrderNetIncome(o), 0);
+  
+  const totalPax = activeOrders.reduce((sum, o) => sum + (Number(o.pax) || 1), 0);
+  const avgPerBooking = activeOrders.length > 0 ? Math.round(netRevenueTotal / activeOrders.length) : 0;
+  const discountRatio = grossBookingTotal > 0 ? ((totalDiscounts / grossBookingTotal) * 100).toFixed(1) : '0';
 
-  const rev = overallSummary.totalRevenue || 0;
-  const cost = overallSummary.totalOrderCosts || 0;
-  const op = overallSummary.totalOperational || 0;
-  const gross = overallSummary.grossProfit || 0;
-  const net = overallSummary.netProfit || 0;
+  // Distribusi Status Pembayaran Jasa
+  const paidOrders = activeOrders.filter(o => o.payment_status === 'Lunas');
+  const paidAmount = paidOrders.reduce((sum, o) => sum + calculateOrderNetIncome(o), 0);
 
-  const costRatio = rev > 0 ? ((cost / rev) * 100).toFixed(1) : '0';
-  const opRatio = rev > 0 ? ((op / rev) * 100).toFixed(1) : '0';
-  const grossMargin = rev > 0 ? Math.round((gross / rev) * 100) : 0;
-  const netMargin = rev > 0 ? ((net / rev) * 100).toFixed(1) : '0';
+  const dpOrders = activeOrders.filter(o => o.payment_status === 'DP / Uang Muka' || o.payment_status === 'DP');
+  const dpAmount = dpOrders.reduce((sum, o) => sum + calculateOrderNetIncome(o), 0);
+
+  const unpaidOrders = activeOrders.filter(o => o.payment_status !== 'Lunas' && o.payment_status !== 'DP / Uang Muka' && o.payment_status !== 'DP');
+  const unpaidAmount = unpaidOrders.reduce((sum, o) => sum + calculateOrderNetIncome(o), 0);
+
+  const paidRatio = netRevenueTotal > 0 ? Math.max(0, Math.min(100, Math.round((paidAmount / netRevenueTotal) * 100))) : 0;
+  const dpRatio = netRevenueTotal > 0 ? Math.max(0, Math.min(100, Math.round((dpAmount / netRevenueTotal) * 100))) : 0;
+  const unpaidRatio = Math.max(0, 100 - paidRatio - dpRatio);
 
   return `
     <div class="view-container">
       
-      <!-- 1. Empat Kartu Metrik Finansial Eksekutif (Berdiameter Jelas & Bernapas) -->
+      <!-- 1. Empat Kartu Metrik Penerimaan Jasa Booking -->
       <div class="profit-cards-grid">
         
-        <!-- Kartu 1: Omzet Penjualan -->
+        <!-- Kartu 1: Total Nilai Booking (Bruto) -->
         <div class="profit-stat-card">
           <div class="profit-stat-header">
-            <span class="profit-stat-title">Total Pendapatan (Omzet)</span>
+            <span class="profit-stat-title">Nilai Booking Bruto</span>
             <div class="brand-badge-icon brand-badge-sm" style="background: #EFF6FF; color: #2563EB;">
               ${icon('orders', { size: 16 })}
             </div>
           </div>
           <div class="profit-stat-value" style="color: var(--text-primary);">
-            ${formatRupiah(rev)}
+            ${formatRupiah(grossBookingTotal)}
           </div>
           <div class="profit-stat-footer">
-            <span>Basis 100% Penjualan</span>
+            <span>Tarif Dasar Layanan</span>
             <span class="badge-subtle badge-completed">Bruto</span>
           </div>
         </div>
 
-        <!-- Kartu 2: Modal Langsung (HPP) -->
-        <div class="profit-stat-card" style="background: #FEF2F2; border-color: #FECACA;">
+        <!-- Kartu 2: Potongan Promo & Diskon -->
+        <div class="profit-stat-card" style="background: #FFFBEB; border-color: #FDE68A;">
           <div class="profit-stat-header">
-            <span class="profit-stat-title" style="color: #991B1B;">Total Modal (HPP &amp; Biaya)</span>
-            <div class="brand-badge-icon brand-badge-sm" style="background: #FEE2E2; color: #DC2626;">
-              ${icon('profit', { size: 16 })}
-            </div>
-          </div>
-          <div class="profit-stat-value" style="color: #DC2626;">
-            ${formatRupiah(cost)}
-          </div>
-          <div class="profit-stat-footer" style="border-top-color: #FECACA; color: #B91C1C;">
-            <span>Biaya Langsung Layanan</span>
-            <span class="badge-subtle badge-cancelled" style="font-weight: 700;">${costRatio}% Omzet</span>
-          </div>
-        </div>
-
-        <!-- Kartu 3: Laba Kotor Usaha -->
-        <div class="profit-stat-card">
-          <div class="profit-stat-header">
-            <span class="profit-stat-title">Laba Kotor Usaha</span>
-            <div class="brand-badge-icon brand-badge-sm" style="background: #ECFDF5; color: #059669;">
-              ${icon('database', { size: 16 })}
-            </div>
-          </div>
-          <div class="profit-stat-value" style="color: #059669;">
-            ${formatRupiah(gross)}
-          </div>
-          <div class="profit-stat-footer">
-            <span>Omzet &minus; Modal Langsung</span>
-            <span class="badge-subtle badge-confirmed" style="font-weight: 700;">Margin ${grossMargin}%</span>
-          </div>
-        </div>
-
-        <!-- Kartu 4: Laba Bersih Akhir (Bintang Utama Dasbor) -->
-        <div class="profit-stat-card card-highlight-net">
-          <div class="profit-stat-header">
-            <span class="profit-stat-title" style="color: #065F46; font-weight: 700;">Laba Bersih Riil (Net Profit)</span>
-            <div class="brand-badge-icon brand-badge-sm" style="background: #DCFCE7; color: #059669;">
+            <span class="profit-stat-title" style="color: #92400E;">Potongan Promo &amp; Diskon</span>
+            <div class="brand-badge-icon brand-badge-sm" style="background: #FEF3C7; color: #D97706;">
               ${icon('sparkles', { size: 16 })}
             </div>
           </div>
+          <div class="profit-stat-value" style="color: #D97706;">
+            ${formatRupiah(totalDiscounts)}
+          </div>
+          <div class="profit-stat-footer" style="border-top-color: #FDE68A; color: #92400E;">
+            <span>Insentif Potongan Harga</span>
+            <span class="badge-subtle badge-pending" style="font-weight: 700; color: #B45309; background: #FEF3C7;">${discountRatio}% dari Bruto</span>
+          </div>
+        </div>
+
+        <!-- Kartu 3: Penerimaan Bersih Jasa (Bintang Utama) -->
+        <div class="profit-stat-card card-highlight-net">
+          <div class="profit-stat-header">
+            <span class="profit-stat-title" style="color: #065F46; font-weight: 700;">Penerimaan Bersih Jasa</span>
+            <div class="brand-badge-icon brand-badge-sm" style="background: #DCFCE7; color: #059669;">
+              ${icon('profit', { size: 16 })}
+            </div>
+          </div>
           <div class="profit-stat-value" style="color: #047857; font-size: 1.65rem;">
-            ${formatRupiah(net)}
+            ${formatRupiah(netRevenueTotal)}
           </div>
           <div class="profit-stat-footer" style="border-top-color: #BBF7D0; color: #065F46;">
-            <span>Uang Bersih Siap Tarik</span>
-            <span class="badge-subtle badge-confirmed" style="font-weight: 700; background: #DCFCE7; color: #065F46;">${netMargin}% Riil</span>
+            <span>Hak Penerimaan Jasa Murni</span>
+            <span class="badge-subtle badge-confirmed" style="font-weight: 700; background: #DCFCE7; color: #065F46;">${paidOrders.length} Lunas</span>
+          </div>
+        </div>
+
+        <!-- Kartu 4: Total Tamu & Rata-rata Reservasi -->
+        <div class="profit-stat-card">
+          <div class="profit-stat-header">
+            <span class="profit-stat-title">Tamu (Pax) &amp; Rata-rata</span>
+            <div class="brand-badge-icon brand-badge-sm" style="background: #F3E8FF; color: #7C3AED;">
+              ${icon('customers', { size: 16 })}
+            </div>
+          </div>
+          <div class="profit-stat-value" style="color: #6D28D9;">
+            ${totalPax} Tamu
+          </div>
+          <div class="profit-stat-footer">
+            <span>Rata-rata: ${formatRupiah(avgPerBooking)}/bkg</span>
+            <span class="badge-subtle badge-completed" style="font-weight: 700; color: #6D28D9; background: #F3E8FF;">${activeOrders.length} Reservasi</span>
           </div>
         </div>
 
       </div>
 
-      <!-- 2. Visualisasi Alur Formula Keuangan & Bar Alokasi Persentase -->
+      <!-- 2. Visualisasi Alur Formula Hasil Jasa & Realisasi Pembayaran -->
       <div class="profit-overview-card">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem;">
           <div>
             <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
               ${icon('charts', { size: 16 })}
-              <span>Struktur Alur Perhitungan Laba &amp; Alokasi Modal</span>
+              <span>Struktur Alur Perhitungan Hasil Jasa Booking</span>
             </h4>
             <p style="margin: 3px 0 0; font-size: 0.78rem; color: var(--text-muted);">
-              Penjelasan visual perbedaan antara uang masuk (omzet), modal langsung yang dikeluarkan, dan laba bersih yang tersisa.
+              Kalkulasi penerimaan murni jasa reservasi: Tarif Dasar Jasa dikurangi potongan promo promosi ditambah layanan fasilitas tambahan.
             </p>
           </div>
           <span class="badge-subtle badge-completed" style="font-size: 0.75rem;">
-            Formula Terintegrasi
+            Perhitungan Khusus Jasa
           </span>
         </div>
 
-        <!-- Visual Flow Strip (Persamaan Finansial Konkret) -->
+        <!-- Visual Flow Strip (Persamaan Finansial Jasa) -->
         <div class="financial-flow-container">
           
           <div class="financial-flow-box flow-revenue">
-            <span class="flow-box-tag">1. Pendapatan (Omzet)</span>
-            <div class="flow-box-amount" style="color: #2563EB;">${formatRupiah(rev)}</div>
-            <span class="flow-box-sub">Uang Masuk dari Pelanggan</span>
+            <span class="flow-box-tag">1. Tarif Dasar (Subtotal)</span>
+            <div class="flow-box-amount" style="color: #2563EB;">${formatRupiah(grossBookingTotal)}</div>
+            <span class="flow-box-sub">Total Nilai Dasar Paket</span>
           </div>
 
-          <div class="financial-flow-operator" title="Dikurangi Modal">&minus;</div>
+          <div class="financial-flow-operator" title="Dikurangi Potongan Diskon">&minus;</div>
 
-          <div class="financial-flow-box flow-cost">
-            <span class="flow-box-tag" style="color: #991B1B;">2. Modal Langsung (HPP)</span>
-            <div class="flow-box-amount" style="color: #DC2626;">${formatRupiah(cost)}</div>
-            <span class="flow-box-sub">Biaya Logistik &amp; Paket (${costRatio}%)</span>
+          <div class="financial-flow-box" style="border-left: 3.5px solid #F59E0B; background: #FFFBEB;">
+            <span class="flow-box-tag" style="color: #92400E;">2. Diskon &amp; Voucher Promo</span>
+            <div class="flow-box-amount" style="color: #D97706;">${formatRupiah(totalDiscounts)}</div>
+            <span class="flow-box-sub">Potongan yang Diberikan</span>
           </div>
 
-          <div class="financial-flow-operator" title="Dikurangi Operasional">&minus;</div>
+          <div class="financial-flow-operator" title="Ditambah Add-on Layanan">&plus;</div>
 
-          <div class="financial-flow-box flow-operational">
-            <span class="flow-box-tag" style="color: #92400E;">3. Biaya Operasional</span>
-            <div class="flow-box-amount" style="color: #D97706;">${formatRupiah(op)}</div>
-            <span class="flow-box-sub">Beban Kantor &amp; Kasir (${opRatio}%)</span>
+          <div class="financial-flow-box" style="border-left: 3.5px solid #8B5CF6; background: #F5F3FF;">
+            <span class="flow-box-tag" style="color: #6D28D9;">3. Layanan Tambahan (Add-on)</span>
+            <div class="flow-box-amount" style="color: #7C3AED;">${formatRupiah(totalAdditional)}</div>
+            <span class="flow-box-sub">Fasilitas / Ekstra Tambahan</span>
           </div>
 
-          <div class="financial-flow-operator" style="background: #DCFCE7; border-color: #86EFAC; color: #059669;" title="Hasil Laba Bersih">&equals;</div>
+          <div class="financial-flow-operator" style="background: #DCFCE7; border-color: #86EFAC; color: #059669;" title="Hasil Penerimaan Bersih">&equals;</div>
 
           <div class="financial-flow-box flow-net" style="box-shadow: 0 1px 3px rgba(5, 150, 105, 0.1);">
-            <span class="flow-box-tag" style="color: #065F46;">4. Laba Bersih Riil</span>
-            <div class="flow-box-amount" style="color: #047857;">${formatRupiah(net)}</div>
-            <span class="flow-box-sub" style="color: #065F46; font-weight: 600;">Keuntungan Riil (${netMargin}%)</span>
+            <span class="flow-box-tag" style="color: #065F46;">4. Penerimaan Bersih Jasa</span>
+            <div class="flow-box-amount" style="color: #047857;">${formatRupiah(netRevenueTotal)}</div>
+            <span class="flow-box-sub" style="color: #065F46; font-weight: 600;">Total Hak Jasa Booking</span>
           </div>
 
         </div>
 
-        <!-- Progress Bar Alokasi Persentase Multi-Segmen -->
+        <!-- Progress Bar Realisasi Pembayaran Jasa -->
         <div class="financial-allocation-wrap">
           <div class="financial-allocation-header">
-            <span><strong>Proporsi Distribusi Dana Usaha:</strong></span>
-            <span>Basis: ${formatRupiah(rev)}</span>
+            <span><strong>Status Realisasi Pembayaran Jasa Booking:</strong></span>
+            <span>Basis: ${formatRupiah(netRevenueTotal)}</span>
           </div>
 
-          <div class="financial-meter-track" title="Alokasi Dana: Laba Bersih (${netMargin}%), Modal HPP (${costRatio}%), Operasional (${opRatio}%)">
-            <div class="meter-segment" style="width: ${Math.max(0, netMargin)}%; background: #10B981;" title="Laba Bersih: ${netMargin}%"></div>
-            <div class="meter-segment" style="width: ${costRatio}%; background: #EF4444;" title="Modal HPP: ${costRatio}%"></div>
-            <div class="meter-segment" style="width: ${opRatio}%; background: #F59E0B;" title="Operasional: ${opRatio}%"></div>
+          <div class="financial-meter-track" title="Status: Lunas (${paidRatio}%), DP (${dpRatio}%), Menunggu (${unpaidRatio}%)">
+            <div class="meter-segment" style="width: ${paidRatio}%; background: #10B981;" title="Lunas: ${paidRatio}%"></div>
+            <div class="meter-segment" style="width: ${dpRatio}%; background: #3B82F6;" title="Uang Muka / DP: ${dpRatio}%"></div>
+            <div class="meter-segment" style="width: ${unpaidRatio}%; background: #F59E0B;" title="Menunggu Pembayaran: ${unpaidRatio}%"></div>
           </div>
 
           <div class="financial-meter-legend">
             <div class="legend-item">
               <span class="legend-dot" style="background: #10B981;"></span>
-              <span><strong>Laba Bersih Usaha:</strong> ${formatRupiah(net)} (${netMargin}%)</span>
+              <span><strong>Lunas:</strong> ${formatRupiah(paidAmount)} (${paidRatio}% &bull; ${paidOrders.length} bkg)</span>
             </div>
             <div class="legend-item">
-              <span class="legend-dot" style="background: #EF4444;"></span>
-              <span><strong>Modal Pokok (HPP):</strong> ${formatRupiah(cost)} (${costRatio}%)</span>
+              <span class="legend-dot" style="background: #3B82F6;"></span>
+              <span><strong>Uang Muka (DP):</strong> ${formatRupiah(dpAmount)} (${dpRatio}% &bull; ${dpOrders.length} bkg)</span>
             </div>
             <div class="legend-item">
               <span class="legend-dot" style="background: #F59E0B;"></span>
-              <span><strong>Beban Operasional:</strong> ${formatRupiah(op)} (${opRatio}%)</span>
+              <span><strong>Menunggu Bayar:</strong> ${formatRupiah(unpaidAmount)} (${unpaidRatio}% &bull; ${unpaidOrders.length} bkg)</span>
             </div>
           </div>
         </div>
 
       </div>
 
-      <!-- Detail Untung per Pesanan Table -->
+      <!-- Detail Penerimaan Jasa per Booking Table -->
       <div class="card" style="margin-top: 1.5rem;">
         <div class="card-header">
           <div style="display: flex; align-items: center; gap: 0.65rem;">
@@ -3543,8 +3552,8 @@ function renderProfitView() {
               ${icon('profit', { size: 16 })}
             </div>
             <div>
-              <h3 class="card-title" style="margin: 0; font-size: 0.95rem; font-weight: 700;">Rincian Untung per Pesanan</h3>
-              <p class="card-desc" style="margin: 2px 0 0;">Kalkulasi keuntungan per transaksi berdasarkan formula resmi: Pendapatan &minus; Diskon &minus; Modal/HPP = Laba Kotor.</p>
+              <h3 class="card-title" style="margin: 0; font-size: 0.95rem; font-weight: 700;">Rincian Penerimaan Hasil Jasa per Booking</h3>
+              <p class="card-desc" style="margin: 2px 0 0;">Daftar reservasi dengan kalkulasi penerimaan murni jasa booking: Tarif Dasar &minus; Potongan Diskon &plus; Add-on.</p>
             </div>
           </div>
         </div>
@@ -3553,61 +3562,85 @@ function renderProfitView() {
           <table class="data-table">
             <thead>
               <tr>
-                <th style="width: 140px;">KODE PESANAN</th>
+                <th style="width: 130px;">KODE BOOKING</th>
                 <th>PEMESAN</th>
-                <th>LAYANAN</th>
-                <th style="text-align: right;">PENDAPATAN BERSIH</th>
-                <th style="text-align: right;">MODAL / HPP</th>
-                <th style="text-align: right;">LABA KOTOR</th>
-                <th style="text-align: center; width: 100px;">MARGIN</th>
-                <th style="text-align: right; width: 140px;">KELOLA BIAYA</th>
+                <th>LAYANAN JASA</th>
+                <th>JADWAL &amp; SESI</th>
+                <th style="text-align: center; width: 75px;">PAX</th>
+                <th style="text-align: right; width: 130px;">TARIF KOTOR</th>
+                <th style="text-align: right; width: 120px;">POTONGAN</th>
+                <th style="text-align: right; width: 140px;">PENERIMAAN BERSIH</th>
+                <th style="text-align: center; width: 125px;">STATUS BAYAR</th>
               </tr>
             </thead>
             <tbody>
-              ${ordersData.map(o => {
-    const orderCosts = costsData.filter(c => c.order_id === o.id);
-    const netIncome = calculateOrderNetIncome(o);
-    const totalCost = calculateOrderTotalCost(orderCosts);
-    const grossProfit = calculateOrderGrossProfit(o, orderCosts);
-    const margin = calculateOrderProfitMargin(o, orderCosts);
+              ${ordersData.length === 0 ? `
+                <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">Belum ada data reservasi pemesanan.</td></tr>
+              ` : ordersData.map(o => {
+                const netIncome = calculateOrderNetIncome(o);
+                const discount = Number(o.discount_amount || 0);
+                const paxCount = o.pax || 1;
+                const isCancelled = o.status === 'Dibatalkan';
 
-    return `
-                  <tr>
+                return `
+                  <tr style="${isCancelled ? 'opacity: 0.6;' : ''}">
                     <td>
                       <span class="booking-id-tag">${escapeHtml(o.order_code)}</span>
                     </td>
                     <td>
                       <div class="cust-cell-primary">${escapeHtml(o.customer_name)}</div>
+                      <div class="cust-cell-secondary">${escapeHtml(o.customer_phone || '-')}</div>
                     </td>
                     <td>
                       <span style="font-size: 0.82rem; color: var(--text-primary); font-weight: 500;">${escapeHtml(o.service_or_item)}</span>
                     </td>
-                    <td style="text-align: right; font-weight: 700; color: var(--text-primary);" class="tabular-nums">
-                      ${formatRupiah(netIncome)}
+                    <td>
+                      <div class="tabular-nums" style="font-weight: 500; font-size: 0.82rem; color: var(--text-primary);">
+                        ${formatTanggal(o.order_date)}
+                      </div>
+                      <div class="tabular-nums" style="font-size: 0.72rem; color: var(--text-muted);">
+                        ${o.order_time ? 'pk ' + formatJam(o.order_time) + ' WITA' : '-'}
+                      </div>
                     </td>
-                    <td style="text-align: right; color: #DC2626; font-weight: 600;" class="tabular-nums">
-                      ${formatRupiah(totalCost)}
+                    <td style="text-align: center;">
+                      <span class="badge-subtle badge-completed" style="font-weight: 600;">
+                        ${paxCount} Pax
+                      </span>
+                    </td>
+                    <td style="text-align: right; color: var(--text-primary);" class="tabular-nums">
+                      ${formatRupiah(o.subtotal_amount)}
                     </td>
                     <td style="text-align: right;" class="tabular-nums">
-                      <strong style="color: ${grossProfit >= 0 ? '#059669' : '#DC2626'}; font-size: 0.9rem;">
-                        ${formatRupiah(grossProfit)}
+                      <span style="color: ${discount > 0 ? '#D97706' : 'var(--text-muted)'}; font-weight: ${discount > 0 ? '600' : '400'};">
+                        ${discount > 0 ? '-' + formatRupiah(discount) : 'Rp 0'}
+                      </span>
+                    </td>
+                    <td style="text-align: right;" class="tabular-nums">
+                      <strong style="color: ${isCancelled ? '#9CA3AF' : '#059669'}; font-size: 0.9rem;">
+                        ${formatRupiah(netIncome)}
                       </strong>
                     </td>
                     <td style="text-align: center;">
-                      <span class="badge-subtle ${margin >= 40 ? 'badge-confirmed' : 'badge-pending'}">
-                        <span class="badge-dot" style="background: ${margin >= 40 ? '#10B981' : '#F59E0B'};"></span>
-                        ${margin}%
-                      </span>
-                    </td>
-                    <td style="text-align: right;">
-                      <button class="btn btn-secondary" style="font-size: 0.78rem; gap: 5px; height: 30px;" onclick="window.adminOpenOrderCosts('${o.id}')">
-                        ${icon('edit', { size: 12 })}
-                        <span>Biaya (${orderCosts.length})</span>
-                      </button>
+                      ${o.payment_status === 'Lunas' ? `
+                        <span class="badge-subtle badge-confirmed">
+                          <span class="badge-dot" style="background: #10B981;"></span>
+                          Lunas
+                        </span>
+                      ` : (o.payment_status === 'DP / Uang Muka' || o.payment_status === 'DP') ? `
+                        <span class="badge-subtle badge-completed" style="color: #2563EB; background: #EFF6FF;">
+                          <span class="badge-dot" style="background: #3B82F6;"></span>
+                          Uang Muka
+                        </span>
+                      ` : `
+                        <span class="badge-subtle badge-pending">
+                          <span class="badge-dot" style="background: #F59E0B;"></span>
+                          ${escapeHtml(o.payment_status || 'Belum Lunas')}
+                        </span>
+                      `}
                     </td>
                   </tr>
                 `;
-  }).join('')}
+              }).join('')}
             </tbody>
           </table>
         </div>
@@ -3913,22 +3946,22 @@ function renderChartsView() {
             <div class="brand-badge-icon brand-badge-sm" style="background: #F8FAFC; color: #475569; border: 1px solid var(--border-subtle); box-shadow: none;">
               ${icon('profit', { size: 15 })}
             </div>
-            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0;">Komposisi Pengeluaran Terbesar</h4>
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin: 0;">Kategori Layanan Jasa Terpopuler</h4>
           </div>
-          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Alokasi modal &amp; biaya langsung operasional usaha.</p>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Distribusi paket perjalanan wellness yang paling diminati pemesan.</p>
           
           <div style="display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.82rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; border-bottom: 1px solid var(--border-subtle);">
-              <span style="color: var(--text-secondary);">Modal / HPP Layanan:</span>
-              <strong style="color: #DC2626; font-weight: 700;">55%</strong>
+              <span style="color: var(--text-secondary);">Sacred Temple &amp; Melukat Tour:</span>
+              <strong style="color: #059669; font-weight: 700;">55%</strong>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0; border-bottom: 1px solid var(--border-subtle);">
-              <span style="color: var(--text-secondary);">Transportasi &amp; Bahan:</span>
-              <strong style="color: #D97706; font-weight: 700;">25%</strong>
+              <span style="color: var(--text-secondary);">Yoga &amp; Meditation Retreat:</span>
+              <strong style="color: #2563EB; font-weight: 700;">25%</strong>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0;">
-              <span style="color: var(--text-secondary);">Fee Pemandu / Terapis:</span>
-              <strong style="color: #2563EB; font-weight: 700;">20%</strong>
+              <span style="color: var(--text-secondary);">Spiritual &amp; Numerology Session:</span>
+              <strong style="color: #7C3AED; font-weight: 700;">20%</strong>
             </div>
           </div>
         </div>
@@ -4490,9 +4523,13 @@ function initSettingsEvents() {
     e.preventDefault();
     const u = document.getElementById('sett-url')?.value.trim();
     const k = document.getElementById('sett-key')?.value.trim();
-    saveSupabaseCredentials(u, k);
-    window.showToast?.('Kredensial disimpan! Memuat ulang...', 'success');
-    setTimeout(() => window.location.reload(), 600);
+    try {
+      saveSupabaseCredentials(u, k);
+      window.showToast?.('Kredensial disimpan! Memuat ulang...', 'success');
+      setTimeout(() => window.location.reload(), 600);
+    } catch (err) {
+      window.showToast?.(err.message, 'error');
+    }
   });
 
   document.getElementById('btn-sett-clear')?.addEventListener('click', () => {
@@ -5369,7 +5406,7 @@ function initUsersEvents() {
   document.getElementById('btn-add-user')?.addEventListener('click', showAddUserModal);
 
   document.querySelectorAll('.btn-toggle-role').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const id = btn.getAttribute('data-id');
       const currentRole = btn.getAttribute('data-role');
       const newRole = currentRole === 'admin' ? 'staf' : 'admin';
@@ -5378,9 +5415,13 @@ function initUsersEvents() {
       const target = users.find(u => u.id === id);
       if (target) {
         target.role = newRole;
-        saveUser(target);
-        window.showToast?.(`Peran ${target.name} diubah menjadi ${newRole.toUpperCase()}!`, 'success');
-        renderActiveModule();
+        try {
+          await saveUser(target);
+          window.showToast?.(`Peran ${target.name} diubah menjadi ${newRole.toUpperCase()}!`, 'success');
+          renderActiveModule();
+        } catch (err) {
+          window.showToast?.(err.message, 'error');
+        }
       }
     });
   });
@@ -5475,13 +5516,13 @@ function showAddUserModal() {
     const val = e.target.value;
     const res = evaluatePasswordStrength(val);
     if (meterFill && meterLabel) {
-      meterFill.style.width = `${res.percent}%`;
+      meterFill.style.width = `${res.widthPercent || res.percent || 0}%`;
       meterFill.style.background = res.color;
       meterLabel.textContent = `Kekuatan: ${res.label}`;
     }
   });
 
-  document.getElementById('form-add-user')?.addEventListener('submit', (e) => {
+  document.getElementById('form-add-user')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('new-user-name')?.value.trim();
     const email = document.getElementById('new-user-email')?.value.trim();
@@ -5492,18 +5533,18 @@ function showAddUserModal() {
     const strength = evaluatePasswordStrength(pass);
     if (!strength.isValid) {
       if (errBox) {
-        errBox.textContent = 'Kata sandi minimal 10 karakter untuk memenuhi standar keamanan.';
+        errBox.textContent = 'Kata sandi minimal 10 karakter dan wajib memuat huruf besar, huruf kecil, angka, dan simbol khusus.';
         errBox.style.display = 'block';
       }
       return;
     }
 
     try {
-      saveUser({
+      await saveUser({
         name,
         email,
         role
-      });
+      }, pass);
       window.showToast?.(`Pengguna ${email} (${role.toUpperCase()}) berhasil ditambahkan!`, 'success');
       slot.innerHTML = '';
       renderActiveModule();
@@ -5876,7 +5917,7 @@ function showChangePasswordModal() {
     const val = e.target.value;
     const res = evaluatePasswordStrength(val);
     if (meterFill && meterLabel) {
-      meterFill.style.width = `${res.percent}%`;
+      meterFill.style.width = `${res.widthPercent || res.percent || 0}%`;
       meterFill.style.background = res.color;
       meterLabel.textContent = `Kekuatan: ${res.label}`;
     }

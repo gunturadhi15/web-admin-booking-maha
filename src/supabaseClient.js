@@ -4,6 +4,8 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import { logger } from './utils/logger.js';
+import { sanitizeErrorMessage } from './utils/security.js';
 
 // Kunci LocalStorage untuk Mode Demo
 const STORAGE_KEYS = {
@@ -545,7 +547,35 @@ export function getSupabaseCredentials() {
   return { url, anonKey, isConfigured };
 }
 
+/**
+ * Deteksi Kunci Service Role (Poin 1: API Key Aman & Poin 3: No Hardcode Secret)
+ * Service Role Key memiliki hak bypass RLS penuh dan TIDAK BOLEH berada di frontend browser
+ */
+export function isServiceRoleKey(key) {
+  if (!key || typeof key !== 'string') return false;
+  try {
+    const parts = key.trim().split('.');
+    if (parts.length === 3) {
+      // Decode JWT payload (base64url)
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const jsonStr = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      const payload = JSON.parse(jsonStr);
+      return payload.role === 'service_role';
+    }
+  } catch {}
+  return false;
+}
+
 export function saveSupabaseCredentials(url, anonKey) {
+  if (anonKey && isServiceRoleKey(anonKey)) {
+    throw new Error('BAHAYA KEAMANAN: Kunci yang Anda masukkan adalah Service Role Key (Admin Secret). Jangan pernah memasukkan Service Role Key ke aplikasi frontend browser! Harap gunakan Anon Key (Public Key).');
+  }
+
   if (url) localStorage.setItem('supabase_url', url.trim());
   else localStorage.removeItem('supabase_url');
 
@@ -736,18 +766,24 @@ export function initSupabaseClient() {
   const { url, anonKey, isConfigured } = getSupabaseCredentials();
 
   if (isConfigured) {
+    if (isServiceRoleKey(anonKey)) {
+      logger.error('CRITICAL SECURITY ALERT: Service Role Key terdeteksi di lingkungan frontend! Inisialisasi dibatalkan.');
+      clientInstance = createMockClient();
+      return clientInstance;
+    }
+
     try {
       clientInstance = createClient(url, anonKey, {
         auth: { persistSession: true, autoRefreshToken: true }
       });
       isMockClient = false;
-      console.log('✅ Supabase live client aktif:', url);
+      logger.info('Supabase live client berhasil diaktifkan.');
     } catch (err) {
-      console.warn('⚠️ Gagal terhubung ke Supabase live, beralih ke Demo Browser:', err);
+      logger.warn('Gagal terhubung ke Supabase live, beralih ke Demo Browser:', err);
       clientInstance = createMockClient();
     }
   } else {
-    console.log('ℹ️ Menggunakan Mode Demo Browser Lokal (Dasbor Untung Usaha).');
+    logger.info('Menggunakan Mode Demo Browser Lokal (Dasbor Untung Usaha).');
     clientInstance = createMockClient();
   }
 
@@ -768,12 +804,19 @@ export function isUsingMock() {
 }
 
 export async function testSupabaseConnection(url, anonKey) {
+  if (isServiceRoleKey(anonKey)) {
+    return {
+      success: false,
+      message: 'BAHAYA KEAMANAN: Kunci yang Anda masukkan adalah Service Role Key! Hanya Anon Key publik yang diizinkan.'
+    };
+  }
+
   try {
     const testClient = createClient(url, anonKey);
     const { data, error } = await testClient.from('orders').select('id').limit(1);
-    if (error) return { success: false, message: error.message };
+    if (error) return { success: false, message: sanitizeErrorMessage(error) };
     return { success: true, message: 'Koneksi ke Supabase berhasil!' };
   } catch (err) {
-    return { success: false, message: err.message || 'Gagal terhubung ke Supabase.' };
+    return { success: false, message: sanitizeErrorMessage(err, 'Gagal terhubung ke Supabase.') };
   }
 }
